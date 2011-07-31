@@ -49,6 +49,17 @@ if (!class_exists('JigoShopSoftware')) {
 			// hooks
 			add_action('product_write_panel_tabs', array(&$this, 'product_write_panel_tab'));
 			add_action('product_write_panels', array(&$this, 'product_write_panel'));
+			add_filter('process_product_meta', array(&$this, 'product_save_data'));
+
+			// define the metadata fields used by this plugin
+			$this->fields = array(
+				array('id' => 'upgradable_product', 'label' => 'Upgradable Product Name', 'title' => 'Upgradable Product Name', 'placeholder' => '', 'type' => 'text'),
+				array('id' => '', 'label' => '', 'title' => '', 'placeholder' => '', 'type' => ''),
+				array('id' => '', 'label' => '', 'title' => '', 'placeholder' => '', 'type' => ''),
+				array('id' => '', 'label' => '', 'title' => '', 'placeholder' => '', 'type' => ''),
+				array('id' => '', 'label' => '', 'title' => '', 'placeholder' => '', 'type' => ''),
+			);			
+			
 			
 		}
 		
@@ -84,20 +95,35 @@ if (!class_exists('JigoShopSoftware')) {
 			*/
 		function product_write_panel() {
 			global $post;
-			$data = get_post_meta($post->ID, 'software_data', true);
-			$fields = array(
-				array('id' => '', 'label' => '', 'title' => '', 'placeholder' => '', 'type' => '');
-				array('id' => '', 'label' => '', 'title' => '', 'placeholder' => '', 'type' => '');
-				array('id' => '', 'label' => '', 'title' => '', 'placeholder' => '', 'type' => '');
-				array('id' => '', 'label' => '', 'title' => '', 'placeholder' => '', 'type' => '');
-				array('id' => '', 'label' => '', 'title' => '', 'placeholder' => '', 'type' => '');
-			);
+			$data = maybe_unserialize( get_post_meta($post->ID, 'product_data', true) );
 		?>	
 			<div id="software_data" class="panel jigoshop_options_panel">
-
+			<?php 
+				foreach ($this->fields as $field) : 
+					switch ($field['type']) :
+						case 'text' :
+							echo '<p class="form-field"><label for="'.$field['id'].'">'.$field['label'].'</label><input type="text" id="'.$field['id'].'" name="'.$field['id'].'" value="'.$data[$field['id']].'" /></p>';
+						break;
+					endswitch;
+				endforeach;	
+				?>
 			</div>	
 		<?php
-		}	
+		}
+		
+		/**
+ 			* product_save_data()
+ 			* saves the data inputed into the product boxes
+			* @see product_write_panel()
+			* @since 1.0
+			*/
+		function product_save_data() {		
+			foreach ($this->fields as $field) {
+				$data[$field['id']] = esc_attr( $_POST[$field['id']] );
+			}	
+			return $data;
+		}
+	
 		
 		
 	
