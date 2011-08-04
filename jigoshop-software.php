@@ -49,15 +49,17 @@ if (!class_exists('JigoShopSoftware')) {
 			// hooks
 			add_action('product_write_panel_tabs', array(&$this, 'product_write_panel_tab'));
 			add_action('product_write_panels', array(&$this, 'product_write_panel'));
-			add_filter('process_product_meta', array(&$this, 'product_save_data'));
+			// add_filter('process_product_meta', array(&$this, 'product_save_data'));
 
 			// define the metadata fields used by this plugin
 			$this->fields = array(
-				array('id' => 'upgradable_product', 'label' => 'Upgradable Product Name', 'title' => 'Upgradable Product Name', 'placeholder' => '', 'type' => 'text'),
-				array('id' => '', 'label' => '', 'title' => '', 'placeholder' => '', 'type' => ''),
-				array('id' => '', 'label' => '', 'title' => '', 'placeholder' => '', 'type' => ''),
-				array('id' => '', 'label' => '', 'title' => '', 'placeholder' => '', 'type' => ''),
-				array('id' => '', 'label' => '', 'title' => '', 'placeholder' => '', 'type' => ''),
+				array('id' => 'is_software', 'label' => 'This product is Software', 'title' => 'This product is Software', 'placeholder' => '', 'type' => 'checkbox'),
+				array('id' => 'upgradable_product', 'label' => 'Upgradable Product Name:', 'title' => 'Upgradable Product Name', 'placeholder' => '', 'type' => 'text'),
+				array('id' => 'up_license_keys', 'label' => 'Upgradable Product Keys:', 'title' => 'Upgradable Product Keys', 'placeholder' => 'Comma separated list', 'type' => 'textarea'),
+				array('id' => 'up_price', 'label' => 'Upgrade Price ($):', 'title' => 'Upgrade Price ($)', 'placeholder' => 'ex: 1.00', 'type' => 'text'),
+				array('id' => 'version', 'label' => 'Version Number:', 'title' => 'Version Number', 'placeholder' => 'ex: 1.0', 'type' => 'text'),
+				array('id' => 'trial', 'label' => 'Trial (amount of days):', 'title' => 'Trial (amount of days)', 'placeholder' => 'ex: 15', 'type' => 'text'),
+				array('id' => 'product_id', 'label' => 'Product ID:', 'title' => 'Product ID', 'placeholder' => 'Optional Product ID for activation', 'type' => 'text'),								
 			);			
 			
 			
@@ -102,8 +104,18 @@ if (!class_exists('JigoShopSoftware')) {
 				foreach ($this->fields as $field) : 
 					switch ($field['type']) :
 						case 'text' :
-							echo '<p class="form-field"><label for="'.$field['id'].'">'.$field['label'].'</label><input type="text" id="'.$field['id'].'" name="'.$field['id'].'" value="'.$data[$field['id']].'" /></p>';
+							echo '<p class="form-field"><label for="'.$field['id'].'">'.$field['label'].'</label><input type="text" id="'.$field['id'].'" name="'.$field['id'].'" value="'.$data[$field['id']].'" placeholder="'.$field['placeholder'].'"/></p>';
 						break;
+						case 'number' :
+							echo '<p class="form-field"><label for="'.$field['id'].'">'.$field['label'].'</label><input type="number" id="'.$field['id'].'" name="'.$field['id'].'" value="'.$data[$field['id']].'" placeholder="'.$field['placeholder'].'"/></p>';
+						break;						
+						case 'textarea' :
+							echo '<p class="form-field"><label for="'.$field['id'].'">'.$field['label'].'</label><textarea id="'.$field['id'].'" name="'.$field['id'].'" placeholder="'.$field['placeholder'].'">'.$data[$field['id']].'</textarea></p>';
+						break;					
+						case 'checkbox' :
+							if ($data[$field['id']] == 'on') $checked = ' checked';
+							echo '<p class="form-field"><label for="'.$field['id'].'">'.$field['label'].'</label><input type="checkbox" id="'.$field['id'].'" name="'.$field['id'].'" value="on"'.$checked.'</p>';
+						break;												
 					endswitch;
 				endforeach;	
 				?>
@@ -117,7 +129,7 @@ if (!class_exists('JigoShopSoftware')) {
 			* @see product_write_panel()
 			* @since 1.0
 			*/
-		function product_save_data() {		
+		function product_save_data( $data ) {		
 			foreach ($this->fields as $field) {
 				$data[$field['id']] = esc_attr( $_POST[$field['id']] );
 			}	
