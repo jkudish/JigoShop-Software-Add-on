@@ -49,7 +49,13 @@ if (!class_exists('JigoShopSoftware')) {
 			// hooks
 			add_action('product_write_panel_tabs', array(&$this, 'product_write_panel_tab'));
 			add_action('product_write_panels', array(&$this, 'product_write_panel'));
-			// add_filter('process_product_meta', array(&$this, 'product_save_data'));
+			add_filter('process_product_meta', array(&$this, 'product_save_data'));
+			remove_action( 'downloadable_add_to_cart', 'jigoshop_downloadable_add_to_cart' ); 
+			add_action( 'downloadable_add_to_cart', array(&$this, 'downloadable_add_to_cart')); 
+			
+			// filters
+			add_filter('add_to_cart_redirect', array(&$this, 'add_to_cart_redirect'));
+
 
 			// define the metadata fields used by this plugin
 			$this->fields = array(
@@ -113,7 +119,7 @@ if (!class_exists('JigoShopSoftware')) {
 							echo '<p class="form-field"><label for="'.$field['id'].'">'.$field['label'].'</label><textarea id="'.$field['id'].'" name="'.$field['id'].'" placeholder="'.$field['placeholder'].'">'.$data[$field['id']].'</textarea></p>';
 						break;					
 						case 'checkbox' :
-							if ($data[$field['id']] == 'on') $checked = ' checked';
+							if ($data[$field['id']] == 'on') $checked = ' checked=checked';
 							echo '<p class="form-field"><label for="'.$field['id'].'">'.$field['label'].'</label><input type="checkbox" id="'.$field['id'].'" name="'.$field['id'].'" value="on"'.$checked.'</p>';
 						break;												
 					endswitch;
@@ -135,13 +141,39 @@ if (!class_exists('JigoShopSoftware')) {
 			}	
 			return $data;
 		}
-	
-		
-		
-	
-	}
 
-	global $jigoshopsoftware;
-	$jigoshopsoftware = new JigoShopSoftware();
+		/**
+ 			* downloadable_add_to_cart()
+ 			* replace the default jigoshop add to cart button
+			* @see downloadable_add_to_cart() from jigoshop
+			* @since 1.0
+			*/	
+		function downloadable_add_to_cart() {
+			global $_product; $availability = $_product->get_availability();
+			if ($availability['availability']) : ?><p class="stock <?php echo $availability['class'] ?>"><?php echo $availability['availability']; ?></p><?php endif; ?>						
+			<form action="<?php echo $_product->add_to_cart_url(); ?>" class="cart" method="post">
+				<button type="submit" class="button-alt"><?php _e('Buy Now', 'jigoshop'); ?></button>
+				<?php do_action('jigoshop_add_to_cart_form'); ?>
+			</form>	
+		<?php
+		}
+
+		/**
+ 			* add_to_cart_redirect()
+ 			* redirect the user to checkout after they've clicked "buy now"
+			* @see jigoshop_add_to_cart_action()
+			* @since 1.0
+			*/			
+		function add_to_cart_redirect() {
+			return jigoshop_cart::get_checkout_url();
+		}
+
+	} // end class
+	
+	add_action('init', 'initJigoShopSoftware');
+	function initJigoShopSoftware() {
+		global $jigoshopsoftware;
+		$jigoshopsoftware = new JigoShopSoftware();
+	}
 
 } // end class exists
