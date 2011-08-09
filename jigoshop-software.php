@@ -50,8 +50,15 @@ if (!class_exists('JigoShopSoftware')) {
 			add_action('product_write_panel_tabs', array(&$this, 'product_write_panel_tab'));
 			add_action('product_write_panels', array(&$this, 'product_write_panel'));
 			add_filter('process_product_meta', array(&$this, 'product_save_data'));
+			remove_action( 'simple_add_to_cart', 'jigoshop_simple_add_to_cart' ); 
+			remove_action( 'virtual_add_to_cart', 'jigoshop_simple_add_to_cart' ); 
 			remove_action( 'downloadable_add_to_cart', 'jigoshop_downloadable_add_to_cart' ); 
-			add_action( 'downloadable_add_to_cart', array(&$this, 'downloadable_add_to_cart')); 
+			remove_action( 'jigoshop_after_shop_loop_item', 'jigoshop_template_loop_add_to_cart', 10, 2);
+			add_action( 'simple_add_to_cart', array(&$this, 'add_to_cart')); 
+			add_action( 'virtual_add_to_cart', array(&$this, 'add_to_cart')); 
+			add_action( 'downloadable_add_to_cart', array(&$this, 'add_to_cart')); 
+			add_action( 'jigoshop_after_shop_loop_item', array(&$this, 'loop_add_to_cart'), 10, 2); 
+			add_action( 'wp_head', array(&$this, 'redirect_away_from_cart')); 
 			
 			// filters
 			add_filter('add_to_cart_redirect', array(&$this, 'add_to_cart_redirect'));
@@ -143,12 +150,12 @@ if (!class_exists('JigoShopSoftware')) {
 		}
 
 		/**
- 			* downloadable_add_to_cart()
+ 			* add_to_cart()
  			* replace the default jigoshop add to cart button
 			* @see downloadable_add_to_cart() from jigoshop
 			* @since 1.0
 			*/	
-		function downloadable_add_to_cart() {
+		function add_to_cart() {
 			global $_product; $availability = $_product->get_availability();
 			if ($availability['availability']) : ?><p class="stock <?php echo $availability['class'] ?>"><?php echo $availability['availability']; ?></p><?php endif; ?>						
 			<form action="<?php echo $_product->add_to_cart_url(); ?>" class="cart" method="post">
@@ -159,6 +166,16 @@ if (!class_exists('JigoShopSoftware')) {
 		}
 
 		/**
+ 			* loop_add_to_cart()
+ 			* replace the default jigoshop add to cart button
+			* @see jigoshop_template_loop_add_to_cart()
+			* @since 1.0
+			*/	
+		function loop_add_to_cart($post, $_product) {
+			?><a href="<?php echo $_product->add_to_cart_url(); ?>" class="button"><?php _e('Buy Now', 'jigoshop'); ?></a><?php
+		}
+		
+		/**
  			* add_to_cart_redirect()
  			* redirect the user to checkout after they've clicked "buy now"
 			* @see jigoshop_add_to_cart_action()
@@ -166,6 +183,18 @@ if (!class_exists('JigoShopSoftware')) {
 			*/			
 		function add_to_cart_redirect() {
 			return jigoshop_cart::get_checkout_url();
+		}
+
+		/**
+ 			* redirect_away_from_cart()
+ 			* redirect the user away from cart page, either to checkout or to home
+			* @since 1.0
+			*/					
+		function redirect_away_from_cart() {
+			if (is_cart()) {
+				$redirect = (isset($_SESSION['cart'])) ? jigoshop_cart::get_checkout_url() : site_url();
+				wp_safe_redirect($redirect); exit;
+			}
 		}
 
 	} // end class
