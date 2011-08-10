@@ -46,10 +46,16 @@ if (!class_exists('JigoShopSoftware')) {
 			// activation hook
 			register_activation_hook(__FILE__, array(&$this, 'activation'));
 			
-			// hooks
+			/**
+			 * hooks
+			 */
+
+			// backend stuff			
 			add_action('product_write_panel_tabs', array(&$this, 'product_write_panel_tab'));
 			add_action('product_write_panels', array(&$this, 'product_write_panel'));
 			add_filter('process_product_meta', array(&$this, 'product_save_data'));
+			
+			// frontend stuff
 			remove_action( 'simple_add_to_cart', 'jigoshop_simple_add_to_cart' ); 
 			remove_action( 'virtual_add_to_cart', 'jigoshop_simple_add_to_cart' ); 
 			remove_action( 'downloadable_add_to_cart', 'jigoshop_downloadable_add_to_cart' ); 
@@ -58,7 +64,12 @@ if (!class_exists('JigoShopSoftware')) {
 			add_action( 'virtual_add_to_cart', array(&$this, 'add_to_cart')); 
 			add_action( 'downloadable_add_to_cart', array(&$this, 'add_to_cart')); 
 			add_action( 'jigoshop_after_shop_loop_item', array(&$this, 'loop_add_to_cart'), 10, 2); 
+
+			add_action( 'wp_print_styles', array(&$this, 'print_styles')); 
 			add_action( 'wp_head', array(&$this, 'redirect_away_from_cart')); 
+			add_action( 'before_checkout_form', array(&$this, 'after_checkout_form')); 
+			add_action( 'wp_ajax_nopriv_jgs_update_product', array(&$this, 'ajax_jgs_update_product')); 
+			add_action( 'wp_ajax_jgs_update_product', array(&$this, 'ajax_jgs_update_product')); 
 			
 			// filters
 			add_filter('add_to_cart_redirect', array(&$this, 'add_to_cart_redirect'));
@@ -115,18 +126,20 @@ if (!class_exists('JigoShopSoftware')) {
 			<div id="software_data" class="panel jigoshop_options_panel">
 			<?php 
 				foreach ($this->fields as $field) : 
+					$value = ($field['id'] == 'up_license_keys') ? $this->un_array_ify_keys($data[$field['id']]) : $data[$field['id']];
+					
 					switch ($field['type']) :
 						case 'text' :
-							echo '<p class="form-field"><label for="'.$field['id'].'">'.$field['label'].'</label><input type="text" id="'.$field['id'].'" name="'.$field['id'].'" value="'.$data[$field['id']].'" placeholder="'.$field['placeholder'].'"/></p>';
+							echo '<p class="form-field"><label for="'.$field['id'].'">'.$field['label'].'</label><input type="text" id="'.$field['id'].'" name="'.$field['id'].'" value="'.$value.'" placeholder="'.$field['placeholder'].'"/></p>';
 						break;
 						case 'number' :
-							echo '<p class="form-field"><label for="'.$field['id'].'">'.$field['label'].'</label><input type="number" id="'.$field['id'].'" name="'.$field['id'].'" value="'.$data[$field['id']].'" placeholder="'.$field['placeholder'].'"/></p>';
+							echo '<p class="form-field"><label for="'.$field['id'].'">'.$field['label'].'</label><input type="number" id="'.$field['id'].'" name="'.$field['id'].'" value="'.$value.'" placeholder="'.$field['placeholder'].'"/></p>';
 						break;						
 						case 'textarea' :
-							echo '<p class="form-field"><label for="'.$field['id'].'">'.$field['label'].'</label><textarea id="'.$field['id'].'" name="'.$field['id'].'" placeholder="'.$field['placeholder'].'">'.$data[$field['id']].'</textarea></p>';
+							echo '<p class="form-field"><label for="'.$field['id'].'">'.$field['label'].'</label><textarea id="'.$field['id'].'" name="'.$field['id'].'" placeholder="'.$field['placeholder'].'">'.$value.'</textarea></p>';
 						break;					
 						case 'checkbox' :
-							if ($data[$field['id']] == 'on') $checked = ' checked=checked';
+							if ($value == 'on') $checked = ' checked=checked';
 							echo '<p class="form-field"><label for="'.$field['id'].'">'.$field['label'].'</label><input type="checkbox" id="'.$field['id'].'" name="'.$field['id'].'" value="on"'.$checked.'</p>';
 						break;												
 					endswitch;
@@ -142,11 +155,61 @@ if (!class_exists('JigoShopSoftware')) {
 			* @see product_write_panel()
 			* @since 1.0
 			*/
-		function product_save_data( $data ) {		
+		function product_save_data($data) {		
 			foreach ($this->fields as $field) {
-				$data[$field['id']] = esc_attr( $_POST[$field['id']] );
+				if ($field['id'] == 'up_license_keys') $data[$field['id']] = $this->array_ify_keys($_POST[$field['id']]);
+				else $data[$field['id']] = esc_attr( $_POST[$field['id']] );
 			}	
 			return $data;
+		}
+
+		/**
+ 			* array_ify_keys()
+ 			* transforms a comma separated list of license keys into an array in order to store in the DB
+			* @param (string) $keys, a comma separated list of keys
+			* @since 1.0
+			*/				
+		function array_ify_keys($keys = null) {
+			$keys = esc_attr($keys);
+			if (is_string($keys)) {
+				$keys_array = explode(',', $keys); 
+				return $keys_array;
+			}
+			return false;
+		}
+		
+		/**
+ 			* un_array_ify_keys()
+ 			* transforms an array of license keys into a comma separated list in order to display it
+			* @param (array) $keys, the array of keys
+			* @since 1.0
+			*/				
+		function un_array_ify_keys($keys = null) {
+			if (is_array($keys)) {
+				foreach ($keys as $key) { $i++;
+					if ($i != 1) $keys_string .= ',';
+					$keys_string .= $key;
+				}	
+				return $keys_string;
+			}
+			return false;
+		}		
+
+		/**
+ 			* is_valid_upgrade_key()
+ 			* checks if a key is a valid upgrade key for a particular product
+			* @param (string) $key, the key to validate
+			* @param (int) $item_id, the product to validate for
+			* @since 1.0
+			*/		
+		function is_valid_upgrade_key($key = null, $item_id = null) {
+			if ($key && $item_id) {
+				$product_data = get_post_meta($item_id, 'product_data', true);
+				$_keys = (array) $product_data['up_license_keys'];
+				if (in_array($key, $_keys)) return true;
+				else return false;
+			}	
+			return false;
 		}
 
 		/**
@@ -184,6 +247,16 @@ if (!class_exists('JigoShopSoftware')) {
 		function add_to_cart_redirect() {
 			return jigoshop_cart::get_checkout_url();
 		}
+		
+		/**
+ 			* print_styles()
+ 			* adds css to the front-end
+			* @since 1.0
+			*/	
+    function print_styles() {
+			wp_register_style('jigoshop_software', plugins_url( 'inc/front-end.css', __FILE__ ));
+			wp_enqueue_style('jigoshop_software');
+    }		
 
 		/**
  			* redirect_away_from_cart()
@@ -197,6 +270,62 @@ if (!class_exists('JigoShopSoftware')) {
 			}
 		}
 
+		/**
+ 			* after_checkout_form()
+ 			* allow the user to upgrade the product rather than paying full price
+			* @since 1.0
+			*/							
+		function after_checkout_form() {
+			include_once('inc/product-upgrade.php');
+		}
+		
+		/**
+ 			* ajax_jgs_update_product()
+ 			* process the ajax request to conduct a product update
+			* @since 1.0
+			*/									
+		function ajax_jgs_update_product() {
+			$messages = null; // reset in case this a second attempt	
+			$success = null;
+			$message = null;
+	
+			$key = esc_attr($_POST['up_key']);
+			$item_id = esc_attr($_POST['item_id']);
+			
+			// key validation
+			if (!$key || $key == '') $messages['key'] = 'Please enter an upgrade key';
+			if ($key && !$this->is_valid_upgrade_key($key, $item_id)) $messages['key'] = 'The key you have entered is not valid, please try again or contact us if you need additional help';
+			
+			
+			$price = '$50.00';
+				
+			// if there is no message, then validation passed
+			if(!$messages) {
+			
+				$success = true;
+				$message = "Upgrade applied below.";
+				
+				
+			} else {
+				// building a message string from all of the $messages above
+				$message = '';
+				foreach ($messages as $m) {
+					$message .= $m.'<br>';
+				}
+				$success = false;
+			}
+
+			header( "Content-Type: application/json" );
+			$response = json_encode( array( 
+				'success' => $success,
+				'message' => $message,
+				'price' => $price,
+				'key' => $key,
+			));
+			echo $response;
+			exit;
+		}
+		
 	} // end class
 	
 	add_action('init', 'initJigoShopSoftware');
