@@ -34,9 +34,9 @@ License: GPL v3
 	* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 	*/	
 
-if (!class_exists('JigoShopSoftware')) {
+if (!class_exists('jigoshop_software')) {
 
-	class JigoShopSoftware {
+	class jigoshop_software {
 	
 		function __construct() {
 			
@@ -67,9 +67,8 @@ if (!class_exists('JigoShopSoftware')) {
 
 			add_action( 'wp_print_styles', array(&$this, 'print_styles')); 
 			add_action( 'wp_head', array(&$this, 'redirect_away_from_cart')); 
-			add_action( 'before_checkout_form', array(&$this, 'after_checkout_form')); 
-			add_action( 'wp_ajax_nopriv_jgs_update_product', array(&$this, 'ajax_jgs_update_product')); 
-			add_action( 'wp_ajax_jgs_update_product', array(&$this, 'ajax_jgs_update_product')); 
+			add_action( 'wp_ajax_nopriv_jgs_checkout', array(&$this, 'ajax_jgs_checkout')); 
+			add_action( 'wp_ajax_jgs_checkout', array(&$this, 'ajax_jgs_checkout')); 
 			
 			// filters
 			add_filter('add_to_cart_redirect', array(&$this, 'add_to_cart_redirect'));
@@ -185,6 +184,8 @@ if (!class_exists('JigoShopSoftware')) {
 			* @since 1.0
 			*/				
 		function un_array_ify_keys($keys = null) {
+			$i = 0;
+			$keys_string = '';
 			if (is_array($keys)) {
 				foreach ($keys as $key) { $i++;
 					if ($i != 1) $keys_string .= ',';
@@ -271,67 +272,134 @@ if (!class_exists('JigoShopSoftware')) {
 		}
 
 		/**
- 			* after_checkout_form()
- 			* allow the user to upgrade the product rather than paying full price
+ 			* record_upgrade()
+ 			* record an upgrade into the jigoshop order system
 			* @since 1.0
 			*/							
-		function after_checkout_form() {
-			include_once('inc/product-upgrade.php');
+		function record_upgrade() {
+			
 		}
 		
 		/**
- 			* ajax_jgs_update_product()
- 			* process the ajax request to conduct a product update
+ 			* ajax_jgs_process_checkout()
+ 			* process the ajax request to checkout
 			* @since 1.0
 			*/									
-		function ajax_jgs_update_product() {
+		function ajax_jgs_checkout() {
+
 			$messages = null; // reset in case this a second attempt	
 			$success = null;
 			$message = null;
 	
-			$key = esc_attr($_POST['up_key']);
 			$item_id = esc_attr($_POST['item_id']);
+			$key = esc_attr($_POST['up_key']);
+			$email = esc_attr($_POST['jgs_email']);
+						
+			// nonce verification
+			if ( $_POST['jgs_checkout_nonce'] && !wp_verify_nonce($_POST['jgs_checkout_nonce'], 'jgs_checkout') ) $messages['nonce'] = 'An error has occurred2, please try again';
+			
+			// email validation
+			if (!$email || $email == '') $messages['email'] = 'Please enter your email';
+			elseif (!is_email($email)) $messages['email'] = 'Please enter a valid email address';
 			
 			// key validation
-			if (!$key || $key == '') $messages['key'] = 'Please enter an upgrade key';
-			if ($key && !$this->is_valid_upgrade_key($key, $item_id)) $messages['key'] = 'The key you have entered is not valid, please try again or contact us if you need additional help';
-			
-			
-			$price = '$50.00';
-				
+			if ($key && $key != '' && !$this->is_valid_upgrade_key($key, $item_id)) $messages['key'] = 'The key you have entered is not valid, please try again or contact us if you need additional help';
+			$upgrade = false; // todo
+			$qty = 0; // todo
+
 			// if there is no message, then validation passed
 			if(!$messages) {
 			
 				$success = true;
-				$message = "Upgrade applied below.";
+																				
+				$order_data = array(
+					'post_type' => 'shop_order',
+					'post_title' => 'Order &ndash; '.date('F j, Y @ h:i A'),
+					'post_status' => 'publish',
+					'post_author' => 1
+				);
+				
+				$data = get_post_meta($item_id, 'product_data', true);
+				$sale_price = $data['sale_price'];
+				$regular_price = $data['regular_price'];
+				$price = ($sale_price && $sale_price != '') ? $sale_price : $regular_price;
+				$version = $data['version'];
+				
+				
+				if ($upgrade) {
+					$up_name = $data['upgradable_product'];
+					$price = $data['up_price'];
+				}	
+								
+				// Order meta data
+				$data['billing_email'] = $email;
+				$data['payment_method'] = 'paypal';
+				$data['order_subtotal'] = $price*$qty;
+				$data['order_shipping'] = 0;
+				$data['order_discount'] = 0;
+				$data['order_tax'] = 0;
+				$data['order_shipping_tax']	= 0;
+				$data['order_total'] = $data['order_subtotal'];
+					
+				$order_items = array();
+						
+				$order_items[] = array(
+			 		'id' 		=> $item_id,
+			 		'name' 		=> get_the_title($item_id),
+			 		'qty' 		=> (int) $qty,
+			 		'cost' 		=> $price,
+			 		'taxrate' 	=> 0
+			 	);
+					 					
+				$order_id = wp_insert_post( $order_data );					
+					
+				// Update post meta
+				update_post_meta( $order_id, 'order_data', $data );
+				update_post_meta( $order_id, 'order_key', uniqid('order_') );
+				update_post_meta( $order_id, 'order_items', $order_items );
+				wp_set_object_terms( $order_id, 'pending', 'shop_order_status' );
+			
+				$order = &new jigoshop_order($order_id);
+					
+				// Inserted successfully 
+				do_action('jigoshop_new_order', $order_id);
+										
+				// Store Order ID in session 
+				$_SESSION['order_awaiting_payment'] = $order_id;
+		
+				// Process Payment
+				$available_gateways = jigoshop_payment_gateways::get_available_payment_gateways();
+				$result = $available_gateways['paypal']->process_payment( $order_id );
 				
 				
 			} else {
 				// building a message string from all of the $messages above
 				$message = '';
-				foreach ($messages as $m) {
+				foreach ($messages as $k => $m) {
 					$message .= $m.'<br>';
 				}
 				$success = false;
+				$result = null;
 			}
 
 			header( "Content-Type: application/json" );
 			$response = json_encode( array( 
 				'success' => $success,
 				'message' => $message,
-				'price' => $price,
-				'key' => $key,
+				'result' => $result,
 			));
 			echo $response;
 			exit;
 		}
+
 		
 	} // end class
 	
 	add_action('init', 'initJigoShopSoftware');
 	function initJigoShopSoftware() {
 		global $jigoshopsoftware;
-		$jigoshopsoftware = new JigoShopSoftware();
+		$jigoshopsoftware = new jigoshop_software();
+		include_once('inc/shortcodes.php');
 	}
 
 } // end class exists
