@@ -82,7 +82,7 @@ if (!class_exists('jigoshop_software')) {
 				array('id' => 'up_price', 'label' => 'Upgrade Price ($):', 'title' => 'Upgrade Price ($)', 'placeholder' => 'ex: 1.00', 'type' => 'text'),
 				array('id' => 'version', 'label' => 'Version Number:', 'title' => 'Version Number', 'placeholder' => 'ex: 1.0', 'type' => 'text'),
 				array('id' => 'trial', 'label' => 'Trial (amount of days):', 'title' => 'Trial (amount of days)', 'placeholder' => 'ex: 15', 'type' => 'text'),
-				array('id' => 'product_id', 'label' => 'Product ID:', 'title' => 'Product ID', 'placeholder' => 'Optional Product ID for activation', 'type' => 'text'),								
+				array('id' => 'activations', 'label' => 'Amount of activations possible:', 'title' => 'Amount of activations possible', 'placeholder' => 'ex: 5', 'type' => 'text'),
 			);			
 			
 			
@@ -138,7 +138,7 @@ if (!class_exists('jigoshop_software')) {
 							echo '<p class="form-field"><label for="'.$field['id'].'">'.$field['label'].'</label><textarea id="'.$field['id'].'" name="'.$field['id'].'" placeholder="'.$field['placeholder'].'">'.$value.'</textarea></p>';
 						break;					
 						case 'checkbox' :
-							if ($value == 'on') $checked = ' checked=checked';
+							$checked = ($value == 'on') ? ' checked=checked' : '';
 							echo '<p class="form-field"><label for="'.$field['id'].'">'.$field['label'].'</label><input type="checkbox" id="'.$field['id'].'" name="'.$field['id'].'" value="on"'.$checked.'</p>';
 						break;												
 					endswitch;
@@ -290,9 +290,12 @@ if (!class_exists('jigoshop_software')) {
 			$messages = null; // reset in case this a second attempt	
 			$success = null;
 			$message = null;
-	
+
+			$no_js = (isset($_POST['no_js']) && $_POST['no_js'] == 'true') ? true : false;
+			if ($no_js) wp_safe_redirect(jigoshop_cart::get_checkout_url().'?no-js=true');
+
 			$item_id = esc_attr($_POST['item_id']);
-			$key = esc_attr($_POST['up_key']);
+			if (isset($_POST['up_key'])) $key = esc_attr($_POST['up_key']);
 			$email = esc_attr($_POST['jgs_email']);
 						
 			// nonce verification
@@ -303,7 +306,7 @@ if (!class_exists('jigoshop_software')) {
 			elseif (!is_email($email)) $messages['email'] = 'Please enter a valid email address';
 			
 			// key validation
-			if ($key && $key != '' && !$this->is_valid_upgrade_key($key, $item_id)) $messages['key'] = 'The key you have entered is not valid, please try again or contact us if you need additional help';
+			if (isset($key) && $key != '' && !$this->is_valid_upgrade_key($key, $item_id)) $messages['key'] = 'The key you have entered is not valid, please try again or contact us if you need additional help';
 			$upgrade = false; // todo
 			$qty = 0; // todo
 
@@ -319,19 +322,22 @@ if (!class_exists('jigoshop_software')) {
 					'post_author' => 1
 				);
 				
-				$data = get_post_meta($item_id, 'product_data', true);
-				$sale_price = $data['sale_price'];
-				$regular_price = $data['regular_price'];
+				$product = get_post_meta($item_id, 'product_data', true);
+				$sale_price = $product['sale_price'];
+				$regular_price = $product['regular_price'];
 				$price = ($sale_price && $sale_price != '') ? $sale_price : $regular_price;
-				$version = $data['version'];
-				
+				$version = $product['version'];
+				// $upgrade = $_POST['upgrade']; // or something - todo: refactor;
 				
 				if ($upgrade) {
-					$up_name = $data['upgradable_product'];
-					$price = $data['up_price'];
-				}	
+					$up_name = $product['upgradable_product'];					
+					$data['upgrade_name'] = $up_name;
+					$data['upgrade_price'] = $price;
+					$data['original_price'] = $price;
+					$price = $product['up_price'];					
+				}
 								
-				// Order meta data
+				// Order meta data [from jigoshop]
 				$data['billing_email'] = $email;
 				$data['payment_method'] = 'paypal';
 				$data['order_subtotal'] = $price*$qty;
@@ -340,6 +346,16 @@ if (!class_exists('jigoshop_software')) {
 				$data['order_tax'] = 0;
 				$data['order_shipping_tax']	= 0;
 				$data['order_total'] = $data['order_subtotal'];
+				
+				// activation stuff	
+				$data['version'] = $version;
+				$data['license_key'] = $this->generate_license_key();
+				$data['activations_possible'] = $product['activations'];				
+					
+				
+				/*
+					TODO add coupon support
+				*/
 					
 				$order_items = array();
 						
@@ -371,7 +387,6 @@ if (!class_exists('jigoshop_software')) {
 				$available_gateways = jigoshop_payment_gateways::get_available_payment_gateways();
 				$result = $available_gateways['paypal']->process_payment( $order_id );
 				
-				
 			} else {
 				// building a message string from all of the $messages above
 				$message = '';
@@ -388,16 +403,16 @@ if (!class_exists('jigoshop_software')) {
 				'message' => $message,
 				'result' => $result,
 			));
-			echo $response;
+			echo $response;			
 			exit;
 		}
 		
 		/**
- 			* generate_license_code()
+ 			* generate_license_key()
  			* generates a unique id that is used as the license code
 			* @since 1.0
 			*/		
-		function generate_license_code() {
+		function generate_license_key() {
 
 			$uuid = sprintf( '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
 				mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff ),

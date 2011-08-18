@@ -4,6 +4,7 @@
 #jgs_checkout .form-row input[type="text"] {width: 300px;}
 #jgs_checkout .form-row .button-alt {float: right;}
 #jgs_checkout #jgs_validation {display: none; color: red;}
+#jgs_checkout #jgs_validation.not-hidden {display: block}
 
 .jgs_loader {float: right;}
 .jgs_loader.loading {padding: 5px 0 0 20px; height: 40px; background: url('../../jigoshop/assets/images/ajax-loader.gif') 0 50% no-repeat; }

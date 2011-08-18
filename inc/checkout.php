@@ -16,11 +16,10 @@ if ( sizeof(jigoshop_cart::$cart_contents) > 0 ) :
 		$up_name = $data['upgradable_product'];
 		$up_price = $data['up_price'];
 		$version = $data['version'];
-
-		if ($up_name && $up_price && $up_name != '' && $up_price != '') : ?>
-			
+		
+	?>				
 			<div id="jgs_checkout">
-				<form id="jgs_checkout_form" method="post">
+				<form id="jgs_checkout_form" action="<?php echo admin_url('admin-ajax.php') ?>" method="post">
 					<div class="form-row">
 						<h2>Purchasing: <?php echo get_the_title($item_id) ?></h2>		
 						<p>
@@ -29,23 +28,27 @@ if ( sizeof(jigoshop_cart::$cart_contents) > 0 ) :
 							<strong>Total</strong>: $<?php echo $qty*$price ?>
 						</p>	
 						<p>Please enter your email below, then click <em>purchase now</em> below to complete the purchase with Paypal.</p>					
-						<p id="jgs_validation"></p>
+						<p id="jgs_validation"<?php if (isset($_GET['no-js'])) echo ' class="not-hidden"' ?>><?php if (isset($_GET['no-js'])) echo 'You need javascript in order to be able to checkout. Please enable javascript and try again.'?></p>
 					</div>	
 					<div class="form-row">
 						<p><label for="jgs_email">Your email address:</label> <input type="text" id="jgs_email" name="jgs_email"></p>
-					</div>	
-					<div class="form-row">
-						<h2>Upgrade from <?php echo $up_name ?>:</h2>
-						<p>If you have a valid <?php echo $up_name ?> license key, you can upgrade to the current version (<?php echo $version ?>). Please enter your old license key below and click upgrade now. The order information below will update once you complete this step.</p>
-						<p><strong>Upgrade Price:</strong> $<?php echo $up_price ?></p>
 					</div>
-					<div class="form-row">						
-						<label for="up_key"><?php echo $up_name ?> Key:</label> <input type="text" id="up_key" name="up_key"><br><br>
-					</div>
+				
+					<?php if ($up_name && $up_price && $up_name != '' && $up_price != '') : ?>				
+						<div class="form-row">
+							<h2>Upgrade from <?php echo $up_name ?>:</h2>
+							<p>If you have a valid <?php echo $up_name ?> license key, you can upgrade to the current version (<?php echo $version ?>). Please enter your old license key below and click upgrade now. The order information below will update once you complete this step.</p>
+							<p><strong>Upgrade Price:</strong> $<?php echo $up_price ?></p>
+						</div>
+						<div class="form-row">						
+							<label for="up_key"><?php echo $up_name ?> Key:</label> <input type="text" id="up_key" name="up_key"><br><br>
+						</div>
+					<?php endif; ?>	
 					<div class="form-row">
 						<input type="hidden" name="action" value="jgs_checkout">
 						<?php wp_nonce_field('jgs_checkout', 'jgs_checkout_nonce'); ?>
 						<input type="hidden" name="item_id" value="<?php echo $item_id ?>">
+						<noscript><input type="hidden" name="no_js" value="true"></noscript>
 						<div class="jgs_loader"><input type="submit" class="button-alt" name="jgs_purchase" id="jgs_purchase" value="Purchase Now"> <a class="button-alt" href="<? site_url('checkout') ?>?empty=true">Cancel Order</a></div>
 					</div>
 				</form>
@@ -61,6 +64,7 @@ if ( sizeof(jigoshop_cart::$cart_contents) > 0 ) :
 					var args = {};
 					var inputs = $(this).serializeArray();
 					$.each(inputs,function(i,input) { args[input['name']]=input['value']; });
+					console.log(inputs);
 					$.post("<?php echo admin_url('admin-ajax.php') ?>", args, function(response){
 						console.log(response);
 						load.removeClass('loading');
@@ -85,7 +89,6 @@ if ( sizeof(jigoshop_cart::$cart_contents) > 0 ) :
 			});	
 			</script>  				
 <?php
-		endif;
 	endforeach;
 
 else: 
