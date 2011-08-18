@@ -37,6 +37,29 @@ License: GPL v3
 if (!class_exists('jigoshop_software')) {
 
 	class jigoshop_software {
+		
+		// define the product metadata fields used by this plugin
+		static $product_fields = array(
+			array('id' => 'is_software', 'label' => 'This product is Software', 'title' => 'This product is Software', 'placeholder' => '', 'type' => 'checkbox'),
+			array('id' => 'upgradable_product', 'label' => 'Upgradable Product Name:', 'title' => 'Upgradable Product Name', 'placeholder' => '', 'type' => 'text'),
+			array('id' => 'up_license_keys', 'label' => 'Upgradable Product Keys:', 'title' => 'Upgradable Product Keys', 'placeholder' => 'Comma separated list', 'type' => 'textarea'),
+			array('id' => 'up_price', 'label' => 'Upgrade Price ($):', 'title' => 'Upgrade Price ($)', 'placeholder' => 'ex: 1.00', 'type' => 'text'),
+			array('id' => 'version', 'label' => 'Version Number:', 'title' => 'Version Number', 'placeholder' => 'ex: 1.0', 'type' => 'text'),
+			array('id' => 'trial', 'label' => 'Trial (amount of days):', 'title' => 'Trial (amount of days)', 'placeholder' => 'ex: 15', 'type' => 'text'),
+			array('id' => 'activations', 'label' => 'Amount of activations possible:', 'title' => 'Amount of activations possible', 'placeholder' => 'ex: 5', 'type' => 'text'),
+		);
+
+		// define the order metadata fields used by this plugin		
+		static $order_fields = array(
+			array('id' => 'activations_possible', 'label' => 'Max Activations Allowed:', 'title' => 'Max Activations Allowed', 'placeholder' => '', 'type' => 'text'),
+			array('id' => 'remaining_activations', 'label' => 'Remaining Activations:', 'title' => 'Remaining Activations', 'placeholder' => '', 'type' => 'text'),
+			array('id' => 'version', 'label' => 'Version:', 'title' => 'Version', 'placeholder' => '', 'type' => 'text'),
+			array('id' => 'is_upgrade', 'label' => 'This is an upgrade if checked', 'title' => 'This is an upgrade if checked', 'placeholder' => '', 'type' => 'checkbox'),
+			array('id' => 'upgrade_name', 'label' => 'Upgraded from:', 'title' => 'License Key', 'placeholder' => '', 'type' => 'text'),
+			array('id' => 'upgrade_price', 'label' => 'Upgrade price ($):', 'title' => 'License Key', 'placeholder' => '', 'type' => 'text'),
+			array('id' => 'original_price', 'label' => 'Original price ($):', 'title' => 'License Key', 'placeholder' => '', 'type' => 'text'),
+		);
+		
 	
 		function __construct() {
 			
@@ -54,6 +77,8 @@ if (!class_exists('jigoshop_software')) {
 			add_action('product_write_panel_tabs', array(&$this, 'product_write_panel_tab'));
 			add_action('product_write_panels', array(&$this, 'product_write_panel'));
 			add_filter('process_product_meta', array(&$this, 'product_save_data'));
+			add_action( 'add_meta_boxes', function(){ add_meta_box('jigoshop-software-order-data', __('Software Purchase Details', 'jigoshop'), array('jigoshop_software', 'order_meta_box'), 'shop_order', 'normal', 'high' ); });
+			
 			
 			// frontend stuff
 			remove_action( 'simple_add_to_cart', 'jigoshop_simple_add_to_cart' ); 
@@ -72,19 +97,6 @@ if (!class_exists('jigoshop_software')) {
 			
 			// filters
 			add_filter('add_to_cart_redirect', array(&$this, 'add_to_cart_redirect'));
-
-
-			// define the metadata fields used by this plugin
-			$this->fields = array(
-				array('id' => 'is_software', 'label' => 'This product is Software', 'title' => 'This product is Software', 'placeholder' => '', 'type' => 'checkbox'),
-				array('id' => 'upgradable_product', 'label' => 'Upgradable Product Name:', 'title' => 'Upgradable Product Name', 'placeholder' => '', 'type' => 'text'),
-				array('id' => 'up_license_keys', 'label' => 'Upgradable Product Keys:', 'title' => 'Upgradable Product Keys', 'placeholder' => 'Comma separated list', 'type' => 'textarea'),
-				array('id' => 'up_price', 'label' => 'Upgrade Price ($):', 'title' => 'Upgrade Price ($)', 'placeholder' => 'ex: 1.00', 'type' => 'text'),
-				array('id' => 'version', 'label' => 'Version Number:', 'title' => 'Version Number', 'placeholder' => 'ex: 1.0', 'type' => 'text'),
-				array('id' => 'trial', 'label' => 'Trial (amount of days):', 'title' => 'Trial (amount of days)', 'placeholder' => 'ex: 15', 'type' => 'text'),
-				array('id' => 'activations', 'label' => 'Amount of activations possible:', 'title' => 'Amount of activations possible', 'placeholder' => 'ex: 5', 'type' => 'text'),
-			);			
-			
 			
 		}
 		
@@ -124,7 +136,7 @@ if (!class_exists('jigoshop_software')) {
 		?>	
 			<div id="software_data" class="panel jigoshop_options_panel">
 			<?php 
-				foreach ($this->fields as $field) : 
+				foreach (self::$product_fields as $field) : 
 					$value = ($field['id'] == 'up_license_keys') ? $this->un_array_ify_keys($data[$field['id']]) : $data[$field['id']];
 					
 					switch ($field['type']) :
@@ -162,6 +174,42 @@ if (!class_exists('jigoshop_software')) {
 			return $data;
 		}
 
+		/**
+ 			* order_meta_box()
+ 			* adds meta fields to the order screens
+			* @since 1.0
+			*/		
+		function order_meta_box() {
+			global $post;
+			$data = (array) maybe_unserialize( get_post_meta($post->ID, 'order_data', true) );
+		?>	
+			<div class="panel-wrap jigoshop">
+				<div id="order_software_data" class="panel jigoshop_options_panel">
+					<?php 
+						foreach (self::$order_fields as $field) : 
+							@$value = ($field['id'] == 'up_license_keys') ? $this->un_array_ify_keys($data[$field['id']]) : $data[$field['id']];
+							switch ($field['type']) :
+								case 'text' :
+									echo '<p class="form-field"><label for="'.$field['id'].'">'.$field['label'].'</label><input type="text" id="'.$field['id'].'" name="'.$field['id'].'" value="'.$value.'" placeholder="'.$field['placeholder'].'"/></p>';
+								break;
+								case 'number' :
+									echo '<p class="form-field"><label for="'.$field['id'].'">'.$field['label'].'</label><input type="number" id="'.$field['id'].'" name="'.$field['id'].'" value="'.$value.'" placeholder="'.$field['placeholder'].'"/></p>';
+								break;						
+								case 'textarea' :
+									echo '<p class="form-field"><label for="'.$field['id'].'">'.$field['label'].'</label><textarea id="'.$field['id'].'" name="'.$field['id'].'" placeholder="'.$field['placeholder'].'">'.$value.'</textarea></p>';
+								break;					
+								case 'checkbox' :
+									$checked = ($value == 'on') ? ' checked=checked' : '';
+									echo '<p class="form-field"><label for="'.$field['id'].'">'.$field['label'].'</label><input type="checkbox" id="'.$field['id'].'" name="'.$field['id'].'" value="on"'.$checked.'</p>';
+								break;												
+							endswitch;
+						endforeach;	
+						?>				
+					</div>
+			</div>	
+		<?php
+		}
+		
 		/**
  			* array_ify_keys()
  			* transforms a comma separated list of license keys into an array in order to store in the DB
@@ -295,20 +343,24 @@ if (!class_exists('jigoshop_software')) {
 			if ($no_js) wp_safe_redirect(jigoshop_cart::get_checkout_url().'?no-js=true');
 
 			$item_id = esc_attr($_POST['item_id']);
-			if (isset($_POST['up_key'])) $key = esc_attr($_POST['up_key']);
-			$email = esc_attr($_POST['jgs_email']);
-						
+			$qty = 1; // always 1 because it's a buy now situation not a cart situation
+			$upgrade = false; // default
+			
 			// nonce verification
 			if ( $_POST['jgs_checkout_nonce'] && !wp_verify_nonce($_POST['jgs_checkout_nonce'], 'jgs_checkout') ) $messages['nonce'] = 'An error has occurred2, please try again';
-			
+						
+			if (isset($_POST['up_key'])) { 
+				$key = esc_attr($_POST['up_key']);
+				$upgrade = true;
+			}	
+
 			// email validation
+			$email = esc_attr($_POST['jgs_email']);
 			if (!$email || $email == '') $messages['email'] = 'Please enter your email';
 			elseif (!is_email($email)) $messages['email'] = 'Please enter a valid email address';
 			
 			// key validation
-			if (isset($key) && $key != '' && !$this->is_valid_upgrade_key($key, $item_id)) $messages['key'] = 'The key you have entered is not valid, please try again or contact us if you need additional help';
-			$upgrade = false; // todo
-			$qty = 0; // todo
+			if ($upgrade && $key != '' && !$this->is_valid_upgrade_key($key, $item_id)) $messages['key'] = 'The key you have entered is not valid, please try again or contact us if you need additional help';			
 
 			// if there is no message, then validation passed
 			if(!$messages) {
@@ -326,35 +378,32 @@ if (!class_exists('jigoshop_software')) {
 				$sale_price = $product['sale_price'];
 				$regular_price = $product['regular_price'];
 				$price = ($sale_price && $sale_price != '') ? $sale_price : $regular_price;
-				$version = $product['version'];
-				// $upgrade = $_POST['upgrade']; // or something - todo: refactor;
 				
 				if ($upgrade) {
-					$up_name = $product['upgradable_product'];					
-					$data['upgrade_name'] = $up_name;
-					$data['upgrade_price'] = $price;
-					$data['original_price'] = $price;
-					$price = $product['up_price'];					
+					$order['is_upgrade'] = 'on';					
+					$order['upgrade_name'] = $product['upgradable_product'];
+					$order['upgrade_price'] = $product['up_price'];
+					$order['original_price'] = $price;
 				}
 								
 				// Order meta data [from jigoshop]
-				$data['billing_email'] = $email;
-				$data['payment_method'] = 'paypal';
-				$data['order_subtotal'] = $price*$qty;
-				$data['order_shipping'] = 0;
-				$data['order_discount'] = 0;
-				$data['order_tax'] = 0;
-				$data['order_shipping_tax']	= 0;
-				$data['order_total'] = $data['order_subtotal'];
+				$order['billing_email'] = $email;
+				$order['payment_method'] = 'paypal';
+				$order['order_subtotal'] = $price*$qty;
+				$order['order_shipping'] = 0;
+				$order['order_discount'] = 0;
+				$order['order_tax'] = 0;
+				$order['order_shipping_tax']	= 0;
+				$order['order_total'] = $data['order_subtotal'];
 				
 				// activation stuff	
-				$data['version'] = $version;
-				$data['license_key'] = $this->generate_license_key();
-				$data['activations_possible'] = $product['activations'];				
-					
+				$order['version'] = $product['version'];
+				$order['license_key'] = $this->generate_license_key();
+				$order['activations_possible'] = $product['activations'];									
+				$order['remaining_activations'] = $product['activations'];
 				
 				/*
-					TODO add coupon support
+					TODO add coupon support (long-term)
 				*/
 					
 				$order_items = array();
@@ -375,7 +424,7 @@ if (!class_exists('jigoshop_software')) {
 				update_post_meta( $order_id, 'order_items', $order_items );
 				wp_set_object_terms( $order_id, 'pending', 'shop_order_status' );
 			
-				$order = &new jigoshop_order($order_id);
+				$_order = &new jigoshop_order($order_id);
 					
 				// Inserted successfully 
 				do_action('jigoshop_new_order', $order_id);
