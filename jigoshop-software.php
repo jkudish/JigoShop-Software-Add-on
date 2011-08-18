@@ -391,6 +391,22 @@ if (!class_exists('jigoshop_software')) {
 			echo $response;
 			exit;
 		}
+		
+		/**
+ 			* generate_license_code()
+ 			* generates a unique id that is used as the license code
+			* @since 1.0
+			*/		
+		function generate_license_code() {
+
+			$uuid = sprintf( '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+				mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff ),
+				mt_rand( 0, 0x0fff ) | 0x4000,
+				mt_rand( 0, 0x3fff ) | 0x8000,
+				mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff ) );
+
+			return $uuid;
+		}		
 
 		
 	} // end class
