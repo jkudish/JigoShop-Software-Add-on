@@ -45,9 +45,11 @@ if (!class_exists('jigoshop_software')) {
 			array('id' => 'up_license_keys', 'label' => 'Upgradable Product Keys:', 'title' => 'Upgradable Product Keys', 'placeholder' => 'Comma separated list', 'type' => 'textarea'),
 			array('id' => 'up_price', 'label' => 'Upgrade Price ($):', 'title' => 'Upgrade Price ($)', 'placeholder' => 'ex: 1.00', 'type' => 'text'),
 			array('id' => 'version', 'label' => 'Version Number:', 'title' => 'Version Number', 'placeholder' => 'ex: 1.0', 'type' => 'text'),
-			array('id' => 'trial', 'label' => 'Trial (amount of days):', 'title' => 'Trial (amount of days)', 'placeholder' => 'ex: 15', 'type' => 'text'),
+			array('id' => 'trial', 'label' => 'Trial Period (amount of days or hours):', 'title' => 'Trial Period (amount of days or hours)', 'placeholder' => 'ex: 15', 'type' => 'text'),
+			array('id' => 'trial_unit', 'label' => 'Trial Units:', 'title' => 'Trial Units', 'type' => 'select', 'values' => array('days' => 'Days', 'hours' => 'Hours')),
 			array('id' => 'activations', 'label' => 'Amount of activations possible:', 'title' => 'Amount of activations possible', 'placeholder' => 'ex: 5', 'type' => 'text'),
 			array('id' => 'soft_product_id', 'label' => 'Product ID to use for API:', 'title' => 'Product ID to use for API', 'placeholder' => 'ex: SPARKBOOTH', 'type' => 'text'),
+			array('id' => 'secret_product_key', 'label' => 'Secret Product Key to use for API:', 'title' => 'Secret Product Key to use  for API', 'placeholder' => 'any random string', 'type' => 'text'),
 		);
 
 		// define the order metadata fields used by this plugin		
@@ -154,8 +156,16 @@ if (!class_exists('jigoshop_software')) {
 						break;					
 						case 'checkbox' :
 							$checked = ($value == 'on') ? ' checked=checked' : '';
-							echo '<p class="form-field"><label for="'.$field['id'].'">'.$field['label'].'</label><input type="checkbox" id="'.$field['id'].'" name="'.$field['id'].'" value="on"'.$checked.'</p>';
-						break;												
+							echo '<p class="form-field"><label for="'.$field['id'].'">'.$field['label'].'</label><input type="checkbox" id="'.$field['id'].'" name="'.$field['id'].'" value="on"'.$checked.'></p>';
+						break;					
+						case 'select' :
+							echo '<p class="form-field"><label for="'.$field['id'].'">'.$field['label'].'</label><select id="'.$field['id'].'" name="'.$field['id'].'">';
+							foreach ($field['values'] as $k => $v) :
+								$selected = ($value == $k) ? ' selected="selected"' : '';
+								echo '<option value="'.$k.'"'.$selected.'>'.$v.'</option>';
+							endforeach;
+							echo '</select></p>';
+						break;													
 					endswitch;
 				endforeach;	
 				?>
