@@ -64,7 +64,6 @@ if ( sizeof(jigoshop_cart::$cart_contents) > 0 ) :
 					var args = {};
 					var inputs = $(this).serializeArray();
 					$.each(inputs,function(i,input) { args[input['name']]=input['value']; });
-					console.log(inputs);
 					$.post("<?php echo admin_url('admin-ajax.php') ?>", args, function(response){
 						console.log(response);
 						load.removeClass('loading');
