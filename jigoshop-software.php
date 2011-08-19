@@ -47,6 +47,7 @@ if (!class_exists('jigoshop_software')) {
 			array('id' => 'version', 'label' => 'Version Number:', 'title' => 'Version Number', 'placeholder' => 'ex: 1.0', 'type' => 'text'),
 			array('id' => 'trial', 'label' => 'Trial (amount of days):', 'title' => 'Trial (amount of days)', 'placeholder' => 'ex: 15', 'type' => 'text'),
 			array('id' => 'activations', 'label' => 'Amount of activations possible:', 'title' => 'Amount of activations possible', 'placeholder' => 'ex: 5', 'type' => 'text'),
+			array('id' => 'soft_product_id', 'label' => 'Product ID to use for API:', 'title' => 'Product ID to use for API', 'placeholder' => 'ex: SPARKBOOTH', 'type' => 'text'),
 		);
 
 		// define the order metadata fields used by this plugin		
@@ -138,8 +139,9 @@ if (!class_exists('jigoshop_software')) {
 			<div id="software_data" class="panel jigoshop_options_panel">
 			<?php 
 				foreach (self::$product_fields as $field) : 
-					$value = ($field['id'] == 'up_license_keys') ? $this->un_array_ify_keys($data[$field['id']]) : $data[$field['id']];
-					
+					if ($field['id'] == 'soft_product_id') $value = get_post_meta($post->ID, 'soft_product_id', true);
+					else @$value = ($field['id'] == 'up_license_keys') ? $this->un_array_ify_keys($data[$field['id']]) : $data[$field['id']];					
+					// die(var_dump(get_post_meta($post->ID, 'soft_product_id', true)));
 					switch ($field['type']) :
 						case 'text' :
 							echo '<p class="form-field"><label for="'.$field['id'].'">'.$field['label'].'</label><input type="text" id="'.$field['id'].'" name="'.$field['id'].'" value="'.$value.'" placeholder="'.$field['placeholder'].'"/></p>';
@@ -168,8 +170,10 @@ if (!class_exists('jigoshop_software')) {
 			* @since 1.0
 			*/
 		function product_save_data($data) {		
-			foreach ($this->fields as $field) {
+			global $post;
+			foreach (self::$product_fields as $field) {
 				if ($field['id'] == 'up_license_keys') $data[$field['id']] = $this->array_ify_keys($_POST[$field['id']]);
+				elseif ($field['id'] == 'soft_product_id') update_post_meta($post->ID, 'soft_product_id', $_POST[$field['id']]);
 				else $data[$field['id']] = esc_attr( $_POST[$field['id']] );
 			}	
 			return $data;
