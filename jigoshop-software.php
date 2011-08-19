@@ -97,6 +97,7 @@ if (!class_exists('jigoshop_software')) {
 			
 			// filters
 			add_filter('add_to_cart_redirect', array(&$this, 'add_to_cart_redirect'));
+			add_filter('page_template', array(&$this, 'locate_api_template'), 10, 1);
 			
 		}
 		
@@ -295,6 +296,19 @@ if (!class_exists('jigoshop_software')) {
 			*/			
 		function add_to_cart_redirect() {
 			return jigoshop_cart::get_checkout_url();
+		}
+
+		/**
+ 			* locate_api_template()
+ 			* filters the template for the api page so that it just does the json stuff
+			* @since 1.0
+			*/
+		function locate_api_template($template) {
+			global $wp_query;
+			if ($wp_query->query_vars['pagename'] == 'api') { // todo make this better
+				$template = JIGOSHOP_SOFTWARE_PATH.'/inc/api.php';
+			}	
+			return $template;
 		}
 		
 		/**
