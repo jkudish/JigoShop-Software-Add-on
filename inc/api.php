@@ -16,7 +16,7 @@ class jigoshop_software_api extends jigoshop_software {
 		$method = (isset($_GET['method']) && ($_GET['method'] == 'GET' || $_GET['method'] == 'get')) ? $_GET : $_POST;
 		if (isset($_GET['request'])) { 
 
-			$request = $method['request'];
+			$request = $_GET['request'];
 
 			switch ($request) :
 				case 'trial' :
