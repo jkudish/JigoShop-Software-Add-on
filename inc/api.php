@@ -13,7 +13,11 @@ class jigoshop_software_api extends jigoshop_software {
 	function __construct($debug = false) {
 		
 		$this->debug = (WP_DEBUG) ? true : $debug; // always on if WP_DEBUG is on
-		$method = (isset($_GET['method']) && ($_GET['method'] == 'GET' || $_GET['method'] == 'get')) ? $_GET : $_POST;
+		$method = (isset($_GET['productid'])) $_GET : $_POST;
+		if (isset($_GET['method'])) $method = $_GET['method'];
+		else $method = $_POST;
+					
+		
 		if (isset($_GET['request'])) { 
 
 			$request = $_GET['request'];
