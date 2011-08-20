@@ -84,8 +84,7 @@ if (!class_exists('jigoshop_software')) {
 			add_action('product_write_panel_tabs', array(&$this, 'product_write_panel_tab'));
 			add_action('product_write_panels', array(&$this, 'product_write_panel'));
 			add_filter('process_product_meta', array(&$this, 'product_save_data'));
-			add_action( 'add_meta_boxes', function(){ add_meta_box('jigoshop-software-order-data', __('Software Purchase Details', 'jigoshop'), array('jigoshop_software', 'order_meta_box'), 'shop_order', 'normal', 'high' ); });
-			add_action( 'add_meta_boxes', function(){ add_meta_box('jigoshop-software-activation-data', __('Activations', 'jigoshop'), array('jigoshop_software', 'activation_meta_box'), 'shop_order', 'normal', 'high' ); });
+			add_action('add_meta_boxes', array(&$this, 'add_meta_boxes'));
 			add_action('jigoshop_process_shop_order_meta', array(&$this, 'order_save_data'), 1, 2);
 			add_action('admin_print_styles', array(&$this, 'admin_print_styles'));
 			
@@ -122,6 +121,16 @@ if (!class_exists('jigoshop_software')) {
 				deactivate_plugins(plugin_basename(__FILE__));				
 				wp_die(__('The JigoShop Software Add-On requires <a href="http://jigoshop.com" target="_blank">JigoShop</a> to be activated in order to work. Please activate <a href="http://jigoshop.com" target="_blank">JigoShop</a> first. <a href="'.admin_url('plugins.php').'"> <br> &laquo; Go Back</a>', 'jigoshop'));
 			}
+		}
+
+		/**
+ 			* add_meta_boxes()
+ 			* registers the meta boxes
+			* @since 1.0
+			*/
+		function add_meta_boxes() {
+			add_meta_box('jigoshop-software-order-data', __('Software Purchase Details', 'jigoshop'), array('jigoshop_software', 'order_meta_box'), 'shop_order', 'normal', 'high' ); 
+			add_meta_box('jigoshop-software-activation-data', __('Activations', 'jigoshop'), array('jigoshop_software', 'activation_meta_box'), 'shop_order', 'normal', 'high' );
 		}
 
 		/**
