@@ -1,5 +1,11 @@
 <?php
 
+/**
+	* This file renders the checkout page
+	* @since 1.0
+	* @author Joachim Kudish <info@jkudish.com>
+	*/
+	
 if (!empty($_GET['empty']) && $_GET['empty'] == true) {
 	jigoshop_cart::empty_cart();
 	wp_redirect(site_url('/checkout')); exit;

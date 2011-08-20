@@ -26,7 +26,7 @@ License: GPL v3
 	* 
 	* This program is distributed in the hope that it will be useful,
 	* but WITHOUT ANY WARRANTY; without even the implied warranty of
-	* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 	* GNU General Public License for more details.
 	* 
 	* You should have received a copy of the GNU General Public License
@@ -85,8 +85,9 @@ if (!class_exists('jigoshop_software')) {
 			add_action('product_write_panels', array(&$this, 'product_write_panel'));
 			add_filter('process_product_meta', array(&$this, 'product_save_data'));
 			add_action( 'add_meta_boxes', function(){ add_meta_box('jigoshop-software-order-data', __('Software Purchase Details', 'jigoshop'), array('jigoshop_software', 'order_meta_box'), 'shop_order', 'normal', 'high' ); });
+			add_action( 'add_meta_boxes', function(){ add_meta_box('jigoshop-software-activation-data', __('Activations', 'jigoshop'), array('jigoshop_software', 'activation_meta_box'), 'shop_order', 'normal', 'high' ); });
 			add_action('jigoshop_process_shop_order_meta', array(&$this, 'order_save_data'), 1, 2);
-			
+			add_action('admin_print_styles', array(&$this, 'admin_print_styles'));
 			
 			// frontend stuff
 			remove_action( 'simple_add_to_cart', 'jigoshop_simple_add_to_cart' ); 
@@ -229,6 +230,45 @@ if (!class_exists('jigoshop_software')) {
 		<?php
 		}
 
+		function activation_meta_box($post) {
+		  $activations = get_post_meta($post->ID, 'activations', true);
+		  if (is_array($activations) && count($activations) > 0) { ?>
+		    <table id="activations-table" class="widefat">
+		      <thead>
+		        <tr>
+		          <th>Instance</th>
+		          <th>Status</th>
+		          <th>Date & Time</th>
+		          <th>Version</th>
+		          <th>Operating System</th>
+		        </tr>
+		      </thead>
+		      <tfoot>
+		        <tr>
+		          <th>Instance</th>
+		          <th>Status</th>
+		          <th>Date & Time</th>
+		          <th>Version</th>
+		          <th>Operating System</th>
+		        </tr>
+		      </tfoot>
+		      <tbody>
+		        <?php $i = 0; foreach ($activations as $activation) : $i++ ?>
+			         <tr<?php if ($i/2 == 1) echo ' class="alternate"' ?>>
+			           <td><?php echo $activation['instance'] ?></td>
+			           <td><?php echo ($activation['active']) ? 'Activated' : 'Deactivated' ?></td>
+			           <td><?php echo date('D j M Y', $activation['time']).' at '.date('i:ha', $activation['time']) ?></td>
+			           <td><?php echo $activation['version'] ?></td>
+			           <td><?php echo ucwords($activation['os']) ?></td>		   
+		          </tr>
+		        <?php endforeach; ?>
+		      </tbody>
+		    </table>
+		  <?php } else { ?>
+		    <p>No activations yet</p>
+		  <? }
+		}
+
 		/**
  			* order_save_data()
  			* saves the data inputed into the order boxes
@@ -353,6 +393,17 @@ if (!class_exists('jigoshop_software')) {
 			wp_register_style('jigoshop_software', plugins_url( 'inc/front-end.css', __FILE__ ));
 			wp_enqueue_style('jigoshop_software');
     }		
+
+		/**
+ 			* admin_print_styles()
+ 			* adds css to the back-end
+			* @since 1.0
+			*/	
+    function admin_print_styles() {
+			wp_register_style('jigoshop_software_backend', plugins_url( 'inc/back-end.css', __FILE__ ));
+			wp_enqueue_style('jigoshop_software_backend');
+    }		
+
 
 		/**
  			* redirect_away_from_cart()
