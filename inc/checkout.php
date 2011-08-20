@@ -71,7 +71,6 @@ if ( sizeof(jigoshop_cart::$cart_contents) > 0 ) :
 					var inputs = $(this).serializeArray();
 					$.each(inputs,function(i,input) { args[input['name']]=input['value']; });
 					$.post("<?php echo admin_url('admin-ajax.php') ?>", args, function(response){
-						console.log(response);
 						load.removeClass('loading');
 						if (response.success) { 
 							$('#jgs_validation').fadeOut();
