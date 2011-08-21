@@ -130,9 +130,9 @@ class jigoshop_software_api extends jigoshop_software {
 												$activated = true;
 												$output_data = $data;
 												$output_data['activated'] = true;
-												$output_data['instance'] = $instance;
+												$output_data['instanceid'] = $instance;
 												$output_data['message'] = $data['remaining_activations'].' out of '.$activations_possible.' activations remaining';
-												$to_output = array('activated', 'instance', 'message');
+												$to_output = array('activated', 'instanceid', 'message');
 												$json = $this->prepare_output($to_output, $output_data);
 											} else {
 												$this->error('102', 'This instance isn\'t active', null, array('activated' => false, 'secret' => $data['secret_product_key']));
@@ -167,9 +167,9 @@ class jigoshop_software_api extends jigoshop_software {
 											
 											$output_data = $data;
 											$output_data['activated'] = true;
-											$output_data['instance'] = $instance;
+											$output_data['instanceid'] = $instance;
 											$output_data['message'] = $data['remaining_activations'].' out of '.$activations_possible.' activations remaining';
-											$to_output = array('activated', 'instance', 'message');
+											$to_output = array('activated', 'instanceid', 'message');
 											$json = $this->prepare_output($to_output, $output_data);
 											
 										} else {											
