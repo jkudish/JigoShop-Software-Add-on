@@ -21,7 +21,7 @@ add_shortcode('jigoshop_software_checkout', 'jigoshop_software_checkout');
 
 
 /**
-	* jigoshop_software_checkout()
+	* jigoshop_software_lost_license()
 	* shortcode used for the lost license page
 	* @since 1.0
 	*/
@@ -30,4 +30,4 @@ function jigoshop_software_lost_license( $atts ) {
 	include_once('lost-license.php');
 	
 }
-add_shortcode('jigoshop_software_lost_license', 'jigoshop_software_checkout');
+add_shortcode('jigoshop_software_lost_license', 'jigoshop_software_lost_license');
