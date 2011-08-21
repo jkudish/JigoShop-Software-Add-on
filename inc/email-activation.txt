@@ -1,0 +1,5 @@
+{date}
+
+You have {remaining_activations} of {max_activations} remaining.
+
+If you have any questions, please visit: http://sparkbooth.com/contact

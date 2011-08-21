@@ -1,0 +1,22 @@
+{date}
+
+Thank you for your purchase. Your license key is below. If you already have the software installed, you can activate by clicking the "Buy" button to enter your license. 
+
+We recommend that you save this email in case you need to activate again in the future.
+
+Your Order
+Item: {product}
+Item Price: {price}
+
+Transaction Details
+Account Name: {email}
+Transaction ID: {transaction_id}
+Transaction Total: {total}
+Currency: USD
+Activations: {max_activations}
+
+This charge will appear as {paypal_name} on your statement.
+
+If you have any questions, please visit: http://sparkbooth.com/contact
+
+
