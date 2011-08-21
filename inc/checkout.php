@@ -24,7 +24,7 @@ if ( sizeof(jigoshop_cart::$cart_contents) > 0 ) :
 		$version = $data['version'];
 		
 	?>				
-			<div id="jgs_checkout">
+			<div class="jgs_page" id="jgs_checkout">
 				<form id="jgs_checkout_form" action="<?php echo admin_url('admin-ajax.php') ?>" method="post">
 					<div class="form-row">
 						<h2>Purchasing: <?php echo get_the_title($item_id) ?></h2>		
