@@ -125,7 +125,7 @@ class jigoshop_software_api extends jigoshop_software {
 									if ($instance) { // checking existing activation
 										$activations = get_post_meta($order->ID, 'activations', true);
 
-										if (isset($activation[$instance]) && is_array($activation[$instance])) { // this instance exists
+										if (isset($activations[$instance]) && is_array($activations[$instance])) { // this instance exists
 											if ($activation[$instance]['active'] = true) {
 												$activated = true;
 												$output_data = $data;
