@@ -251,8 +251,7 @@ class jigoshop_software_api extends jigoshop_software {
 								update_post_meta($order->ID, 'activations', $activations);
 
 								// reset number of activations
-								$remaining_activations = $data['remaining_activations'];
-								$data['activations_possible'] = $remaining_activations;
+								$data['remaining_activations'] = $data['activations_possible'];
 								update_post_meta($order->ID, 'order_data', $data);
 								
 								$output_data = $data;
