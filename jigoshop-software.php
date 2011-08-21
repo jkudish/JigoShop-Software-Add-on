@@ -50,11 +50,14 @@ if (!class_exists('jigoshop_software')) {
 			array('id' => 'activations', 'label' => 'Amount of activations possible:', 'title' => 'Amount of activations possible', 'placeholder' => 'ex: 5', 'type' => 'text'),
 			array('id' => 'soft_product_id', 'label' => 'Product ID to use for API:', 'title' => 'Product ID to use for API', 'placeholder' => 'ex: SPARKBOOTH', 'type' => 'text'),
 			array('id' => 'secret_product_key', 'label' => 'Secret Product Key to use for API:', 'title' => 'Secret Product Key to use  for API', 'placeholder' => 'any random string', 'type' => 'text'),
+			array('id' => 'paypal_name', 'label' => 'Paypal Name to show on transaction receipts:', 'title' => 'Paypal Name to show on transaction receiptsAPI', 'placeholder' => 'ex: Google Inc.', 'type' => 'text'),
 		);
 
 		// define the order metadata fields used by this plugin		
 		static $order_fields = array(
 			array('id' => 'activation_email', 'label' => 'Activation Email:', 'title' => 'Activation Email', 'placeholder' => '', 'type' => 'text'),			
+			array('id' => 'transaction_id', 'label' => 'Transaction ID:', 'title' => 'Transaction ID', 'placeholder' => '', 'type' => 'text'),			
+			array('id' => 'paypal_name', 'label' => 'Paypal Name to show on transaction receipts:', 'title' => 'Paypal Name to show on transaction receiptsAPI', 'placeholder' => 'ex: Google Inc.', 'type' => 'text'),			
 			array('id' => 'license_key', 'label' => 'License Key:', 'title' => 'License Key', 'placeholder' => '', 'type' => 'text'),
 			array('id' => 'productid', 'label' => 'Product ID:', 'title' => 'Product ID', 'placeholder' => '', 'type' => 'text'),
 			array('id' => 'activations_possible', 'label' => 'Max Activations Allowed:', 'title' => 'Max Activations Allowed', 'placeholder' => '', 'type' => 'text'),			
@@ -105,11 +108,24 @@ if (!class_exists('jigoshop_software')) {
 			add_action( 'virtual_add_to_cart', array(&$this, 'add_to_cart')); 
 			add_action( 'downloadable_add_to_cart', array(&$this, 'add_to_cart')); 
 			add_action( 'jigoshop_after_shop_loop_item', array(&$this, 'loop_add_to_cart'), 10, 2); 
+			add_filter('init', array(&$this, 'init_output_buffer'));
 
 			add_action( 'wp_print_styles', array(&$this, 'print_styles')); 
 			add_action( 'wp_head', array(&$this, 'redirect_away_from_cart')); 
 			add_action( 'wp_ajax_nopriv_jgs_checkout', array(&$this, 'ajax_jgs_checkout')); 
 			add_action( 'wp_ajax_jgs_checkout', array(&$this, 'ajax_jgs_checkout')); 
+			
+			// payment stuff
+			add_action('thankyou_paypal', array(&$this, 'record_paypal_transaction_id'));
+			
+			// email stuff
+			remove_action('order_status_pending_to_processing', 'jigoshop_new_order_notification');
+			remove_action('order_status_pending_to_completed', 'jigoshop_new_order_notification');
+			remove_action('order_status_pending_to_on-hold', 'jigoshop_new_order_notification');
+			add_action('order_status_completed', array(&$this, 'process_email'));
+			add_action('jgs_lost_license_page', array(&$this, 'process_email'));
+			add_action('jgs_activation_completed', array(&$this, 'process_email'));
+
 			
 			// filters
 			add_filter('add_to_cart_redirect', array(&$this, 'add_to_cart_redirect'));
@@ -238,8 +254,9 @@ if (!class_exists('jigoshop_software')) {
 			<div class="panel-wrap jigoshop">
 				<div id="order_software_data" class="panel jigoshop_options_panel">
 					<?php 
-						foreach (self::$order_fields as $field) : 
+						foreach (self::$order_fields as $field) : 						
 							@$value = ($field['id'] == 'activation_email') ? get_post_meta($post->ID, 'activation_email', true) : $data[$field['id']];
+							@$value = ($field['id'] == 'transaction_id') ? get_post_meta($post->ID, 'transaction_id', true) : $value;
 							switch ($field['type']) :
 								case 'text' :
 									echo '<p class="form-field"><label for="'.$field['id'].'">'.$field['label'].'</label><input type="text" id="'.$field['id'].'" name="'.$field['id'].'" value="'.$value.'" placeholder="'.$field['placeholder'].'"/></p>';
@@ -316,6 +333,7 @@ if (!class_exists('jigoshop_software')) {
 			global $post;
 			foreach (self::$order_fields as $field) {
 				if ($field['id'] == 'activation_email') update_post_meta($post->ID, 'activation_email', $_POST[$field['id']]);
+				elseif ($field['id'] == 'transaction_id') update_post_meta($post->ID, 'transaction_id', $_POST[$field['id']]);
 				else $data[$field['id']] = esc_attr( $_POST[$field['id']] );
 			}	
 			update_post_meta($post->ID, 'order_data', $data);			
@@ -382,6 +400,28 @@ if (!class_exists('jigoshop_software')) {
 				$template = JIGOSHOP_SOFTWARE_PATH.'/inc/api.php';
 			}	
 			return $template;
+		}
+
+		/**
+			* jigoshop_software_filter_price_paypal()
+			* very hack way to filter out the price sent to paypal when it's an upgrade, but the only way to do it w/out changing core jigoshop
+			* @see $this->init_output_buffer()
+			* @param $buffer (string) the original buffer output
+			* @return $buffer (string) the filtered buffer output
+			* @todo find a better a way to do this
+			* @since 1.0
+			*/
+		function jigoshop_software_filter_price_paypal($buffer) {
+			if (isset($_GET['order'])) {		
+				$order_id = $_GET['order'];
+				$data = get_post_meta($order_id, 'order_data', true);
+				$original_price = $data['original_price'];
+				$correct_price = $data['order_total'];
+				if ($original_price) {
+					$buffer = str_replace('"amount_1" value="'.$original_price.'"', '"amount_1" value="'.$correct_price.'"', $buffer);
+				}	
+			}		
+			return $buffer;
 		}
 
 /* =======================================
@@ -468,7 +508,7 @@ if (!class_exists('jigoshop_software')) {
 		}
 
 /* =======================================
-		ajax & email processing
+		ajax, payment & email processing
 ==========================================*/
 		
 		/**
@@ -482,18 +522,18 @@ if (!class_exists('jigoshop_software')) {
 			$success = null;
 			$message = null;
 
-			// $no_js = (isset($_POST['no_js']) && $_POST['no_js'] == 'true') ? true : false;
-			// if ($no_js) wp_safe_redirect(jigoshop_cart::get_checkout_url().'?no-js=true');
+			$no_js = (isset($_POST['no_js']) && $_POST['no_js'] == 'true') ? true : false;
+			if ($no_js) wp_safe_redirect(jigoshop_cart::get_checkout_url().'?no-js=trues');
 
 			$item_id = esc_attr($_POST['item_id']);
 			$qty = 1; // always 1 because it's a buy now situation not a cart situation
 			$upgrade = false; // default
 			
 			// nonce verification
-			if ( $_POST['jgs_checkout_nonce'] && !wp_verify_nonce($_POST['jgs_checkout_nonce'], 'jgs_checkout') ) $messages['nonce'] = 'An error has occurred2, please try again';
+			if ( $_POST['jgs_checkout_nonce'] && !wp_verify_nonce($_POST['jgs_checkout_nonce'], 'jgs_checkout') ) $messages['nonce'] = 'An error has occurred, please try again';
 						
 			if (isset($_POST['up_key'])) { 
-				$key = esc_attr($_POST['up_key']);
+				$key = esc_attr($_POST['up_key']);				
 				$upgrade = true;
 			}	
 
@@ -527,6 +567,7 @@ if (!class_exists('jigoshop_software')) {
 					$order['upgrade_name'] = $product['upgradable_product'];
 					$order['upgrade_price'] = $product['up_price'];
 					$order['original_price'] = $price;
+					$price = $order['upgrade_price'];
 				}
 								
 				// Order meta data [from jigoshop]
@@ -544,6 +585,8 @@ if (!class_exists('jigoshop_software')) {
 				$order['license_key'] = $this->generate_license_key();
 				$order['activations_possible'] = $product['activations'];									
 				$order['remaining_activations'] = $product['activations'];
+				$order['secret_product_key'] = $product['secret_product_key'];
+				$order['paypal_name'] = $product['paypal_name'];
 				$order['productid'] = get_post_meta($item_id, 'soft_product_id', true);
 				
 				/*
@@ -606,7 +649,7 @@ if (!class_exists('jigoshop_software')) {
  			* ajax_jgs_lost_license()
  			* process the ajax request for a lost license request
 			* @since 1.0
-			* TODO!!!
+			* @todo the whole thing
 			*/									
 		function ajax_jgs_lost_license() {
 
@@ -733,6 +776,81 @@ if (!class_exists('jigoshop_software')) {
 			echo $response;			
 			exit;
 		}		
+
+		/**
+ 			* record_paypal_transaction_id()
+ 			* record paypal transaction id into the order, for some reason jigoshop doesn't do this by default
+			* @param $order_id (string), the order id to store the transaction id for
+			* @since 1.0
+			*/		
+		function record_paypal_transaction_id($order_id) {
+			if (isset($_POST['txn_id'])) {
+				update_post_meta($order_id, 'transaction_id', $_POST['txn_id']);
+			}
+		}
+				
+		/**
+ 			* process_email()
+ 			* process emails and send them out
+			* @since 1.0
+			* @todo the whole thing
+			*/		
+		function process_email( $data ) {
+			
+			// switch based on the hook that was fired
+			switch (current_filter()) :
+				
+				case 'order_status_completed' :
+					
+					$order_id = $data;
+					$order = &new jigoshop_order( $order_id );
+					
+					$date = date('D, F j Y', time());
+					$data = get_post_meta($order_id, 'order_data', true);
+					$products = get_post_meta($order_id, 'order_items', true);
+					$product = $products[0]['name'];
+					$price = $products[0]['cost'];
+					$email = get_post_meta($order_id, 'activation_email', true);
+					$transaction_id = get_post_meta($order_id, 'transaction_id', true);
+					$total = $price;
+					$max_activations = $data['activations_possible'];
+					$paypal_name = $data['paypal_name'];
+					
+					$send_to = get_post_meta($order_id, 'activation_email', true);
+					$subject = $product.' '.__('Purchase Confirmation','jigoshop');
+					$message = file_get_contents(JIGOSHOP_SOFTWARE_PATH.'/inc/email-purchase.txt');
+					$message = str_replace('{date}', $date, $message);
+					$message = str_replace('{product}', $product, $message);
+					$message = str_replace('{price}', $price, $message);
+					$message = str_replace('{email}', $email, $message);
+					$message = str_replace('{transaction_id}', $transaction_id, $message);
+					$message = str_replace('{total}', $total, $message);
+					$message = str_replace('{max_activations}', $max_activations, $message);
+					$message = str_replace('{paypal_name}', $paypal_name, $message);					
+				
+				break;
+				
+				case 'jgs_lost_license_page' :
+				
+					$subject = __('Recovered Licenses','jigoshop');
+					$message = '';
+				
+				break;
+
+				case 'jgs_activation_completed' :
+				
+					$subject = $data['product_name'].' '.__('Activation Confirmation','jigoshop');
+					$message = '';
+				
+				break;
+
+			
+			endswitch;	
+			
+			wp_mail($send_to, $subject, $message);
+			
+		}
+		
 		
 	} // end class
 	
@@ -740,6 +858,7 @@ if (!class_exists('jigoshop_software')) {
 	function initJigoShopSoftware() {
 		global $jigoshopsoftware;
 		$jigoshopsoftware = new jigoshop_software();
+		ob_start(array(&$jigoshopsoftware, 'jigoshop_software_filter_price_paypal'));
 		include_once('inc/shortcodes.php');
 	}
 

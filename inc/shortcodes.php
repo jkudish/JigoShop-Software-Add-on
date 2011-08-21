@@ -17,6 +17,8 @@ function jigoshop_software_checkout( $atts ) {
 	include_once('checkout.php');
 	
 }
+remove_shortcode('jigoshop_checkout', 'jigoshop_checkout');
+add_shortcode('jigoshop_checkout', 'jigoshop_software_checkout');
 add_shortcode('jigoshop_software_checkout', 'jigoshop_software_checkout');
 
 
