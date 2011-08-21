@@ -76,6 +76,10 @@ if (!class_exists('jigoshop_software')) {
 			// activation hook
 			register_activation_hook(__FILE__, array(&$this, 'activation'));
 			
+			// set the right time zone from WP options
+			date_default_timezone_set(get_option('timezone_string'));
+			
+			
 			/**
 			 * hooks
 			 */
@@ -266,7 +270,7 @@ if (!class_exists('jigoshop_software')) {
 			         <tr<?php if ($i/2 == 1) echo ' class="alternate"' ?>>
 			           <td><?php echo $activation['instance'] ?></td>
 			           <td><?php echo ($activation['active']) ? 'Activated' : 'Deactivated' ?></td>
-			           <td><?php echo date('D j M Y', $activation['time']).' at '.date('i:ha', $activation['time']) ?></td>
+			           <td><?php echo date('D j M Y', $activation['time']).' at '.date('h:ia T', $activation['time']) ?></td>
 			           <td><?php echo $activation['version'] ?></td>
 			           <td><?php echo ucwords($activation['os']) ?></td>		   
 		          </tr>
