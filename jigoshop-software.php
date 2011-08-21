@@ -119,6 +119,7 @@ if (!class_exists('jigoshop_software')) {
 			* @see register_activation_hook()
 			* @link http://codex.wordpress.org/Function_Reference/register_activation_hook 
 			* @since 1.0
+			* @todo shortcode replacement / page creation
 			*/
 		function activation() {
 			if (!is_plugin_active('jigoshop/jigoshop.php')) {
@@ -128,8 +129,22 @@ if (!class_exists('jigoshop_software')) {
 		}
 
 		/**
+ 			* print_styles()
+ 			* adds css to the front-end
+			* @since 1.0
+			*/	
+    function print_styles() {
+			wp_register_style('jigoshop_software', plugins_url( 'inc/front-end.css', __FILE__ ));
+			wp_enqueue_style('jigoshop_software');
+    }
+
+/* =======================================
+		meta boxes
+==========================================*/
+
+		/**
  			* add_meta_boxes()
- 			* registers the meta boxes
+ 			* registers meta boxes
 			* @since 1.0
 			*/
 		function add_meta_boxes() {
@@ -149,7 +164,7 @@ if (!class_exists('jigoshop_software')) {
 		}	
 		
 		/**
- 			* product_write_panels()
+ 			* product_write_panel()
  			* adds the panel to the product interface
 			* @since 1.0
 			*/
@@ -243,6 +258,11 @@ if (!class_exists('jigoshop_software')) {
 		<?php
 		}
 
+		/**
+ 			* activation_meta_box()
+ 			* adds activations meta box
+			* @since 1.0
+			*/
 		function activation_meta_box($post) {
 		  $activations = get_post_meta($post->ID, 'activations', true);
 		  if (is_array($activations) && count($activations) > 0) { ?>
@@ -296,6 +316,73 @@ if (!class_exists('jigoshop_software')) {
 			}	
 			update_post_meta($post->ID, 'order_data', $data);			
 		}
+
+		/**
+ 			* admin_print_styles()
+ 			* adds css to the back-end
+			* @since 1.0
+			*/	
+    function admin_print_styles() {
+			wp_register_style('jigoshop_software_backend', plugins_url( 'inc/back-end.css', __FILE__ ));
+			wp_enqueue_style('jigoshop_software_backend');
+    }
+
+/* =======================================
+		filter add to cart & other jigoshop internal functions
+==========================================*/
+
+		/**
+ 			* add_to_cart()
+ 			* replace the default jigoshop add to cart button
+			* @see downloadable_add_to_cart() from jigoshop
+			* @since 1.0
+			*/	
+		function add_to_cart() {
+			global $_product; $availability = $_product->get_availability();
+			if ($availability['availability']) : ?><p class="stock <?php echo $availability['class'] ?>"><?php echo $availability['availability']; ?></p><?php endif; ?>						
+			<form action="<?php echo $_product->add_to_cart_url(); ?>" class="cart" method="post">
+				<button type="submit" class="button-alt"><?php _e('Buy Now', 'jigoshop'); ?></button>
+				<?php do_action('jigoshop_add_to_cart_form'); ?>
+			</form>	
+		<?php
+		}
+
+		/**
+ 			* loop_add_to_cart()
+ 			* replace the default jigoshop add to cart button
+			* @see jigoshop_template_loop_add_to_cart()
+			* @since 1.0
+			*/	
+		function loop_add_to_cart($post, $_product) {
+			?><a href="<?php echo $_product->add_to_cart_url(); ?>" class="button"><?php _e('Buy Now', 'jigoshop'); ?></a><?php
+		}
+
+		/**
+ 			* add_to_cart_redirect()
+ 			* redirect the user to checkout after they've clicked "buy now"
+			* @see jigoshop_add_to_cart_action()
+			* @since 1.0
+			*/			
+		function add_to_cart_redirect() {
+			return jigoshop_cart::get_checkout_url();
+		}
+
+		/**
+ 			* locate_api_template()
+ 			* filters the template for the api page so that it just does the json stuff
+			* @since 1.0
+			*/
+		function locate_api_template($template) {
+			global $wp_query;
+			if ($wp_query->query_vars['pagename'] == 'api') { // todo make this better
+				$template = JIGOSHOP_SOFTWARE_PATH.'/inc/api.php';
+			}	
+			return $template;
+		}
+
+/* =======================================
+		helper functions
+==========================================*/
 		
 		/**
  			* array_ify_keys()
@@ -349,74 +436,20 @@ if (!class_exists('jigoshop_software')) {
 		}
 
 		/**
- 			* add_to_cart()
- 			* replace the default jigoshop add to cart button
-			* @see downloadable_add_to_cart() from jigoshop
+ 			* generate_license_key()
+ 			* generates a unique id that is used as the license code
 			* @since 1.0
-			*/	
-		function add_to_cart() {
-			global $_product; $availability = $_product->get_availability();
-			if ($availability['availability']) : ?><p class="stock <?php echo $availability['class'] ?>"><?php echo $availability['availability']; ?></p><?php endif; ?>						
-			<form action="<?php echo $_product->add_to_cart_url(); ?>" class="cart" method="post">
-				<button type="submit" class="button-alt"><?php _e('Buy Now', 'jigoshop'); ?></button>
-				<?php do_action('jigoshop_add_to_cart_form'); ?>
-			</form>	
-		<?php
-		}
+			*/		
+		function generate_license_key() {
 
-		/**
- 			* loop_add_to_cart()
- 			* replace the default jigoshop add to cart button
-			* @see jigoshop_template_loop_add_to_cart()
-			* @since 1.0
-			*/	
-		function loop_add_to_cart($post, $_product) {
-			?><a href="<?php echo $_product->add_to_cart_url(); ?>" class="button"><?php _e('Buy Now', 'jigoshop'); ?></a><?php
-		}
-		
-		/**
- 			* add_to_cart_redirect()
- 			* redirect the user to checkout after they've clicked "buy now"
-			* @see jigoshop_add_to_cart_action()
-			* @since 1.0
-			*/			
-		function add_to_cart_redirect() {
-			return jigoshop_cart::get_checkout_url();
-		}
+			$uuid = sprintf( '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+				mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff ),
+				mt_rand( 0, 0x0fff ) | 0x4000,
+				mt_rand( 0, 0x3fff ) | 0x8000,
+				mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff ) );
 
-		/**
- 			* locate_api_template()
- 			* filters the template for the api page so that it just does the json stuff
-			* @since 1.0
-			*/
-		function locate_api_template($template) {
-			global $wp_query;
-			if ($wp_query->query_vars['pagename'] == 'api') { // todo make this better
-				$template = JIGOSHOP_SOFTWARE_PATH.'/inc/api.php';
-			}	
-			return $template;
+			return $uuid;
 		}
-		
-		/**
- 			* print_styles()
- 			* adds css to the front-end
-			* @since 1.0
-			*/	
-    function print_styles() {
-			wp_register_style('jigoshop_software', plugins_url( 'inc/front-end.css', __FILE__ ));
-			wp_enqueue_style('jigoshop_software');
-    }		
-
-		/**
- 			* admin_print_styles()
- 			* adds css to the back-end
-			* @since 1.0
-			*/	
-    function admin_print_styles() {
-			wp_register_style('jigoshop_software_backend', plugins_url( 'inc/back-end.css', __FILE__ ));
-			wp_enqueue_style('jigoshop_software_backend');
-    }		
-
 
 		/**
  			* redirect_away_from_cart()
@@ -430,17 +463,12 @@ if (!class_exists('jigoshop_software')) {
 			}
 		}
 
-		/**
- 			* record_upgrade()
- 			* record an upgrade into the jigoshop order system
-			* @since 1.0
-			*/							
-		function record_upgrade() {
-			
-		}
+/* =======================================
+		ajax & email processing
+==========================================*/
 		
 		/**
- 			* ajax_jgs_process_checkout()
+ 			* ajax_jgs_checkout()
  			* process the ajax request to checkout
 			* @since 1.0
 			*/									
@@ -569,23 +597,138 @@ if (!class_exists('jigoshop_software')) {
 			echo $response;			
 			exit;
 		}
-		
+
 		/**
- 			* generate_license_key()
- 			* generates a unique id that is used as the license code
+ 			* ajax_jgs_lost_license()
+ 			* process the ajax request for a lost license request
 			* @since 1.0
-			*/		
-		function generate_license_key() {
+			* TODO!!!
+			*/									
+		function ajax_jgs_lost_license() {
 
-			$uuid = sprintf( '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
-				mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff ),
-				mt_rand( 0, 0x0fff ) | 0x4000,
-				mt_rand( 0, 0x3fff ) | 0x8000,
-				mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff ) );
+			$messages = null; // reset in case this a second attempt	
+			$success = null;
+			$message = null;
 
-			return $uuid;
+			// $no_js = (isset($_POST['no_js']) && $_POST['no_js'] == 'true') ? true : false;
+			// if ($no_js) wp_safe_redirect(jigoshop_cart::get_checkout_url().'?no-js=true');
+
+			$item_id = esc_attr($_POST['item_id']);
+			$qty = 1; // always 1 because it's a buy now situation not a cart situation
+			$upgrade = false; // default
+			
+			// nonce verification
+			if ( $_POST['jgs_checkout_nonce'] && !wp_verify_nonce($_POST['jgs_checkout_nonce'], 'jgs_checkout') ) $messages['nonce'] = 'An error has occurred2, please try again';
+						
+			if (isset($_POST['up_key'])) { 
+				$key = esc_attr($_POST['up_key']);
+				$upgrade = true;
+			}	
+
+			// email validation
+			$email = esc_attr($_POST['jgs_email']);
+			if (!$email || $email == '') $messages['email'] = 'Please enter your email';
+			elseif (!is_email($email)) $messages['email'] = 'Please enter a valid email address';
+			
+			// key validation
+			if ($upgrade && $key != '' && !$this->is_valid_upgrade_key($key, $item_id)) $messages['key'] = 'The key you have entered is not valid, please try again or contact us if you need additional help';			
+
+			// if there is no message, then validation passed
+			if(!$messages) {
+			
+				$success = true;
+																				
+				$order_data = array(
+					'post_type' => 'shop_order',
+					'post_title' => 'Order &ndash; '.date('F j, Y @ h:i A'),
+					'post_status' => 'publish',
+					'post_author' => 1
+				);
+				
+				$product = get_post_meta($item_id, 'product_data', true);
+				$sale_price = $product['sale_price'];
+				$regular_price = $product['regular_price'];
+				$price = ($sale_price && $sale_price != '') ? $sale_price : $regular_price;
+				
+				if ($upgrade) {
+					$order['is_upgrade'] = 'on';					
+					$order['upgrade_name'] = $product['upgradable_product'];
+					$order['upgrade_price'] = $product['up_price'];
+					$order['original_price'] = $price;
+				}
+								
+				// Order meta data [from jigoshop]
+				$order['billing_email'] = $email;
+				$order['payment_method'] = 'paypal';
+				$order['order_subtotal'] = $price*$qty;
+				$order['order_shipping'] = 0;
+				$order['order_discount'] = 0;
+				$order['order_tax'] = 0;
+				$order['order_shipping_tax']	= 0;
+				$order['order_total'] = $order['order_subtotal'];
+				
+				// activation stuff	
+				$order['version'] = $product['version'];
+				$order['license_key'] = $this->generate_license_key();
+				$order['activations_possible'] = $product['activations'];									
+				$order['remaining_activations'] = $product['activations'];
+				$order['productid'] = get_post_meta($item_id, 'soft_product_id', true);
+				
+				/*
+					TODO add coupon support (long-term)
+				*/
+					
+				$order_items = array();
+						
+				$order_items[] = array(
+			 		'id' 		=> $item_id,
+			 		'name' 		=> get_the_title($item_id),
+			 		'qty' 		=> (int) $qty,
+			 		'cost' 		=> $price,
+			 		'taxrate' 	=> 0
+			 	);
+					 					
+				$order_id = wp_insert_post( $order_data );					
+					
+				// Update post meta
+				update_post_meta( $order_id, 'order_data', $order );
+				update_post_meta( $order_id, 'activation_email', $email );
+				update_post_meta( $order_id, 'activations', array() ); // store an empty array for use later
+				update_post_meta( $order_id, 'order_key', uniqid('order_') );
+				update_post_meta( $order_id, 'order_items', $order_items );
+				wp_set_object_terms( $order_id, 'pending', 'shop_order_status' );
+			
+				$_order = &new jigoshop_order($order_id);
+					
+				// Inserted successfully 
+				do_action('jigoshop_new_order', $order_id);
+										
+				// Store Order ID in session 
+				$_SESSION['order_awaiting_payment'] = $order_id;
+		
+				// Process Payment
+				$available_gateways = jigoshop_payment_gateways::get_available_payment_gateways();
+				$result = $available_gateways['paypal']->process_payment( $order_id );
+				
+			} else {
+				// building a message string from all of the $messages above
+				$message = '';
+				foreach ($messages as $k => $m) {
+					$message .= $m.'<br>';
+				}
+				$success = false;
+				$result = null;
+			}
+
+			header( "Content-Type: application/json" );
+			$response = json_encode( array( 
+				'success' => $success,
+				'message' => $message,
+				'result' => $result,
+			));
+			echo $response;			
+			exit;
 		}		
-
 		
 	} // end class
 	
