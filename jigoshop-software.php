@@ -67,7 +67,11 @@ if (!class_exists('jigoshop_software')) {
 			array('id' => 'original_price', 'label' => 'Original price ($):', 'title' => 'License Key', 'placeholder' => '', 'type' => 'text'),
 		);
 		
-	
+	/**
+		* __construct()
+		* plugin activation, hooks & filters, etc..
+		* @since 1.0
+		*/	
 		function __construct() {
 			
 			// define constants
