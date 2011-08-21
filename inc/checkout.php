@@ -13,8 +13,8 @@ if (!empty($_GET['empty']) && $_GET['empty'] == true) {
 
 if ( sizeof(jigoshop_cart::$cart_contents) > 0 ) : 
 	foreach (jigoshop_cart::$cart_contents as $item_id => $values) :
-
-		$qty = $values['quantity'];
+		
+		$qty = 1; // force it
 		$data = $values['data']->data;
 		$sale_price = $data['sale_price'];
 		$regular_price = $data['regular_price'];

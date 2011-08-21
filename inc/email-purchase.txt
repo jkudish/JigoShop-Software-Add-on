@@ -4,14 +4,21 @@ Thank you for your purchase. Your license key is below. If you already have the 
 
 We recommend that you save this email in case you need to activate again in the future.
 
+=====================================================================
 Your Order
-Item: {product}
-Item Price: {price}
+=====================================================================
 
+Item: {product}
+Item Price: ${price}
+
+=====================================================================
 Transaction Details
+=====================================================================
+
 Account Name: {email}
-Transaction ID: {transaction_id}
-Transaction Total: {total}
+License Key: {license_key}
+Transaction ID: {transaction_id} 
+Transaction Total: ${total} via paypal
 Currency: USD
 Activations: {max_activations}
 

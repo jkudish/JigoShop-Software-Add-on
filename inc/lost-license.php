@@ -31,7 +31,7 @@
 		$('#jgs_lost_license').submit(function(e){
 			e.preventDefault();
 			$('#jgs_validation').fadeIn();
-			var load = $('#jgs_lost_license .jgs_loader');
+			var load = $('#jgs_lost_licensec .jgs_loader');
 			load.addClass('loading');
 			var args = {};
 			var inputs = $(this).serializeArray();

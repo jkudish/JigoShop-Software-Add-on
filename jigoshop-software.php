@@ -122,10 +122,7 @@ if (!class_exists('jigoshop_software')) {
 			remove_action('order_status_pending_to_processing', 'jigoshop_new_order_notification');
 			remove_action('order_status_pending_to_completed', 'jigoshop_new_order_notification');
 			remove_action('order_status_pending_to_on-hold', 'jigoshop_new_order_notification');
-			add_action('order_status_completed', array(&$this, 'process_email'));
-			add_action('jgs_lost_license_page', array(&$this, 'process_email'));
-			add_action('jgs_activation_completed', array(&$this, 'process_email'));
-
+			remove_action('order_status_completed', 'jigoshop_completed_order_customer_notification');
 			
 			// filters
 			add_filter('add_to_cart_redirect', array(&$this, 'add_to_cart_redirect'));
@@ -530,12 +527,9 @@ if (!class_exists('jigoshop_software')) {
 			$upgrade = false; // default
 			
 			// nonce verification
-			if ( $_POST['jgs_checkout_nonce'] && !wp_verify_nonce($_POST['jgs_checkout_nonce'], 'jgs_checkout') ) $messages['nonce'] = 'An error has occurred, please try again';
+			if ( isset($_POST['jgs_checkout_nonce']) && !wp_verify_nonce($_POST['jgs_checkout_nonce'], 'jgs_checkout') ) $messages['nonce'] = 'An error has occurred, please try again';
 						
-			if (isset($_POST['up_key'])) { 
-				$key = esc_attr($_POST['up_key']);				
-				$upgrade = true;
-			}	
+			$key = esc_attr($_POST['up_key']);							
 
 			// email validation
 			$email = esc_attr($_POST['jgs_email']);
@@ -543,11 +537,13 @@ if (!class_exists('jigoshop_software')) {
 			elseif (!is_email($email)) $messages['email'] = 'Please enter a valid email address';
 			
 			// key validation
-			if ($upgrade && $key != '' && !$this->is_valid_upgrade_key($key, $item_id)) $messages['key'] = 'The key you have entered is not valid, please try again or contact us if you need additional help';			
+			if ($key != '' && !$this->is_valid_upgrade_key($key, $item_id)) $messages['key'] = 'The key you have entered is not valid, please try again or contact us if you need additional help';			
 
 			// if there is no message, then validation passed
 			if(!$messages) {
-			
+				
+				if ($this->is_valid_upgrade_key($key, $item_id)) $upgrade = true;
+				
 				$success = true;
 																				
 				$order_data = array(
@@ -787,6 +783,7 @@ if (!class_exists('jigoshop_software')) {
 			if (isset($_POST['txn_id'])) {
 				update_post_meta($order_id, 'transaction_id', $_POST['txn_id']);
 			}
+			$this->process_email($order_id, 'completed_purchase');
 		}
 				
 		/**
@@ -795,17 +792,17 @@ if (!class_exists('jigoshop_software')) {
 			* @since 1.0
 			* @todo the whole thing
 			*/		
-		function process_email( $data ) {
+		function process_email( $data, $type ) {
 			
 			// switch based on the hook that was fired
-			switch (current_filter()) :
+			switch ($type) :
 				
-				case 'order_status_completed' :
+				case 'completed_purchase' :
 					
 					$order_id = $data;
 					$order = &new jigoshop_order( $order_id );
 					
-					$date = date('D, F j Y', time());
+					$date = date('l, F j Y', time());
 					$data = get_post_meta($order_id, 'order_data', true);
 					$products = get_post_meta($order_id, 'order_items', true);
 					$product = $products[0]['name'];
@@ -814,6 +811,7 @@ if (!class_exists('jigoshop_software')) {
 					$transaction_id = get_post_meta($order_id, 'transaction_id', true);
 					$total = $price;
 					$max_activations = $data['activations_possible'];
+					$license_key = $data['license_key'];
 					$paypal_name = $data['paypal_name'];
 					
 					$send_to = get_post_meta($order_id, 'activation_email', true);
@@ -821,6 +819,7 @@ if (!class_exists('jigoshop_software')) {
 					$message = file_get_contents(JIGOSHOP_SOFTWARE_PATH.'/inc/email-purchase.txt');
 					$message = str_replace('{date}', $date, $message);
 					$message = str_replace('{product}', $product, $message);
+					$message = str_replace('{license_key}', $license_key, $message);
 					$message = str_replace('{price}', $price, $message);
 					$message = str_replace('{email}', $email, $message);
 					$message = str_replace('{transaction_id}', $transaction_id, $message);
@@ -847,7 +846,8 @@ if (!class_exists('jigoshop_software')) {
 			
 			endswitch;	
 			
-			wp_mail($send_to, $subject, $message);
+		 $headers = 'From: '.get_bloginfo('name').' <'.get_bloginfo('admin_email').'>' . "\r\n";
+			wp_mail($send_to, $subject, $message, $headers);
 			
 		}
 		
