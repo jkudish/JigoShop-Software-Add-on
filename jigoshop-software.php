@@ -77,7 +77,7 @@ if (!class_exists('jigoshop_software')) {
 			register_activation_hook(__FILE__, array(&$this, 'activation'));
 			
 			// set the right time zone from WP options
-			date_default_timezone_set(get_option('timezone_string'));
+			@date_default_timezone_set(get_option('timezone_string'));
 			
 			
 			/**

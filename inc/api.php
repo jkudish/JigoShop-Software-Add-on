@@ -338,7 +338,12 @@ class jigoshop_software_api extends jigoshop_software {
 		
 		$sig_out = $output;
 		$sig_array = array_merge($sig_array, $sig_out);
-		$sig = http_build_query($sig_array);
+		foreach ($sig_array as $k => $v) {
+			if ($v === false) $v = "false";
+			if ($v === true) $v = "true";			
+			$sigjoined[] = "$k=$v";
+		}
+		$sig = implode('&', $sigjoined);
 		if (!$this->debug) $sig = md5($sig);
 		$output['sig'] = $sig;
 		return $output;
@@ -378,7 +383,12 @@ class jigoshop_software_api extends jigoshop_software {
 			$error[$k] = $v;
 		}	
 		$secret = ($secret) ? $secret : 'null';
-		$sig = http_build_query($error);
+		foreach ($error as $k => $v) {
+			if ($v === false) $v = "false";
+			if ($v === true) $v = "true";
+			$sigjoined[] = "$k=$v";
+		}
+		$sig = implode('&', $sigjoined);
 		$sig = 'secret='.$secret.'&'.$sig;
 		if (!$this->debug) $sig = md5($sig);
 		$error['sig'] = $sig;		
