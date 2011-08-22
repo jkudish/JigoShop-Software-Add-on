@@ -419,8 +419,8 @@ if (!class_exists('jigoshop_software')) {
 			* @since 1.0
 			*/
 		function locate_api_template($template) {
-			global $wp_query;
-			if ($wp_query->query_vars['pagename'] == 'api') { // todo make this better
+			global $post;;
+			if ($post->ID == get_option('jigoshop_api_page_id')) {
 				$template = JIGOSHOP_SOFTWARE_PATH.'/inc/api.php';
 			}	
 			return $template;
@@ -615,11 +615,7 @@ if (!class_exists('jigoshop_software')) {
 				$order['secret_product_key'] = $product['secret_product_key'];
 				$order['paypal_name'] = $product['paypal_name'];
 				$order['productid'] = get_post_meta($item_id, 'soft_product_id', true);
-				
-				/*
-					TODO add coupon support (long-term)
-				*/
-					
+									
 				$order_items = array();
 						
 				$order_items[] = array(
@@ -676,7 +672,6 @@ if (!class_exists('jigoshop_software')) {
  			* ajax_jgs_lost_license()
  			* process the ajax request for a lost license request
 			* @since 1.0
-			* @todo the whole thing
 			*/									
 		function ajax_jgs_lost_license() {
 
@@ -781,7 +776,6 @@ if (!class_exists('jigoshop_software')) {
  			* process_email()
  			* process emails and send them out
 			* @since 1.0
-			* @todo the whole thing
 			*/		
 		function process_email( $data, $type ) {
 			
