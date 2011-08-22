@@ -21,8 +21,7 @@ if ( sizeof(jigoshop_cart::$cart_contents) > 0 ) :
 		$price = ($sale_price && $sale_price != '') ? $sale_price : $regular_price;
 		$up_name = $data['upgradable_product'];
 		$up_price = $data['up_price'];
-		$version = $data['version'];
-		
+		$version = $data['version'];		
 	?>				
 			<div class="jgs_page" id="jgs_checkout">
 				<form id="jgs_checkout_form" action="<?php echo admin_url('admin-ajax.php') ?>" method="post">

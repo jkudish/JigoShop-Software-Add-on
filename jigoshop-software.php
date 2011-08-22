@@ -481,6 +481,8 @@ if (!class_exists('jigoshop_software')) {
 					if ($i != 1) $keys_string .= ',';
 					$keys_string .= $key;
 				}	
+				$keys_string = ltrim($keys_string, ','); // filter out a comma if there is one in the first character
+				$keys_string = ltrim($keys_string, ' '); // filter out a space if there is one in the first character
 				return $keys_string;
 			}
 			return false;
@@ -594,7 +596,7 @@ if (!class_exists('jigoshop_software')) {
 					// move the upgraded key to the used keys 
 					unset($product['up_license_keys'][array_search($key, $product['up_license_keys'])]);
 					$product['used_license_keys'][] = $key;
-					update_post_meta($item_id, 'product_data', true);
+					update_post_meta($item_id, 'product_data', $product);
 				}
 								
 				// Order meta data [from jigoshop]
