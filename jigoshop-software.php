@@ -86,7 +86,6 @@ if (!class_exists('jigoshop_software')) {
 			// set the right time zone from WP options
 			@date_default_timezone_set(get_option('timezone_string'));
 			
-			
 			/**
 			 * hooks
 			 */
@@ -113,7 +112,9 @@ if (!class_exists('jigoshop_software')) {
 			add_action( 'wp_print_styles', array(&$this, 'print_styles')); 
 			add_action( 'wp_head', array(&$this, 'redirect_away_from_cart')); 
 			add_action( 'wp_ajax_nopriv_jgs_checkout', array(&$this, 'ajax_jgs_checkout')); 
-			add_action( 'wp_ajax_jgs_checkout', array(&$this, 'ajax_jgs_checkout')); 
+			add_action( 'wp_ajax_jgs_checkout', array(&$this, 'ajax_jgs_checkout')); 			
+			add_action( 'wp_ajax_nopriv_jgs_lost_license', array(&$this, 'ajax_jgs_lost_license')); 
+			add_action( 'wp_ajax_jgs_lost_license', array(&$this, 'ajax_jgs_lost_license')); 
 			
 			// payment stuff
 			add_action('thankyou_paypal', array(&$this, 'record_paypal_transaction_id'));
@@ -132,17 +133,32 @@ if (!class_exists('jigoshop_software')) {
 		
 		/**
  			* activation()
- 			* checks if the jigoshop plugin is running and disables this plugin if it's not (and displays a message)
+ 			* runs various functions when the plugin first activates
 			* @see register_activation_hook()
 			* @link http://codex.wordpress.org/Function_Reference/register_activation_hook 
 			* @since 1.0
-			* @todo shortcode replacement / page creation
 			*/
 		function activation() {
+			
+			// checks if the jigoshop plugin is running and disables this plugin if it's not (and displays a message)
 			if (!is_plugin_active('jigoshop/jigoshop.php')) {
 				deactivate_plugins(plugin_basename(__FILE__));				
 				wp_die(__('The JigoShop Software Add-On requires <a href="http://jigoshop.com" target="_blank">JigoShop</a> to be activated in order to work. Please activate <a href="http://jigoshop.com" target="_blank">JigoShop</a> first. <a href="'.admin_url('plugins.php').'"> <br> &laquo; Go Back</a>', 'jigoshop'));
 			}
+			
+			// creates the lost license page with the right shortcode in it
+			$lost_license_page_id = get_option('jigoshop_lost_license_page_id');
+			if ($lost_license_page_id && $lost_license_page_id != '') {
+				$lost_license_page = array(
+					'post_title' => 'Lost License',
+					'post_content' => '[jigoshop_software_lost_license]',
+					'post_status' => 'publish',
+				
+				);
+				$lost_license_page_id = wp_insert_post($lost_license_page);
+				update_option('jigoshop_lost_license_page_id', $lost_license_page);		
+			}	
+			
 		}
 
 		/**
@@ -652,106 +668,59 @@ if (!class_exists('jigoshop_software')) {
 			$messages = null; // reset in case this a second attempt	
 			$success = null;
 			$message = null;
-
-			// $no_js = (isset($_POST['no_js']) && $_POST['no_js'] == 'true') ? true : false;
-			// if ($no_js) wp_safe_redirect(jigoshop_cart::get_checkout_url().'?no-js=true');
-
-			$item_id = esc_attr($_POST['item_id']);
-			$qty = 1; // always 1 because it's a buy now situation not a cart situation
-			$upgrade = false; // default
 			
+			$no_js = (isset($_POST['no_js']) && $_POST['no_js'] == 'true') ? true : false;
+			if ($no_js) wp_safe_redirect(get_permalink(get_option('jigoshop_lost_license_page_id')).'?no-js=true');
+
 			// nonce verification
-			if ( $_POST['jgs_checkout_nonce'] && !wp_verify_nonce($_POST['jgs_checkout_nonce'], 'jgs_checkout') ) $messages['nonce'] = 'An error has occurred2, please try again';
-						
-			if (isset($_POST['up_key'])) { 
-				$key = esc_attr($_POST['up_key']);
-				$upgrade = true;
-			}	
+			if ( $_POST['jgs_lost_license_nonce'] && !wp_verify_nonce($_POST['jgs_lost_license_nonce'], 'jgs_lost_license') ) $messages['nonce'] = 'An error has occurred, please try again';
 
 			// email validation
 			$email = esc_attr($_POST['jgs_email']);
 			if (!$email || $email == '') $messages['email'] = 'Please enter your email';
 			elseif (!is_email($email)) $messages['email'] = 'Please enter a valid email address';
-			
-			// key validation
-			if ($upgrade && $key != '' && !$this->is_valid_upgrade_key($key, $item_id)) $messages['key'] = 'The key you have entered is not valid, please try again or contact us if you need additional help';			
+			else {
+				$_orders = get_posts(array(
+					'post_type' => 'shop_order',
+					'posts_per_page' => -1,
+					'meta_query' => array(
+						array(
+							'key' => 'activation_email',
+							'value' => $email
+						)
+					)
+				));
+				if (!is_array($_orders) || count($_orders) < 1) {
+					$messages['email'] = 'There are no purchase records for this email address. Please try again. If you think there is a mistake, please contact us.';
+				}
+			}
 
 			// if there is no message, then validation passed
 			if(!$messages) {
 			
 				$success = true;
-																				
-				$order_data = array(
-					'post_type' => 'shop_order',
-					'post_title' => 'Order &ndash; '.date('F j, Y @ h:i A'),
-					'post_status' => 'publish',
-					'post_author' => 1
-				);
 				
-				$product = get_post_meta($item_id, 'product_data', true);
-				$sale_price = $product['sale_price'];
-				$regular_price = $product['regular_price'];
-				$price = ($sale_price && $sale_price != '') ? $sale_price : $regular_price;
-				
-				if ($upgrade) {
-					$order['is_upgrade'] = 'on';					
-					$order['upgrade_name'] = $product['upgradable_product'];
-					$order['upgrade_price'] = $product['up_price'];
-					$order['original_price'] = $price;
+				$data['email'] = $email;
+
+				$i = 0;
+				foreach ($_orders as $order) { $i++;
+					$order_data = get_post_meta($order->ID, 'order_data', true);
+					$order_items = get_post_meta($order->ID, 'order_items', true);
+					$data['purchases'][$i]['product'] = $order_items[0]['name'];
+					$data['purchases'][$i]['price'] = $order_items[0]['cost'];
+					$data['purchases'][$i]['date'] = get_the_time('l, F j Y', $order->ID);
+					$data['purchases'][$i]['activation_email'] = get_post_meta($order->ID, 'activation_email', true);
+					$data['purchases'][$i]['transaction_id'] = get_post_meta($order->ID, 'transaction_id', true);
+					$data['purchases'][$i]['license_key'] = $order_data['license_key'];
+					$data['purchases'][$i]['order_total'] = $order_items[0]['cost'];
+					$data['purchases'][$i]['remaining_activations'] = $order_data['remaining_activations'];
+					$data['purchases'][$i]['activations_possible'] = $order_data['activations_possible'];
 				}
-								
-				// Order meta data [from jigoshop]
-				$order['billing_email'] = $email;
-				$order['payment_method'] = 'paypal';
-				$order['order_subtotal'] = $price*$qty;
-				$order['order_shipping'] = 0;
-				$order['order_discount'] = 0;
-				$order['order_tax'] = 0;
-				$order['order_shipping_tax']	= 0;
-				$order['order_total'] = $order['order_subtotal'];
 				
-				// activation stuff	
-				$order['version'] = $product['version'];
-				$order['license_key'] = $this->generate_license_key();
-				$order['activations_possible'] = $product['activations'];									
-				$order['remaining_activations'] = $product['activations'];
-				$order['productid'] = get_post_meta($item_id, 'soft_product_id', true);
+				$this->process_email($data, 'lost_license');
 				
-				/*
-					TODO add coupon support (long-term)
-				*/
-					
-				$order_items = array();
-						
-				$order_items[] = array(
-			 		'id' 		=> $item_id,
-			 		'name' 		=> get_the_title($item_id),
-			 		'qty' 		=> (int) $qty,
-			 		'cost' 		=> $price,
-			 		'taxrate' 	=> 0
-			 	);
-					 					
-				$order_id = wp_insert_post( $order_data );					
-					
-				// Update post meta
-				update_post_meta( $order_id, 'order_data', $order );
-				update_post_meta( $order_id, 'activation_email', $email );
-				update_post_meta( $order_id, 'activations', array() ); // store an empty array for use later
-				update_post_meta( $order_id, 'order_key', uniqid('order_') );
-				update_post_meta( $order_id, 'order_items', $order_items );
-				wp_set_object_terms( $order_id, 'pending', 'shop_order_status' );
-			
-				$_order = &new jigoshop_order($order_id);
-					
-				// Inserted successfully 
-				do_action('jigoshop_new_order', $order_id);
-										
-				// Store Order ID in session 
-				$_SESSION['order_awaiting_payment'] = $order_id;
-		
-				// Process Payment
-				$available_gateways = jigoshop_payment_gateways::get_available_payment_gateways();
-				$result = $available_gateways['paypal']->process_payment( $order_id );
+				$message = 'Your request has been accepted. You should receive an email shortly with all of your purchase history.';
+				
 				
 			} else {
 				// building a message string from all of the $messages above
@@ -767,7 +736,6 @@ if (!class_exists('jigoshop_software')) {
 			$response = json_encode( array( 
 				'success' => $success,
 				'message' => $message,
-				'result' => $result,
 			));
 			echo $response;			
 			exit;
@@ -829,10 +797,31 @@ if (!class_exists('jigoshop_software')) {
 				
 				break;
 				
-				case 'jgs_lost_license_page' :
+				case 'lost_license' :
 				
 					$subject = __('Recovered Licenses','jigoshop');
-					$message = '';
+					$send_to = $data['email'];
+					$message = file_get_contents(JIGOSHOP_SOFTWARE_PATH.'/inc/email-lost-license.txt');
+					$orders = '';
+					
+					$i = 0;
+					foreach ($data['purchases'] as $purchase) { $i++;
+						$orders .= '
+						====================================================================='."\n\n"
+						.'Order '.$i.''."\n\n"
+						.'====================================================================='."\n\n"
+						.'Item: '.$purchase['product']."\n"
+						.'Item Price: '.$purchase['price']."\n"
+						.'Purchase date: '.$purchase['date']."\n\n"						
+						.'Account Name: '.$purchase['activation_email']."\n"
+						.'Transaction ID: '.$purchase['transaction_id']."\n"
+						.'License Key: '.$purchase['license_key']."\n"
+						.'Transaction Total: '.$purchase['order_total'].' via paypal'."\n"
+						.'Currency: USD'."\n"
+						.'Activations: '.$purchase['remaining_activations'].' out of '.$purchase['activations_possible'].' activations remaining'."\n\n\n";
+					}
+
+				$message = str_replace('{orders}', $orders, $message);		
 				
 				break;
 

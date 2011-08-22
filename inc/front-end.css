@@ -5,6 +5,7 @@
 .jgs_page .form-row .button-alt {float: right;}
 .jgs_page #jgs_validation {display: none; color: red;}
 .jgs_page #jgs_validation.not-hidden {display: block}
+.jgs_page #jgs_validation.success {color: green;}
 
 .jgs_loader {float: right;}
 .jgs_loader.loading {padding: 5px 0 0 20px; height: 40px; background: url('../../jigoshop/assets/images/ajax-loader.gif') 0 50% no-repeat; }
