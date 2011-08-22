@@ -704,21 +704,29 @@ if (!class_exists('jigoshop_software')) {
 				
 				$data['email'] = $email;
 
+				// loop through the orders
 				$i = 0;
-				foreach ($_orders as $order) { $i++;
-					$order_data = get_post_meta($order->ID, 'order_data', true);
-					$order_items = get_post_meta($order->ID, 'order_items', true);
-					$data['purchases'][$i]['product'] = $order_items[0]['name'];
-					$data['purchases'][$i]['price'] = $order_items[0]['cost'];
-					$data['purchases'][$i]['date'] = get_the_time('l, F j Y', $order->ID);
-					$data['purchases'][$i]['activation_email'] = get_post_meta($order->ID, 'activation_email', true);
-					$data['purchases'][$i]['transaction_id'] = get_post_meta($order->ID, 'transaction_id', true);
-					$data['purchases'][$i]['license_key'] = $order_data['license_key'];
-					$data['purchases'][$i]['order_total'] = $order_items[0]['cost'];
-					$data['purchases'][$i]['remaining_activations'] = $order_data['remaining_activations'];
-					$data['purchases'][$i]['activations_possible'] = $order_data['activations_possible'];
+				foreach ($_orders as $order) { 
+					$order_status = wp_get_post_terms($order->ID, 'shop_order_status');
+					$order_status = $order_status[0]->slug;
+					// make sure it's a completed order
+					if ($order_status == 'completed') {
+						$i++;
+						$order_data = get_post_meta($order->ID, 'order_data', true);
+						$order_items = get_post_meta($order->ID, 'order_items', true);
+						$data['purchases'][$i]['product'] = $order_items[0]['name'];
+						$data['purchases'][$i]['price'] = $order_items[0]['cost'];
+						$data['purchases'][$i]['date'] = get_the_time('l, F j Y', $order->ID);
+						$data['purchases'][$i]['activation_email'] = get_post_meta($order->ID, 'activation_email', true);
+						$data['purchases'][$i]['transaction_id'] = get_post_meta($order->ID, 'transaction_id', true);
+						$data['purchases'][$i]['license_key'] = $order_data['license_key'];
+						$data['purchases'][$i]['order_total'] = $order_items[0]['cost'];
+						$data['purchases'][$i]['remaining_activations'] = $order_data['remaining_activations'];
+						$data['purchases'][$i]['activations_possible'] = $order_data['activations_possible'];
+					}	
 				}
 				
+				// send out the email
 				$this->process_email($data, 'lost_license');
 				
 				$message = 'Your request has been accepted. You should receive an email shortly with all of your purchase history.';
@@ -808,9 +816,9 @@ if (!class_exists('jigoshop_software')) {
 					
 					$i = 0;
 					foreach ($data['purchases'] as $purchase) { $i++;
-						$orders .= '
-						====================================================================='."\n\n"
-						.'Order '.$i.''."\n\n"
+						$orders .= 
+						'====================================================================='."\n"
+						.'Order '.$i.''."\n"
 						.'====================================================================='."\n\n"
 						.'Item: '.$purchase['product']."\n"
 						.'Item Price: '.$purchase['price']."\n"
