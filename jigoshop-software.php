@@ -821,12 +821,12 @@ if (!class_exists('jigoshop_software')) {
 						.'Order '.$i.''."\n"
 						.'====================================================================='."\n\n"
 						.'Item: '.$purchase['product']."\n"
-						.'Item Price: '.$purchase['price']."\n"
+						.'Item Price: $'.$purchase['price']."\n"
 						.'Purchase date: '.$purchase['date']."\n\n"						
 						.'Account Name: '.$purchase['activation_email']."\n"
 						.'Transaction ID: '.$purchase['transaction_id']."\n"
 						.'License Key: '.$purchase['license_key']."\n"
-						.'Transaction Total: '.$purchase['order_total'].' via paypal'."\n"
+						.'Transaction Total: $'.$purchase['order_total'].' via paypal'."\n"
 						.'Currency: USD'."\n"
 						.'Activations: '.$purchase['remaining_activations'].' out of '.$purchase['activations_possible'].' activations remaining'."\n\n\n";
 					}
