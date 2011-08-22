@@ -419,7 +419,7 @@ if (!class_exists('jigoshop_software')) {
 			* @since 1.0
 			*/
 		function locate_api_template($template) {
-			global $post;;
+			global $post;
 			if ($post->ID == get_option('jigoshop_api_page_id')) {
 				$template = JIGOSHOP_SOFTWARE_PATH.'/inc/api.php';
 			}	
