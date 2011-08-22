@@ -157,10 +157,18 @@ if (!class_exists('jigoshop_software')) {
 			}	
 			
 			// creates the API page
-			/*
-				TODO 
-			*/
-			
+			$jigoshop_api_page_id = get_option('jigoshop_api_page_id');
+			if (!$jigoshop_api_page_id || $jigoshop_api_page_id == '') {
+				$api_page = array(
+					'post_title' => 'API',
+					'post_content' => '',
+					'post_status' => 'publish',
+					'post_type' => 'page',
+				);
+				$jigoshop_api_page_id = wp_insert_post($api_page);
+				update_option('jigoshop_api_page_id', $jigoshop_api_page_id);		
+			}
+						
 		}
 
 		/**
