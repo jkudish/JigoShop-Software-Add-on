@@ -57,7 +57,6 @@ if (!class_exists('jigoshop_software')) {
 		// define the order metadata fields used by this plugin		
 		static $order_fields = array(
 			array('id' => 'activation_email', 'label' => 'Activation Email:', 'title' => 'Activation Email', 'placeholder' => '', 'type' => 'text'),			
-			array('id' => 'transaction_id', 'label' => 'Transaction ID:', 'title' => 'Transaction ID', 'placeholder' => '', 'type' => 'text'),			
 			array('id' => 'paypal_name', 'label' => 'Paypal Name to show on transaction receipts:', 'title' => 'Paypal Name to show on transaction receiptsAPI', 'placeholder' => 'ex: Google Inc.', 'type' => 'text'),			
 			array('id' => 'license_key', 'label' => 'License Key:', 'title' => 'License Key', 'placeholder' => '', 'type' => 'text'),
 			array('id' => 'productid', 'label' => 'Product ID:', 'title' => 'Product ID', 'placeholder' => '', 'type' => 'text'),
@@ -115,7 +114,7 @@ if (!class_exists('jigoshop_software')) {
 			add_action( 'wp_ajax_jgs_lost_license', array(&$this, 'ajax_jgs_lost_license')); 
 			
 			// payment stuff
-			add_action('thankyou_paypal', array(&$this, 'record_paypal_transaction_id'));
+			add_action('thankyou_paypal', array(&$this, 'process_paypal_payment'));
 			
 			// email stuff
 			remove_action('order_status_pending_to_processing', 'jigoshop_new_order_notification');
@@ -284,7 +283,6 @@ if (!class_exists('jigoshop_software')) {
 					<?php 
 						foreach (self::$order_fields as $field) : 						
 							@$value = ($field['id'] == 'activation_email') ? get_post_meta($post->ID, 'activation_email', true) : $data[$field['id']];
-							@$value = ($field['id'] == 'transaction_id') ? get_post_meta($post->ID, 'transaction_id', true) : $value;
 							switch ($field['type']) :
 								case 'text' :
 									echo '<p class="form-field"><label for="'.$field['id'].'">'.$field['label'].'</label><input type="text" id="'.$field['id'].'" name="'.$field['id'].'" value="'.$value.'" placeholder="'.$field['placeholder'].'"/></p>';
@@ -361,7 +359,6 @@ if (!class_exists('jigoshop_software')) {
 			global $post;
 			foreach (self::$order_fields as $field) {
 				if ($field['id'] == 'activation_email') update_post_meta($post->ID, 'activation_email', $_POST[$field['id']]);
-				elseif ($field['id'] == 'transaction_id') update_post_meta($post->ID, 'transaction_id', $_POST[$field['id']]);
 				else $data[$field['id']] = esc_attr( $_POST[$field['id']] );
 			}	
 			update_post_meta($post->ID, 'order_data', $data);			
@@ -732,7 +729,6 @@ if (!class_exists('jigoshop_software')) {
 						$data['purchases'][$i]['price'] = $order_items[0]['cost'];
 						$data['purchases'][$i]['date'] = get_the_time('l, F j Y', $order->ID);
 						$data['purchases'][$i]['activation_email'] = get_post_meta($order->ID, 'activation_email', true);
-						$data['purchases'][$i]['transaction_id'] = get_post_meta($order->ID, 'transaction_id', true);
 						$data['purchases'][$i]['license_key'] = $order_data['license_key'];
 						$data['purchases'][$i]['order_total'] = $order_items[0]['cost'];
 						$data['purchases'][$i]['remaining_activations'] = $order_data['remaining_activations'];
@@ -766,16 +762,17 @@ if (!class_exists('jigoshop_software')) {
 		}		
 
 		/**
- 			* record_paypal_transaction_id()
+ 			* process_paypal_payment()
  			* record paypal transaction id into the order, for some reason jigoshop doesn't do this by default
+			* also send the purchase email to the customer
 			* @param $order_id (string), the order id to store the transaction id for
 			* @since 1.0
 			*/		
-		function record_paypal_transaction_id($order_id) {
-			if (isset($_POST['txn_id'])) {
-				update_post_meta($order_id, 'transaction_id', $_POST['txn_id']);
-			}
-			$this->process_email($order_id, 'completed_purchase');
+		function process_paypal_payment($order_id) {
+			$order = new jigoshop_order( $order_id );
+			if ($order->status == 'completed') {
+				$this->process_email($order_id, 'completed_purchase');
+			}			
 		}
 				
 		/**
@@ -799,7 +796,6 @@ if (!class_exists('jigoshop_software')) {
 					$product = $products[0]['name'];
 					$price = $products[0]['cost'];
 					$email = get_post_meta($order_id, 'activation_email', true);
-					$transaction_id = get_post_meta($order_id, 'transaction_id', true);
 					$total = $price;
 					$max_activations = $data['activations_possible'];
 					$license_key = $data['license_key'];
@@ -813,7 +809,6 @@ if (!class_exists('jigoshop_software')) {
 					$message = str_replace('{license_key}', $license_key, $message);
 					$message = str_replace('{price}', $price, $message);
 					$message = str_replace('{email}', $email, $message);
-					$message = str_replace('{transaction_id}', $transaction_id, $message);
 					$message = str_replace('{total}', $total, $message);
 					$message = str_replace('{max_activations}', $max_activations, $message);
 					$message = str_replace('{paypal_name}', $paypal_name, $message);					
@@ -837,7 +832,6 @@ if (!class_exists('jigoshop_software')) {
 						.'Item Price: $'.$purchase['price']."\n"
 						.'Purchase date: '.$purchase['date']."\n\n"						
 						.'Account Name: '.$purchase['activation_email']."\n"
-						.'Transaction ID: '.$purchase['transaction_id']."\n"
 						.'License Key: '.$purchase['license_key']."\n"
 						.'Transaction Total: $'.$purchase['order_total'].' via paypal'."\n"
 						.'Currency: USD'."\n"

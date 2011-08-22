@@ -17,7 +17,6 @@ Transaction Details
 
 Account Name: {email}
 License Key: {license_key}
-Transaction ID: {transaction_id} 
 Transaction Total: ${total} via paypal
 Currency: USD
 Activations: {max_activations}
