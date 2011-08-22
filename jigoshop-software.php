@@ -710,9 +710,7 @@ if (!class_exists('jigoshop_software')) {
 
 			// if there is no message, then validation passed
 			if(!$messages) {
-			
-				$success = true;
-				
+							
 				$data['email'] = $email;
 
 				// loop through the orders
@@ -736,11 +734,15 @@ if (!class_exists('jigoshop_software')) {
 					}	
 				}
 				
-				// send out the email
-				$this->process_email($data, 'lost_license');
-				
-				$message = 'Your request has been accepted. You should receive an email shortly with all of your purchase history.';
-				
+				// are there completed orders ?
+				if (isset($data['purchases']) && is_array($data['purchases']) && count($data['purchases']) > 0) {
+					$success = true;
+					$this->process_email($data, 'lost_license');				
+					$message = 'Your request has been accepted. You should receive an email shortly with all of your purchase history.';
+				} else {
+					$success = false;
+					$message = 'Your purchases are not completed. If you think there is a mistake, please contact us.';
+				}
 				
 			} else {
 				// building a message string from all of the $messages above
