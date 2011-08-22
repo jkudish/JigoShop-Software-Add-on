@@ -845,10 +845,9 @@ if (!class_exists('jigoshop_software')) {
 					$message = str_replace('{remaining_activations}', $data['remaining_activations'], $message);
 					$message = str_replace('{activations_possible}', $data['activations_possible'], $message);
 					$message = str_replace('{product}', $data['product'], $message);
-				
+									
 				break;
 
-			
 			endswitch;	
 			
 			$headers = 'From: '.get_bloginfo('name').' <'.get_bloginfo('admin_email').'>' . "\r\n";

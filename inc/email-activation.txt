@@ -1,5 +1,5 @@
 {date}
 
-You have {remaining_activations} of {activations_possible} remaining for {produc}.
+You have {remaining_activations} of {activations_possible} activations remaining for {product}.
 
 If you have any questions, please visit: http://sparkbooth.com/contact
