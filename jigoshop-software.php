@@ -120,8 +120,12 @@ if (!class_exists('jigoshop_software')) {
 			// email stuff
 			remove_action('order_status_pending_to_processing', 'jigoshop_new_order_notification');
 			remove_action('order_status_pending_to_completed', 'jigoshop_new_order_notification');
-			remove_action('order_status_pending_to_on-hold', 'jigoshop_new_order_notification');
+			remove_action('order_status_pending_to_on-hold', 'jigoshop_new_order_notification');			
 			remove_action('order_status_completed', 'jigoshop_completed_order_customer_notification');
+			remove_action('order_status_pending_to_processing', 'jigoshop_processing_order_customer_notification');
+			remove_action('order_status_pending_to_on-hold', 'jigoshop_processing_order_customer_notification');
+			remove_action('order_status_completed', 'jigoshop_completed_order_customer_notification');
+			
 			
 			// filters
 			add_filter('add_to_cart_redirect', array(&$this, 'add_to_cart_redirect'));
