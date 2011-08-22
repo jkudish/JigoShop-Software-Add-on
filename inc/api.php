@@ -165,6 +165,17 @@ class jigoshop_software_api extends jigoshop_software {
 											// update the order data
 											update_post_meta($order->ID, 'order_data', $data);
 											
+											// send email to the customer
+											$order_items = get_post_meta($order->ID, 'order_items', true);											
+											$email_data = array(
+												'email' => get_post_meta($order->ID, 'activation_email', true);
+												'remaining_activations' => $data['remaining_activations'],
+												'activations_possible' => $data['activations_possible'],
+												'product' => $order_items[0]['name'];
+											);
+											parent::process_email($email_data, 'new_activation');
+											
+											// return the json
 											$output_data = $data;
 											$output_data['activated'] = true;
 											$output_data['instanceid'] = $instance;

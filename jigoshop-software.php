@@ -835,17 +835,23 @@ if (!class_exists('jigoshop_software')) {
 				
 				break;
 
-				case 'jgs_activation_completed' :
+				case 'new_activation' :
 				
-					$subject = $data['product_name'].' '.__('Activation Confirmation','jigoshop');
-					$message = '';
+					$subject = $data['product'].' '.__('Activation Confirmation','jigoshop');
+					$send_to = $data['email'];
+					$message = file_get_contents(JIGOSHOP_SOFTWARE_PATH.'/inc/email-activation.txt');
+					$date = date('l, F j Y', time());
+					$message = str_replace('{date}', $date, $message);
+					$message = str_replace('{remaining_activations}', $data['remaining_activations'], $message);
+					$message = str_replace('{activations_possible}', $data['activations_possible'], $message);
+					$message = str_replace('{product}', $data['product'], $message);
 				
 				break;
 
 			
 			endswitch;	
 			
-		 $headers = 'From: '.get_bloginfo('name').' <'.get_bloginfo('admin_email').'>' . "\r\n";
+			$headers = 'From: '.get_bloginfo('name').' <'.get_bloginfo('admin_email').'>' . "\r\n";
 			wp_mail($send_to, $subject, $message, $headers);
 			
 		}
