@@ -43,6 +43,7 @@ if (!class_exists('jigoshop_software')) {
 			array('id' => 'is_software', 'label' => 'This product is Software', 'title' => 'This product is Software', 'placeholder' => '', 'type' => 'checkbox'),
 			array('id' => 'upgradable_product', 'label' => 'Upgradable Product Name:', 'title' => 'Upgradable Product Name', 'placeholder' => '', 'type' => 'text'),
 			array('id' => 'up_license_keys', 'label' => 'Upgradable Product Keys:', 'title' => 'Upgradable Product Keys', 'placeholder' => 'Comma separated list', 'type' => 'textarea'),
+			array('id' => 'used_license_keys', 'label' => 'Used Upgrade Keys:', 'title' => 'Used Upgrade Keys', 'placeholder' => 'Comma separated list', 'type' => 'textarea'),
 			array('id' => 'up_price', 'label' => 'Upgrade Price ($):', 'title' => 'Upgrade Price ($)', 'placeholder' => 'ex: 1.00', 'type' => 'text'),
 			array('id' => 'version', 'label' => 'Version Number:', 'title' => 'Version Number', 'placeholder' => 'ex: 1.0', 'type' => 'text'),
 			array('id' => 'trial', 'label' => 'Trial Period (amount of days or hours):', 'title' => 'Trial Period (amount of days or hours)', 'placeholder' => 'ex: 15', 'type' => 'text'),
@@ -219,7 +220,7 @@ if (!class_exists('jigoshop_software')) {
 			<?php 
 				foreach (self::$product_fields as $field) : 
 					if ($field['id'] == 'soft_product_id') $value = get_post_meta($post->ID, 'soft_product_id', true);
-					else @$value = ($field['id'] == 'up_license_keys') ? $this->un_array_ify_keys($data[$field['id']]) : $data[$field['id']];					
+					else @$value = ($field['id'] == 'up_license_keys' || $field['id'] == 'used_license_keys') ? $this->un_array_ify_keys($data[$field['id']]) : $data[$field['id']];					
 					switch ($field['type']) :
 						case 'text' :
 							echo '<p class="form-field"><label for="'.$field['id'].'">'.$field['label'].'</label><input type="text" id="'.$field['id'].'" name="'.$field['id'].'" value="'.$value.'" placeholder="'.$field['placeholder'].'"/></p>';
@@ -258,7 +259,7 @@ if (!class_exists('jigoshop_software')) {
 		function product_save_data($data) {		
 			global $post;
 			foreach (self::$product_fields as $field) {
-				if ($field['id'] == 'up_license_keys') $data[$field['id']] = $this->array_ify_keys($_POST[$field['id']]);
+				if ($field['id'] == 'up_license_keys' || $field['id'] == 'used_license_keys') $data[$field['id']] = $this->array_ify_keys($_POST[$field['id']]);
 				elseif ($field['id'] == 'soft_product_id') update_post_meta($post->ID, 'soft_product_id', $_POST[$field['id']]);
 				else $data[$field['id']] = esc_attr( $_POST[$field['id']] );
 			}	
@@ -590,6 +591,10 @@ if (!class_exists('jigoshop_software')) {
 					$order['upgrade_price'] = $product['up_price'];
 					$order['original_price'] = $price;
 					$price = $order['upgrade_price'];
+					// move the upgraded key to the used keys 
+					unset($product['up_license_keys'][array_search($key, $product['up_license_keys'])]);
+					$product['used_license_keys'][] = $key;
+					update_post_meta($item_id, 'product_data', true);
 				}
 								
 				// Order meta data [from jigoshop]
