@@ -79,10 +79,7 @@ if (!class_exists('jigoshop_software')) {
 			
 			// define constants
 			define('JIGOSHOP_SOFTWARE_PATH', dirname(__FILE__));
-		
-			// activation hook
-			register_activation_hook(__FILE__, array(&$this, 'activation'));
-			
+					
 			// set the right time zone from WP options
 			@date_default_timezone_set(get_option('timezone_string'));
 			
@@ -148,16 +145,21 @@ if (!class_exists('jigoshop_software')) {
 			
 			// creates the lost license page with the right shortcode in it
 			$lost_license_page_id = get_option('jigoshop_lost_license_page_id');
-			if ($lost_license_page_id && $lost_license_page_id != '') {
+			if (!$lost_license_page_id || $lost_license_page_id == '') {
 				$lost_license_page = array(
 					'post_title' => 'Lost License',
 					'post_content' => '[jigoshop_software_lost_license]',
 					'post_status' => 'publish',
-				
+					'post_type' => 'page',
 				);
 				$lost_license_page_id = wp_insert_post($lost_license_page);
-				update_option('jigoshop_lost_license_page_id', $lost_license_page);		
+				update_option('jigoshop_lost_license_page_id', $lost_license_page_id);		
 			}	
+			
+			// creates the API page
+			/*
+				TODO 
+			*/
 			
 		}
 
@@ -852,3 +854,9 @@ if (!class_exists('jigoshop_software')) {
 	}
 
 } // end class exists
+
+/**
+ 	* run the plugin activation hook
+	* @since 1.0
+	*/
+register_activation_hook(__FILE__, array('jigoshop_software', 'activation'));
