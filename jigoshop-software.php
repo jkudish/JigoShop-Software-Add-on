@@ -888,7 +888,7 @@ if (!class_exists('jigoshop_software')) {
 			$key = esc_attr($_POST['up_key']);							
 
 			// email validation
-			$email = esc_attr($_POST['jgs_email']);
+			$email = strtolower(esc_attr($_POST['jgs_email']));
 			if (!$email || $email == '') $messages['email'] = 'Please enter your email';
 			elseif (!is_email($email)) $messages['email'] = 'Please enter a valid email address';
 			
