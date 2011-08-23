@@ -126,7 +126,7 @@ class jigoshop_software_api extends jigoshop_software {
 										$activations = get_post_meta($order->ID, 'activations', true);
 
 										if (isset($activations[$instance]) && is_array($activations[$instance])) { // this instance exists
-											if ($activation[$instance]['active'] = true) {
+											if ($activation[$instance]['active'] == true) {
 												$activated = true;
 												$output_data = $data;
 												$output_data['activated'] = true;
@@ -192,12 +192,12 @@ class jigoshop_software_api extends jigoshop_software {
 									$this->error('101', 'The purchase matching this product is not complete', null,  array('activated' => false, 'secret' => $data['secret_product_key']));
 								}
 							}
-						} 
-						if (!isset($activated)) {
-							// if we got here than there were no matches for productid and license key
-							$data = array('activated' => false);
-							$this->error('101', 'No purchase orders match this product ID and license key', null, $data);
-						}
+						} 					
+					}
+					if (!isset($activated)) {
+						// if we got here than there were no matches for productid and license key
+						$data = array('activated' => false);
+						$this->error('101', 'No purchase orders match this product ID and license key', null, $data);
 					}		
 				} else { 
 					$data = array('activated' => false);
