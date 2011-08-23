@@ -3,7 +3,7 @@
 Plugin Name: JigoShop - Software Add-On
 Plugin URI: https://github.com/jkudish/JigoShop-Software-Add-on/
 Description: Extends JigoShop to a full-blown software shop, including license activation, license retrieval, activation e-mails and more
-Version: 1.0
+Version: 1.1
 Author: Joachim Kudish
 Author URI: http://jkudish.com
 License: GPL v3
@@ -64,6 +64,7 @@ if (!class_exists('jigoshop_software')) {
 			array('id' => 'remaining_activations', 'label' => 'Remaining Activations:', 'title' => 'Remaining Activations', 'placeholder' => '', 'type' => 'text'),
 			array('id' => 'secret_product_key', 'label' => 'Secret Product Key to use for API:', 'title' => 'Secret Product Key to use  for API', 'placeholder' => 'any random string', 'type' => 'text'),			
 			array('id' => 'version', 'label' => 'Version:', 'title' => 'Version', 'placeholder' => '', 'type' => 'text'),
+			array('id' => 'old_order_id', 'label' => 'Legacy order ID:', 'title' => 'Legacy order ID', 'placeholder' => '', 'type' => 'text'),
 			array('id' => 'is_upgrade', 'label' => 'This is an upgrade if checked', 'title' => 'This is an upgrade if checked', 'placeholder' => '', 'type' => 'checkbox'),
 			array('id' => 'upgrade_name', 'label' => 'Upgraded from:', 'title' => 'License Key', 'placeholder' => '', 'type' => 'text'),
 			array('id' => 'upgrade_price', 'label' => 'Upgrade price ($):', 'title' => 'License Key', 'placeholder' => '', 'type' => 'text'),
@@ -95,6 +96,10 @@ if (!class_exists('jigoshop_software')) {
 			add_action('jigoshop_process_shop_order_meta', array(&$this, 'order_save_data'), 1, 2);
 			add_action('admin_print_styles', array(&$this, 'admin_print_styles'));
 			add_action('admin_menu', array(&$this, 'admin_menu'));
+			add_action( 'wp_ajax_nopriv_jgs_import', array(&$this, 'import_ajax')); 
+			add_action( 'wp_ajax_jgs_import', array(&$this, 'import_ajax'));			
+			add_action( 'wp_ajax_nopriv_jgs_do_import', array(&$this, 'import')); 
+			add_action( 'wp_ajax_jgs_do_import', array(&$this, 'import'));			
 			
 			
 			// frontend stuff
@@ -176,16 +181,6 @@ if (!class_exists('jigoshop_software')) {
 			}
 						
 		}
-
-		/**
- 			* print_styles()
- 			* adds css to the front-end
-			* @since 1.0
-			*/	
-    function print_styles() {
-			wp_register_style('jigoshop_software', plugins_url( 'inc/front-end.css', __FILE__ ));
-			wp_enqueue_style('jigoshop_software');
-    }
 
 /* =======================================
 		meta boxes
@@ -285,6 +280,7 @@ if (!class_exists('jigoshop_software')) {
 					<?php 
 						foreach (self::$order_fields as $field) : 						
 							@$value = ($field['id'] == 'activation_email') ? get_post_meta($post->ID, 'activation_email', true) : $data[$field['id']];
+							@$value = ($field['id'] == 'old_order_id') ? get_post_meta($post->ID, 'old_order_id', true) : $value;
 							switch ($field['type']) :
 								case 'text' :
 									echo '<p class="form-field"><label for="'.$field['id'].'">'.$field['label'].'</label><input type="text" id="'.$field['id'].'" name="'.$field['id'].'" value="'.$value.'" placeholder="'.$field['placeholder'].'"/></p>';
@@ -378,11 +374,12 @@ if (!class_exists('jigoshop_software')) {
 
 		/**
  			* admin_menu()
- 			* registers the stats page
+ 			* registers the stats page & import page
 			* @since 1.0
 			*/		
 		function admin_menu() {
 			add_submenu_page('jigoshop', __('Stats', 'jigoshop'),  __('Stats', 'jigoshop') , 'manage_options', 'jgs_stats', array(&$this, 'software_stats'));
+			add_submenu_page('jigoshop', __('Import', 'jigoshop'),  __('Import', 'jigoshop') , 'manage_options', 'jgs_import', array(&$this, 'import_page'));
 		}
 
 		/**
@@ -703,6 +700,16 @@ if (!class_exists('jigoshop_software')) {
 /* =======================================
 		filter add to cart & other jigoshop internal functions
 ==========================================*/
+
+		/**
+			* print_styles()
+			* adds css to the front-end
+			* @since 1.0
+			*/	
+		function print_styles() {
+			wp_register_style('jigoshop_software', plugins_url( 'inc/front-end.css', __FILE__ ));
+			wp_enqueue_style('jigoshop_software');
+		}
 
 		/**
  			* add_to_cart()
@@ -1189,7 +1196,283 @@ if (!class_exists('jigoshop_software')) {
 			wp_mail($send_to, $subject, $message, $headers);
 			
 		}
+
+/* =======================================
+		import
+==========================================*/
+
+	/**
+		* import_page()
+		* creates a backend page for the importer
+		* @since 1.1
+		*/		
+		function import_page() { ?>
+			<div class="wrap jigoshop">
+				<div class="icon32 icon32-jigoshop-debug" id="icon-jigoshop"><br/></div>
+	    	<h2><?php _e('Import','jigoshop') ?></h2>
+	
+				<div class="metabox-holder" style="margin-top:25px">
+					<div class="postbox-container" style="width:700px;">
+					
+						<div class="postbox">
+							<h3>Enter the path/filename of the import file</h3>
+							<div class="inside">
+								<p><strong>Recommended:</strong> back up the database before proceeding</p>
+								<form id="jgs_import" action="<?php echo admin_url('admin-ajax.php') ?>" method="post">
+									<?php $value = (isset($_POST['import_path']) && $_POST['import_path'] != '') ? esc_attr($_POST['import_path']) : 'wp-content/plugins/jigoshop-software/inc/import.php' ?>
+									<p><?php echo ABSPATH ?><input type="text" style="width: 350px" id="import_path" name="import_path" value="<?php echo $value ?>"></p>
+									<? wp_nonce_field('jgs_import', 'jgs_import'); ?>
+									<input type="hidden" name="action" value="jgs_import">
+									<p><div class="jgs_loader"><input type="submit" class="button-primary" name="submit" value="Begin Import"></div></p>
+									<p id="jgs_import_feedback"></p>
+									<p id="jgs_import_feedback_done"></p>
+								</form>
+								<script>
+								jQuery(document).ready(function($){
+									$('#jgs_import').submit(function(e){
+										e.preventDefault();
+										var load = $('#jgs_import .jgs_loader');
+										load.addClass('loading');
+										var args = {};
+										var inputs = $(this).serializeArray();
+										$.ajaxSetup({timeout: 0}); // make the timeout be 0
+										$.each(inputs,function(i,input) { args[input['name']]=input['value']; });
+										$.post("<?php echo admin_url('admin-ajax.php') ?>", args, function(response){
+											if (response.success) { 
+												$('#jgs_import_feedback').addClass('doing_import').html('Importing '+response.total_count+' records. Please be patient.').fadeIn();
+												args['action']='jgs_do_import';
+												args['import']=response.import;
+												$.post("<?php echo admin_url('admin-ajax.php') ?>", args, function(resp){
+													if (resp.success) {
+														load.removeClass('loading');														
+														$('#jgs_import_feedback').fadeOut('normal', function(){
+															$(this).html('All Records Imported!').fadeIn();
+															$('#jgs_import_feedback_done').html(resp.feedback).fadeIn();
+														});
+													} else {
+														load.removeClass('loading');
+														$('#jgs_import_feedback').fadeOut('normal', function(){
+															$(this).removeClass('doing_import').html('An error has occurred and the import did not complete, please refresh the page and try again.').fadeIn();
+														});	
+													}													
+												});	
+											} else {
+												if (response.success === false) {
+													load.removeClass('loading');
+													$('#jgs_import_feedback').html(response.message).fadeIn();
+												} else {
+													load.removeClass('loading');													
+													$('#jgs_import_feedback').html('An error has occurred, please refresh the page and try again.').fadeIn();
+												}
+											}	
+										});
+										return false; // prevent submit (redundant)
+									});
+								});
+								</script>								
+							</div>
+						</div>						
+					</div>	
+				</div>	
+				
+			</div>
+		<?php
+		}
+
+		/**
+			* import_ajax()
+			* ajax import step 1
+			* @since 1.1
+			*/		
+		function import_ajax() {
+			
+			$success = false;
+			$messages = null;
+			$total_count = 0;
+			$import = null;
+			
+			
+			$import_path = esc_attr($_POST['import_path']);
+			$file_path = ABSPATH.$import_path;
+			if (is_file($file_path)) {
+				include_once($file_path);
+				if (!is_array($import)) $messages['missing_array'] = 'This file doesn\'t contain an $import array, please try again.';
+			} else {
+				$messages['missing_file'] = 'This file doesn\'t exist or doesn\'t have read permissions, please try again.';
+			}
+			
+			// if there is no message, then validation passed
+			if(!$messages) {
+				
+				$total_count = count($import);
+				$success = true;
+				
+				header( "Content-Type: application/json" );
+				$response = json_encode( array( 
+					'success' => $success,
+					'total_count' => $total_count,
+					'import' => $import,
+				));
+				echo $response;
+				exit;
+
+			} else {
+				// building a message string from all of the $messages above
+				$message = '';
+				foreach ($messages as $k => $m) {
+					$message .= $m.'<br>';
+				}
+				$success = false;
+				$result = null;
+			}
+
+			header( "Content-Type: application/json" );
+			$response = json_encode( array( 
+				'success' => $success,
+				'message' => $message,
+			));
+			echo $response;			
+			exit;			
+			
+
+		}		
+	
+
+		/**
+			* import()
+			* import routine
+			* @since 1.1
+			*/				
+		function import($import = null) {
+			
+			if (!$import) {
+				$import = $_POST['import'];
+			}	
+			
+			$failures = array();
+			$duplicate = array();
+			$succesful = array();
+			
+			foreach ($import as $imp) {
+
+				// gather the fields
+				$date = strtotime($imp['purchase_time']);
+				$email = (is_email($imp['email'])) ? strtolower($imp['email']) : '';
+				$price = $imp['amount'];
+				$product_id = $imp['product_id'];
+				$license_key = $imp['license_key'];
+				$payment_type = $imp['payment_type'];
+				$old_order_id = $imp['order_id'];
+
+				// double check this order doesn't exist already
+				$_duplicate = get_posts( array('post_type' => 'shop_order', 'meta_query' => array( array( 'key' => 'old_order_id', 'value' => $old_order_id ) ) ));
+				$_duplicate = @$_duplicate[0];				
+				if (is_object($_duplicate)) {
+					$duplicate[] = $old_order_id;
+				} else {
+					// fetch the product & associated meta information
+					$_item_id = get_posts( array('post_type' => 'product', 'meta_query' => array( array( 'key' => 'soft_product_id', 'value' => $product_id ) ) ));
+					$item_id = @$_item_id[0];
+					if (is_object($item_id)) {
+						$item_id = $item_id->ID;
+						$product = get_post_meta($item_id, 'product_data', true);
+						$order_items = array();
+						$order_items[] = array(
+							'id' 		=> $item_id,
+							'name' 		=> get_the_title($item_id),
+							'qty' 		=> (int) 1,
+							'cost' 		=> $price,
+							'taxrate' 	=> 0,
+						);
+					} else {
+						$order_items = array();
+						$order_items[] = array(
+							'id' 		=> 'n/a',
+							'name' 		=> $product_id,
+							'qty' 		=> (int) 1,
+							'cost' 		=> $price,
+							'taxrate' 	=> 0,
+						);
+						$product = null;
+					}
+
+					// payment type
+					if ($payment_type == 'PP - PayPal' || $payment_type == 'PP- PayPal') $payment_type = 'paypal';
+					if ($payment_type == 'CH - Credit Card' || $payment_type == 'CH- Credit Card') $payment_type = 'credit card';
+
+					// Order meta data [from jigoshop]
+					$order['billing_email'] = $email;
+					$order['payment_method'] = $payment_type;
+					$order['order_subtotal'] = $price;
+					$order['order_shipping'] = 0;
+					$order['order_discount'] = 0;
+					$order['order_tax'] = 0;
+					$order['order_shipping_tax']	= 0;
+					$order['order_total'] = $order['order_subtotal'];
+
+					$order['version'] = "n/a";
+					$order['license_key'] = $license_key;
+					$order['activations_possible'] = 3;
+					$order['remaining_activations'] = 3;
+					$order['secret_product_key'] = @$product['secret_product_key'];
+					$order['paypal_name'] = @$product['paypal_name'];
+					$order['productid'] = $product_id;
+
+					$order_data = array(
+						'post_type' => 'shop_order',
+						'post_title' => 'Order &ndash; '.date('F j, Y @ h:i A', $date),
+						'post_status' => 'publish',
+						'post_author' => 1,
+						'post_date' => date('Y-m-d H:i:s', $date),
+					);
+
+					$order_id = wp_insert_post( $order_data );
+					
+					if (is_wp_error($order_id)) {
+						$failures[] = $old_order_id;
+					} else {					
+						$_order = &new jigoshop_order($order_id);
+
+						// Update post meta
+						update_post_meta( $order_id, 'order_data', $order );
+						update_post_meta( $order_id, 'old_order_id', $old_order_id );
+						update_post_meta( $order_id, 'activation_email', $email );
+						update_post_meta( $order_id, 'activations', array() ); // store an empty array for use later
+						update_post_meta( $order_id, 'order_key', uniqid('order_') );
+						update_post_meta( $order_id, 'order_items', $order_items );
+						wp_set_object_terms( $order_id, 'completed', 'shop_order_status' );
+						
+						$succesful[] = $order_id;
+						
+					}	
+				}
+			}
+			
+			foreach ($failures as $fail) {
+				$feedback[] = 'The following record failed to import: ORDER ID = '.$fail;
+			}
+			
+			foreach ($duplicate as $dupe) {
+				$feedback[] = 'The following record was a duplicate: ORDER ID = '.$dupe;
+			}
+
+			$feedback[] = count($succesful).' records successfully imported.';
+			
+			$feedback_string = '<ul>';
+			foreach ($feedback as $fdb) {
+				$feedback_string .= '<li>'.$fdb.'</li>';
+			}
+			$feedback_string .= '<ul>';
 		
+			header( "Content-Type: application/json" );
+			$response = json_encode( array( 
+				'success' => true,
+				'feedback' => $feedback_string,
+			));
+			echo $response;			
+			exit;
+		
+		}
 		
 	} // end class
 	
