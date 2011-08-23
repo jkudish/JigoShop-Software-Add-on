@@ -41,16 +41,16 @@ if (!class_exists('jigoshop_software')) {
 		// define the product metadata fields used by this plugin
 		static $product_fields = array(
 			array('id' => 'is_software', 'label' => 'This product is Software', 'title' => 'This product is Software', 'placeholder' => '', 'type' => 'checkbox'),
+			array('id' => 'soft_product_id', 'label' => 'Product ID to use for API:', 'title' => 'Product ID to use for API', 'placeholder' => 'ex: SPARKBOOTH', 'type' => 'text'),
+			array('id' => 'secret_product_key', 'label' => 'Secret Product Key to use for API:', 'title' => 'Secret Product Key to use  for API', 'placeholder' => 'any random string', 'type' => 'text'),
+			array('id' => 'version', 'label' => 'Version Number:', 'title' => 'Version Number', 'placeholder' => 'ex: 1.0', 'type' => 'text'),
+			array('id' => 'activations', 'label' => 'Amount of activations possible:', 'title' => 'Amount of activations possible', 'placeholder' => 'ex: 5', 'type' => 'text'),
+			array('id' => 'trial', 'label' => 'Trial Period (amount of days or hours):', 'title' => 'Trial Period (amount of days or hours)', 'placeholder' => 'ex: 15', 'type' => 'text'),
+			array('id' => 'trial_unit', 'label' => 'Trial Units:', 'title' => 'Trial Units', 'type' => 'select', 'values' => array('days' => 'Days', 'hours' => 'Hours')),
 			array('id' => 'upgradable_product', 'label' => 'Upgradable Product Name:', 'title' => 'Upgradable Product Name', 'placeholder' => '', 'type' => 'text'),
 			array('id' => 'up_license_keys', 'label' => 'Upgradable Product Keys:', 'title' => 'Upgradable Product Keys', 'placeholder' => 'Comma separated list', 'type' => 'textarea'),
 			array('id' => 'used_license_keys', 'label' => 'Used Upgrade Keys:', 'title' => 'Used Upgrade Keys', 'placeholder' => 'Comma separated list', 'type' => 'textarea'),
 			array('id' => 'up_price', 'label' => 'Upgrade Price ($):', 'title' => 'Upgrade Price ($)', 'placeholder' => 'ex: 1.00', 'type' => 'text'),
-			array('id' => 'version', 'label' => 'Version Number:', 'title' => 'Version Number', 'placeholder' => 'ex: 1.0', 'type' => 'text'),
-			array('id' => 'trial', 'label' => 'Trial Period (amount of days or hours):', 'title' => 'Trial Period (amount of days or hours)', 'placeholder' => 'ex: 15', 'type' => 'text'),
-			array('id' => 'trial_unit', 'label' => 'Trial Units:', 'title' => 'Trial Units', 'type' => 'select', 'values' => array('days' => 'Days', 'hours' => 'Hours')),
-			array('id' => 'activations', 'label' => 'Amount of activations possible:', 'title' => 'Amount of activations possible', 'placeholder' => 'ex: 5', 'type' => 'text'),
-			array('id' => 'soft_product_id', 'label' => 'Product ID to use for API:', 'title' => 'Product ID to use for API', 'placeholder' => 'ex: SPARKBOOTH', 'type' => 'text'),
-			array('id' => 'secret_product_key', 'label' => 'Secret Product Key to use for API:', 'title' => 'Secret Product Key to use  for API', 'placeholder' => 'any random string', 'type' => 'text'),
 			array('id' => 'paypal_name', 'label' => 'Paypal Name to show on transaction receipts:', 'title' => 'Paypal Name to show on transaction receiptsAPI', 'placeholder' => 'ex: Google Inc.', 'type' => 'text'),
 		);
 
@@ -403,6 +403,7 @@ if (!class_exists('jigoshop_software')) {
 			$str_from_date = date('M d Y', $options['from_date']);
 			$str_to_date = date('M d Y', $options['to_date']);
 			$date_str = 'from '.$str_from_date.' to '.$str_to_date;
+
 			?>
 			<div class="wrap jigoshop">
 				<div class="icon32 jigoshop_icon" id="icon-jigoshop"><br/></div>
