@@ -355,6 +355,7 @@ if (!class_exists('jigoshop_software')) {
 			*/		
 		function order_save_data() {
 			global $post;
+			$data = get_post_meta($post->ID, 'order_data', true);
 			foreach (self::$order_fields as $field) {
 				if ($field['id'] == 'activation_email') update_post_meta($post->ID, 'activation_email', $_POST[$field['id']]);
 				else $data[$field['id']] = esc_attr( $_POST[$field['id']] );
