@@ -4,8 +4,6 @@ This plugin extends the WordPress [JigoShop](http://jigoshop.com/) e-commerce pl
 
 The code is well documented (inline) with more documentation to come. The project is currently private, with plans to make it public in the near future
 
----------------------------------------
-
 Changelog
 ===========
 
