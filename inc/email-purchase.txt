@@ -23,6 +23,6 @@ Activations: {max_activations}
 
 This charge will appear as {paypal_name} on your statement.
 
-If you have any questions, please visit: http://sparkbooth.com/contact
+If you have any questions, please visit: {site_url}/contact
 
 

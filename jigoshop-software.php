@@ -3,16 +3,18 @@
 Plugin Name: JigoShop - Software Add-On
 Plugin URI: https://github.com/jkudish/JigoShop-Software-Add-on/
 Description: Extends JigoShop to a full-blown software shop, including license activation, license retrieval, activation e-mails and more
-Version: 1.1
+Version: 1.2
 Author: Joachim Kudish
 Author URI: http://jkudish.com
 License: GPL v3
 */
 
 /**
-	* @version 1.0
+	* @version 1.2
 	* @author Joachim Kudish <info@jkudish.com>
 	* @link http://jkudish.com
+	* @uses JigoShop @link http://jigoshop.com
+	* @uses automatic-theme-plugin-update @link https://github.com/jeremyclark13/automatic-theme-plugin-update
 	* @license http://www.gnu.org/copyleft/gpl.html GNU Public License
 	* @copyright Copyright (c) 2011, Joachim Kudish
 	*
@@ -41,7 +43,7 @@ if (!class_exists('jigoshop_software')) {
 		// define the product metadata fields used by this plugin
 		static $product_fields = array(
 			array('id' => 'is_software', 'label' => 'This product is Software', 'title' => 'This product is Software', 'placeholder' => '', 'type' => 'checkbox'),
-			array('id' => 'soft_product_id', 'label' => 'Product ID to use for API:', 'title' => 'Product ID to use for API', 'placeholder' => 'ex: SPARKBOOTH', 'type' => 'text'),
+			array('id' => 'soft_product_id', 'label' => 'Product ID to use for API:', 'title' => 'Product ID to use for API', 'placeholder' => 'ex: PRODUCT1', 'type' => 'text'),
 			array('id' => 'secret_product_key', 'label' => 'Secret Product Key to use for API:', 'title' => 'Secret Product Key to use  for API', 'placeholder' => 'any random string', 'type' => 'text'),
 			array('id' => 'version', 'label' => 'Version Number:', 'title' => 'Version Number', 'placeholder' => 'ex: 1.0', 'type' => 'text'),
 			array('id' => 'activations', 'label' => 'Amount of activations possible:', 'title' => 'Amount of activations possible', 'placeholder' => 'ex: 5', 'type' => 'text'),
@@ -51,18 +53,18 @@ if (!class_exists('jigoshop_software')) {
 			array('id' => 'up_license_keys', 'label' => 'Upgradable Product Keys:', 'title' => 'Upgradable Product Keys', 'placeholder' => 'Comma separated list', 'type' => 'textarea'),
 			array('id' => 'used_license_keys', 'label' => 'Used Upgrade Keys:', 'title' => 'Used Upgrade Keys', 'placeholder' => 'Comma separated list', 'type' => 'textarea'),
 			array('id' => 'up_price', 'label' => 'Upgrade Price ($):', 'title' => 'Upgrade Price ($)', 'placeholder' => 'ex: 1.00', 'type' => 'text'),
-			array('id' => 'paypal_name', 'label' => 'Paypal Name to show on transaction receipts:', 'title' => 'Paypal Name to show on transaction receiptsAPI', 'placeholder' => 'ex: Google Inc.', 'type' => 'text'),
+			array('id' => 'paypal_name', 'label' => 'Paypal Name to show on transaction receipts:', 'title' => 'Paypal Name to show on transaction receipts', 'placeholder' => 'ex: Google Inc.', 'type' => 'text'),
 		);
 
 		// define the order metadata fields used by this plugin		
 		static $order_fields = array(
 			array('id' => 'activation_email', 'label' => 'Activation Email:', 'title' => 'Activation Email', 'placeholder' => '', 'type' => 'text'),			
-			array('id' => 'paypal_name', 'label' => 'Paypal Name to show on transaction receipts:', 'title' => 'Paypal Name to show on transaction receiptsAPI', 'placeholder' => 'ex: Google Inc.', 'type' => 'text'),			
+			array('id' => 'paypal_name', 'label' => 'Paypal Name to show on transaction receipts:', 'title' => 'Paypal Name to show on transaction receipts', 'placeholder' => 'ex: Google Inc.', 'type' => 'text'),			
 			array('id' => 'license_key', 'label' => 'License Key:', 'title' => 'License Key', 'placeholder' => '', 'type' => 'text'),
 			array('id' => 'productid', 'label' => 'Product ID:', 'title' => 'Product ID', 'placeholder' => '', 'type' => 'text'),
 			array('id' => 'activations_possible', 'label' => 'Max Activations Allowed:', 'title' => 'Max Activations Allowed', 'placeholder' => '', 'type' => 'text'),			
 			array('id' => 'remaining_activations', 'label' => 'Remaining Activations:', 'title' => 'Remaining Activations', 'placeholder' => '', 'type' => 'text'),
-			array('id' => 'secret_product_key', 'label' => 'Secret Product Key to use for API:', 'title' => 'Secret Product Key to use  for API', 'placeholder' => 'any random string', 'type' => 'text'),			
+			array('id' => 'secret_product_key', 'label' => 'Secret Product Key to use for API:', 'title' => 'Secret Product Key to use for API', 'placeholder' => 'any random string', 'type' => 'text'),			
 			array('id' => 'version', 'label' => 'Version:', 'title' => 'Version', 'placeholder' => '', 'type' => 'text'),
 			array('id' => 'old_order_id', 'label' => 'Legacy order ID:', 'title' => 'Legacy order ID', 'placeholder' => '', 'type' => 'text'),
 			array('id' => 'is_upgrade', 'label' => 'This is an upgrade if checked', 'title' => 'This is an upgrade if checked', 'placeholder' => '', 'type' => 'checkbox'),
@@ -100,6 +102,8 @@ if (!class_exists('jigoshop_software')) {
 			add_action( 'wp_ajax_jgs_import', array(&$this, 'import_ajax'));			
 			add_action( 'wp_ajax_nopriv_jgs_do_import', array(&$this, 'import')); 
 			add_action( 'wp_ajax_jgs_do_import', array(&$this, 'import'));			
+			
+			add_action('admin_head', array(&$this, 'filter_order_search'));
 			
 			
 			// frontend stuff
@@ -372,6 +376,38 @@ if (!class_exists('jigoshop_software')) {
 			wp_register_style('jigoshop_software_backend', plugins_url( 'inc/back-end.css', __FILE__ ));
 			wp_enqueue_style('jigoshop_software_backend');
     }
+
+
+		/**
+ 			* filter_order_search()
+ 			* filters search results on the orders page to allow search by email
+			* will only do it when it's a valid email, otherwise will revert back to regular old search
+			* @since 1.2
+			*/
+		function filter_order_search() {
+			global $pagenow, $wp_query;
+			if ($pagenow == 'edit.php' && $_GET['post_type'] == 'shop_order' && $wp_query->is_search === true && isset($_GET['s']) && is_email($_GET['s'])) {
+				query_posts(array(
+					'post_type' => 'shop_order',
+					'meta_query' => array(
+						array(
+							'key' => 'activation_email',
+							'value' => $_GET['s'],
+						)
+					)					
+				));
+				add_filter('get_search_query', array(&$this, 'get_search_query_when_order'));
+			}
+		}
+
+		/**
+ 			* get_search_query_when_order()
+ 			* filters the "search results" subtitle on the orders page to show the e-mail address
+			* @since 1.2
+			*/
+		function get_search_query_when_order() {
+			return $_GET['s'];
+		}
 
 		/**
  			* admin_menu()
@@ -1193,6 +1229,7 @@ if (!class_exists('jigoshop_software')) {
 
 			endswitch;	
 			
+			$message = str_replace('{site_url}', site_url(), $message);
 			$headers = 'From: '.get_bloginfo('name').' <'.get_bloginfo('admin_email').'>' . "\r\n";
 			wp_mail($send_to, $subject, $message, $headers);
 			

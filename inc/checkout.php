@@ -14,23 +14,33 @@ if (!empty($_GET['empty']) && $_GET['empty'] == true) {
 if ( sizeof(jigoshop_cart::$cart_contents) > 0 ) : 
 	foreach (jigoshop_cart::$cart_contents as $item_id => $values) :
 		
+		// data
 		$qty = 1; // force it
 		$data = $values['data']->data;
+		$up_name = $data['upgradable_product'];
+		$version = $data['version'];		
+				
+		// prices
 		$sale_price = $data['sale_price'];
 		$regular_price = $data['regular_price'];
 		$price = ($sale_price && $sale_price != '') ? $sale_price : $regular_price;
-		$up_name = $data['upgradable_product'];
 		$up_price = $data['up_price'];
-		$version = $data['version'];		
+		
+		// prices format in US dollars
+		setlocale(LC_MONETARY, 'en_US');
+		@$echo_price = money_format('%(#10n', $price);
+		@$echo_up_price = money_format('%(#10n', $up_price);
+		
+
 	?>				
 			<div class="jgs_page" id="jgs_checkout">
 				<form id="jgs_checkout_form" action="<?php echo admin_url('admin-ajax.php') ?>" method="post">
 					<div class="form-row">
 						<h2>Purchasing: <?php echo get_the_title($item_id) ?></h2>		
 						<p>
-							<strong>Price</strong>: $<?php echo $price ?><br>
+							<strong>Price</strong>: <?php echo $echo_price ?><br>
 							<strong>Quantity</strong>: <?php echo $qty ?><br>
-							<strong>Total</strong>: $<?php echo $qty*$price ?>
+							<strong>Total</strong>: <?php echo $echo_price ?>
 						</p>	
 						<p>Please enter your email below, then click <em>purchase now</em> below to complete the purchase with Paypal.</p>					
 						<p id="jgs_validation"<?php if (isset($_GET['no-js'])) echo ' class="not-hidden"' ?>><?php if (isset($_GET['no-js'])) echo 'You need javascript in order to be able to checkout. Please enable javascript and try again.'?></p>
@@ -43,7 +53,7 @@ if ( sizeof(jigoshop_cart::$cart_contents) > 0 ) :
 						<div class="form-row">
 							<h2>Upgrade from <?php echo $up_name ?>:</h2>
 							<p>If you have a valid <?php echo $up_name ?> license key, you can upgrade to the current version (<?php echo $version ?>). Please enter your old license key below and click upgrade now. The order information below will update once you complete this step.</p>
-							<p><strong>Upgrade Price:</strong> $<?php echo $up_price ?></p>
+							<p><strong>Upgrade Price:</strong> <?php echo $echo_up_price ?></p>
 						</div>
 						<div class="form-row">						
 							<label for="up_key"><?php echo $up_name ?> Key:</label> <input type="text" id="up_key" name="up_key"><br><br>

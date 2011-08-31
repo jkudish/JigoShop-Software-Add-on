@@ -2,14 +2,23 @@ JigoShop Software Add-On
 
 This plugin extends the WordPress [JigoShop](http://jigoshop.com/) e-commerce plugin by offering the disabling and enabling certain functionality which transform the shop into a software selling hub, include a full API for license generation, license activation, license retrieval, activation e-mails, stats and more. 
 
-The code is well documented (inline) with more documentation to come. The project is currently private, with plans to make it public in the near future
+The code is well documented (inline) with more documentation to come. The project started off as a private client request, but is now public for anyone to collaborate on. That being said, the client continues to use this plugin and its updates, and thus there may be certain constraints before pushing an update (otherwise a branch may be required). We are open to any suggestions :)
 
 Changelog
 ===========
+
+### 1.3 (upcoming)
+* One-click plugin updates in the backend (a la typical WordPress), still only hosted on GitHub
+
+### 1.2 (current version)
+* Initial Public Release
+* Proper decimal formatting for prices on purchase pages (front-end)
+* Allow searching for orders via the activation e-mail in the admin
+* Removed direct references to client site/project in favour of more generic examples and strings
 
 ### 1.1
 * Added an import page in the admin which allows to import orders 
 * See [this page](https://github.com/jkudish/JigoShop-Software-Add-on/wiki/Import-Instructions) for details on the import routine
 
 ### 1.0
-* Initial Release
+* Initial Private Release

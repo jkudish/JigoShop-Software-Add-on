@@ -4,4 +4,4 @@ Here are the purchases you requested. If you have no idea what this email is abo
 
 =====================================================================
 
-If you have any questions, please visit: http://sparkbooth.com/contact
+If you have any questions, please visit: {site_url}/contact
