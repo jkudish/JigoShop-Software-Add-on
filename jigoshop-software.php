@@ -1520,6 +1520,7 @@ if (!class_exists('jigoshop_software')) {
 		$jigoshopsoftware = new jigoshop_software();
 		ob_start(array(&$jigoshopsoftware, 'jigoshop_software_filter_price_paypal'));
 		include_once('inc/shortcodes.php');
+		include_once('inc/_updater.php');
 	}
 
 } // end class exists
