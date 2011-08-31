@@ -80,8 +80,7 @@ if (!class_exists('jigoshop_software')) {
 		*/	
 		function __construct() {
 			
-			// define constants
-			define('JIGOSHOP_SOFTWARE_PATH', dirname(__FILE__));
+			$this->define_constants();
 					
 			// set the right time zone from WP options
 			@date_default_timezone_set(get_option('timezone_string'));
@@ -141,6 +140,17 @@ if (!class_exists('jigoshop_software')) {
 			add_filter('add_to_cart_redirect', array(&$this, 'add_to_cart_redirect'));
 			add_filter('page_template', array(&$this, 'locate_api_template'), 10, 1);
 			
+		}
+		
+		function define_constants() {
+			if (!defined('JIGOSHOP_SOFTWARE_PATH')) define('JIGOSHOP_SOFTWARE_PATH', dirname(__FILE__));
+			if (!defined('JIGOSHOP_SOFTWARE_SLUG')) define('JIGOSHOP_SOFTWARE_SLUG', plugin_basename(__FILE__));
+			if (!defined('JIGOSHOP_SOFTWARE_GITHUB_URL')) define('JIGOSHOP_SOFTWARE_GITHUB_URL', 'https://github.com/jkudish/JigoShop-Software-Add-on');
+			if (!defined('JIGOSHOP_SOFTWARE_GITHUB_ZIP_URL')) define('JIGOSHOP_SOFTWARE_GITHUB_ZIP_URL', 'https://github.com/jkudish/JigoShop-Software-Add-on/zipball/master');
+			if (!defined('JIGOSHOP_SOFTWARE_GITHUB_API_URL')) define('JIGOSHOP_SOFTWARE_GITHUB_API_URL', 'https://api.github.com/repos/jkudish/JigoShop-Software-Add-on');
+			if (!defined('JIGOSHOP_SOFTWARE_GITHUB_RAW_URL')) define('JIGOSHOP_SOFTWARE_GITHUB_RAW_URL', 'https://raw.github.com/jkudish/JigoShop-Software-Add-on/master');
+			if (!defined('JIGOSHOP_SOFTWARE_REQUIRES_WP')) define('JIGOSHOP_SOFTWARE_REQUIRES_WP', '3.0');
+			if (!defined('JIGOSHOP_SOFTWARE_TESTED_WP')) define('JIGOSHOP_SOFTWARE_TESTED_WP', '3.3');
 		}
 		
 		/**
@@ -1520,7 +1530,6 @@ if (!class_exists('jigoshop_software')) {
 		$jigoshopsoftware = new jigoshop_software();
 		ob_start(array(&$jigoshopsoftware, 'jigoshop_software_filter_price_paypal'));
 		include_once('inc/shortcodes.php');
-		include_once('inc/_updater.php');
 	}
 
 } // end class exists
@@ -1530,3 +1539,5 @@ if (!class_exists('jigoshop_software')) {
 	* @since 1.0
 	*/
 register_activation_hook(__FILE__, array('jigoshop_software', 'activation'));
+include_once('inc/_updater.php');
+new jigoshop_software_updater();
