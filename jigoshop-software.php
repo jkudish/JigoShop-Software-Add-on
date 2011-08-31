@@ -3,14 +3,14 @@
 Plugin Name: JigoShop - Software Add-On
 Plugin URI: https://github.com/jkudish/JigoShop-Software-Add-on/
 Description: Extends JigoShop to a full-blown software shop, including license activation, license retrieval, activation e-mails and more
-Version: 1.1
+Version: 1.3
 Author: Joachim Kudish
 Author URI: http://jkudish.com
 License: GPL v3
 */
 
 /**
-	* @version 1.2
+	* @version 1.3
 	* @author Joachim Kudish <info@jkudish.com>
 	* @link http://jkudish.com
 	* @uses JigoShop @link http://jigoshop.com
@@ -150,6 +150,7 @@ if (!class_exists('jigoshop_software')) {
 		function define_constants() {
 			if (!defined('JIGOSHOP_SOFTWARE_PATH')) define('JIGOSHOP_SOFTWARE_PATH', dirname(__FILE__));
 			if (!defined('JIGOSHOP_SOFTWARE_SLUG')) define('JIGOSHOP_SOFTWARE_SLUG', plugin_basename(__FILE__));
+			if (!defined('JIGOSHOP_SOFTWARE_PROPER_NAME')) define('JIGOSHOP_SOFTWARE_PROPER_NAME', 'jigoshop-software');
 			if (!defined('JIGOSHOP_SOFTWARE_GITHUB_URL')) define('JIGOSHOP_SOFTWARE_GITHUB_URL', 'https://github.com/jkudish/JigoShop-Software-Add-on');
 			if (!defined('JIGOSHOP_SOFTWARE_GITHUB_ZIP_URL')) define('JIGOSHOP_SOFTWARE_GITHUB_ZIP_URL', 'https://github.com/jkudish/JigoShop-Software-Add-on/zipball/master');
 			if (!defined('JIGOSHOP_SOFTWARE_GITHUB_API_URL')) define('JIGOSHOP_SOFTWARE_GITHUB_API_URL', 'https://api.github.com/repos/jkudish/JigoShop-Software-Add-on');
@@ -1548,6 +1549,7 @@ include_once('inc/_updater.php');
 jigoshop_software::define_constants();
 $config = array(
 	'slug' => JIGOSHOP_SOFTWARE_SLUG,
+	'proper_folder_name' => JIGOSHOP_SOFTWARE_PROPER_NAME,
 	'api_url' => JIGOSHOP_SOFTWARE_GITHUB_API_URL,
 	'raw_url' => JIGOSHOP_SOFTWARE_GITHUB_RAW_URL,
 	'github_url' => JIGOSHOP_SOFTWARE_GITHUB_URL,

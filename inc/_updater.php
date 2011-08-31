@@ -10,6 +10,7 @@ class wp_github_updater {
 		
 		$defaults = array(
 			'slug' => plugin_basename(__FILE__),
+			'proper_folder_name' => plugin_basename(__FILE__),
 			'api_url' => 'https://api.github.com/repos/jkudish/WordPress-GitHub-Plugin-Updater',
 			'raw_url' => 'https://raw.github.com/jkudish/WordPress-GitHub-Plugin-Updater/master',
 			'github_url' => 'https://github.com/jkudish/WordPress-GitHub-Plugin-Updater',
@@ -39,7 +40,8 @@ class wp_github_updater {
 		// Hook into the plugin details screen
 		add_filter('plugins_api', array(&$this, 'get_plugin_info'), 10, 3);
 		
-		add_filter('sanitize_file_name', array(&$this, 'filter_filename'));
+
+		add_filter('upgrader_post_install', array(&$this, 'upgrader_post_install'), 10, 3);
 		
 	}
 
@@ -139,10 +141,11 @@ class wp_github_updater {
 		return $response;
 	}
 	
-	function filter_filename($filename) {
-		die(var_dump($filename));
+	function upgrader_post_install($true, $hook_extra, $result) {
+		global $wp_filesystem;
+		$wp_filesystem->move($result['destination'], WP_PLUGIN_DIR.'/'.$this->config['proper_folder_name']);
 	}
-		
+			
 }
 
 endif; // endif class exists

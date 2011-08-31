@@ -7,10 +7,10 @@ The code is well documented (inline) with more documentation to come. The projec
 Changelog
 ===========
 
-### 1.3 (upcoming)
+### 1.3 (current version)
 * One-click plugin updates in the backend (a la typical WordPress), still only hosted on GitHub
 
-### 1.2 (current version)
+### 1.2
 * Initial Public Release
 * Proper decimal formatting for prices on purchase pages (front-end)
 * Allow searching for orders via the activation e-mail in the admin
@@ -28,4 +28,4 @@ Current Version
 
 The line below is used for the updater API, please leave it untouched unless bumping the version up :)
 
-~Current Version:1.2~
+~Current Version:1.3~
