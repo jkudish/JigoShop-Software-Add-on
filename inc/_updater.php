@@ -143,7 +143,16 @@ class wp_github_updater {
 	
 	function upgrader_post_install($true, $hook_extra, $result) {
 		global $wp_filesystem;
-		$wp_filesystem->move($result['destination'], WP_PLUGIN_DIR.'/'.$this->config['proper_folder_name']);
+		$proper_destination = WP_PLUGIN_DIR.'/'.$this->config['proper_folder_name'];
+		$wp_filesystem->move($result['destination'], $proper_destination);
+		$result['destination'] = $proper_destination;
+		$activate = activate_plugin(WP_PLUGIN_DIR.'/'.$this->config['slug']);
+		if (is_wp_error($activate)) {
+			echo 'The plugin has been updated but could not be re-activated, please re-activate it manually.';
+		} else {
+			echo 'Plugin reactivated successfully';
+		}	
+		return $result;
 	}
 			
 }
