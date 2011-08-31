@@ -17,9 +17,9 @@ add_filter('pre_set_site_transient_update_plugins', 'check_for_plugin_update');
 function check_for_plugin_update($checked_data) {
 	
 	// Start checking for an update
-	$raw_response = wp_remote_get('https://github.com/jkudish/JigoShop-Software-Add-on');
+	$raw_response = wp_remote_get('https://raw.github.com/jkudish/JigoShop-Software-Add-on/master/README.md');
 	$__version = explode('~Current Version:', $raw_response['body']);
-	$_version = explode('~', $_version[1]);
+	$_version = explode('~', $__version[1]);
 	die(var_dump($_version[0]));
 	
 	if (!is_wp_error($raw_response) && ($raw_response['response']['code'] == 200))
