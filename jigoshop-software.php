@@ -3,7 +3,7 @@
 Plugin Name: JigoShop - Software Add-On
 Plugin URI: https://github.com/jkudish/JigoShop-Software-Add-on/
 Description: Extends JigoShop to a full-blown software shop, including license activation, license retrieval, activation e-mails and more
-Version: 1.2
+Version: 1.1
 Author: Joachim Kudish
 Author URI: http://jkudish.com
 License: GPL v3
@@ -142,6 +142,11 @@ if (!class_exists('jigoshop_software')) {
 			
 		}
 		
+		/**
+ 			* define_constants()
+ 			* defines the constants we need for the plugin
+			* @since 1.3
+			*/		
 		function define_constants() {
 			if (!defined('JIGOSHOP_SOFTWARE_PATH')) define('JIGOSHOP_SOFTWARE_PATH', dirname(__FILE__));
 			if (!defined('JIGOSHOP_SOFTWARE_SLUG')) define('JIGOSHOP_SOFTWARE_SLUG', plugin_basename(__FILE__));
@@ -1540,4 +1545,14 @@ if (!class_exists('jigoshop_software')) {
 	*/
 register_activation_hook(__FILE__, array('jigoshop_software', 'activation'));
 include_once('inc/_updater.php');
-new jigoshop_software_updater();
+jigoshop_software::define_constants();
+$config = array(
+	'slug' => JIGOSHOP_SOFTWARE_SLUG,
+	'api_url' => JIGOSHOP_SOFTWARE_GITHUB_API_URL,
+	'raw_url' => JIGOSHOP_SOFTWARE_GITHUB_RAW_URL,
+	'github_url' => JIGOSHOP_SOFTWARE_GITHUB_URL,
+	'zip_url' => JIGOSHOP_SOFTWARE_GITHUB_ZIP_URL,
+	'requires' => JIGOSHOP_SOFTWARE_REQUIRES_WP,
+	'tested' => JIGOSHOP_SOFTWARE_TESTED_WP,
+);
+new wp_github_updater($config);
