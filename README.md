@@ -7,7 +7,10 @@ The code is well documented (inline) with more documentation to come. The projec
 Changelog
 ===========
 
-### 1.3 (current version)
+### 1.4
+* disable email now button after click, fixes issue #15
+
+### 1.3
 * One-click plugin updates in the backend (a la typical WordPress), still only hosted on GitHub
 
 ### 1.2
@@ -28,4 +31,4 @@ Current Version
 
 The line below is used for the updater API, please leave it untouched unless bumping the version up :)
 
-~Current Version:1.3~
+~Current Version:1.4~

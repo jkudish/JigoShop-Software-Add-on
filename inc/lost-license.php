@@ -29,27 +29,29 @@
 	jQuery(document).ready(function($){
 		$('#jgs_lost_license_form').submit(function(e){
 			e.preventDefault();
-			$('#jgs_validation').fadeIn();
-			$('#jgs_validation').hide();
 			var load = $('#jgs_lost_license .jgs_loader');
-			load.addClass('loading');
-			var args = {};
-			var inputs = $(this).serializeArray();
-			$.each(inputs,function(i,input) { args[input['name']]=input['value']; });
-			$.post("<?php echo admin_url('admin-ajax.php') ?>", args, function(response){
-				load.removeClass('loading');
-				if (response.success) { 
-					$('.done').slideUp('slow', function(){
-						$('#jgs_validation').html(response.message).addClass('success').slideDown('slow');
-					});
-				} else {
-					if (response.success === false) {
-						$('#jgs_validation').html(response.message).fadeIn();
+			if (!load.hasClass('loading')) {
+				$('#jgs_validation').fadeIn();
+				$('#jgs_validation').hide();
+				load.addClass('loading');
+				var args = {};
+				var inputs = $(this).serializeArray();
+				$.each(inputs,function(i,input) { args[input['name']]=input['value']; });
+				$.post("<?php echo admin_url('admin-ajax.php') ?>", args, function(response){
+					load.removeClass('loading');
+					if (response.success) { 
+						$('.done').slideUp('slow', function(){
+							$('#jgs_validation').html(response.message).addClass('success').slideDown('slow');
+						});
 					} else {
-						$('#jgs_validation').html('An error has occurred, please try again.').fadeIn();
-					}
-				}	
-			});
+						if (response.success === false) {
+							$('#jgs_validation').html(response.message).fadeIn();
+						} else {
+							$('#jgs_validation').html('An error has occurred, please try again.').fadeIn();
+						}
+					}	
+				});
+			}	
 			return false; // prevent submit (redundant)
 		});
 	});	
