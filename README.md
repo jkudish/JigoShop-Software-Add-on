@@ -7,6 +7,9 @@ The code is well documented (inline) with more documentation to come. The projec
 Changelog
 ===========
 
+### 1.5
+* Set proper headers for IE7 in the API
+
 ### 1.4
 * disable email now button after click, fixes issue #15
 
@@ -31,4 +34,4 @@ Current Version
 
 The line below is used for the updater API, please leave it untouched unless bumping the version up :)
 
-~Current Version:1.4~
+~Current Version:1.5~
