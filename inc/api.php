@@ -328,7 +328,7 @@ class jigoshop_software_api extends jigoshop_software {
 		}
 		
 		header( "Cache-Control: no-store");
-		header( "Pragma: ");
+		header_remove("Pragma");
 		header( "Content-Type: application/json" );
 		die(json_encode($json));
 	}
@@ -407,7 +407,7 @@ class jigoshop_software_api extends jigoshop_software {
 		$error['sig'] = $sig;		
 		$json = $error;
 		header( "Cache-Control: no-store");
-		header( "Pragma: ");
+		header_remove("Pragma");
 		header( "Content-Type: application/json" );
 		die(json_encode($json));
 		exit;
