@@ -7,8 +7,11 @@ The code is well documented (inline) with more documentation to come. The projec
 Changelog
 ===========
 
+### 1.5.2
+* PHP < 5.3 backwards compatibly for removing the pragma header
+
 ### 1.5.1
-* Remove Pragma Header
+* Remove pragma header
 
 ### 1.5
 * Set proper headers for IE7 in the API
@@ -37,4 +40,4 @@ Current Version
 
 The line below is used for the updater API, please leave it untouched unless bumping the version up :)
 
-~Current Version:1.5.1~
+~Current Version:1.5.2~
