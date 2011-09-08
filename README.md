@@ -7,6 +7,9 @@ The code is well documented (inline) with more documentation to come. The projec
 Changelog
 ===========
 
+### 1.5.3
+* fix a WP_Error bug with the updater class
+
 ### 1.5.2
 * PHP < 5.3 backwards compatibly for removing the pragma header
 
@@ -40,4 +43,4 @@ Current Version
 
 The line below is used for the updater API, please leave it untouched unless bumping the version up :)
 
-~Current Version:1.5.2~
+~Current Version:1.5.3~

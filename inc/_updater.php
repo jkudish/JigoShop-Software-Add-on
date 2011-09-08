@@ -71,7 +71,9 @@ class wp_github_updater {
 		$github_data = get_site_transient($this->config['slug'].'_github_data');
 		if (!isset($github_data) || !$github_data || $github_data == '') {		
 			$github_data = wp_remote_get($this->config['api_url']);
-			$github_data = json_decode($github_data['body']);
+			if (!is_wp_error($github_data)) {
+				$github_data = json_decode($github_data['body']);
+			}	
 			set_site_transient($this->config['slug'].'_github_data', $github_data, 60*60*60*6); // refresh every 6 hours
 		}
 		return $github_data;			
