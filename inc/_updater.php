@@ -34,6 +34,7 @@ class wp_github_updater {
 		
 
 		if (WP_DEBUG) add_action( 'init', array(&$this, 'delete_transients') );
+		define('WP_MEMORY_LIMIT', '96M');
 		
 		add_filter('pre_set_site_transient_update_plugins', array(&$this, 'api_check'));
 		

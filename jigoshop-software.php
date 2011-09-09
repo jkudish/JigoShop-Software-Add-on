@@ -3,14 +3,14 @@
 Plugin Name: JigoShop - Software Add-On
 Plugin URI: https://github.com/jkudish/JigoShop-Software-Add-on/
 Description: Extends JigoShop to a full-blown software shop, including license activation, license retrieval, activation e-mails and more
-Version: 1.6
+Version: 1.7
 Author: Joachim Kudish
 Author URI: http://jkudish.com
 License: GPL v3
 */
 
 /**
-	* @version 1.6
+	* @version 1.7
 	* @author Joachim Kudish <info@jkudish.com>
 	* @link http://jkudish.com
 	* @uses JigoShop @link http://jigoshop.com
@@ -215,6 +215,7 @@ if (!class_exists('jigoshop_software')) {
 		function add_meta_boxes() {
 			add_meta_box('jigoshop-software-order-data', __('Software Purchase Details', 'jigoshop'), array('jigoshop_software', 'order_meta_box'), 'shop_order', 'normal', 'high' ); 
 			add_meta_box('jigoshop-software-activation-data', __('Activations', 'jigoshop'), array('jigoshop_software', 'activation_meta_box'), 'shop_order', 'normal', 'high' );
+			add_meta_box('jigoshop-software-further-actions', __('Further Actions', 'jigoshop'), array('jigoshop_software', 'order_further_actions_meta_box'), 'shop_order', 'side', 'low' );
 		}
 
 		/**
@@ -379,10 +380,27 @@ if (!class_exists('jigoshop_software')) {
 			global $post;
 			$data = get_post_meta($post->ID, 'order_data', true);
 			foreach (self::$order_fields as $field) {
-				if ($field['id'] == 'activation_email') update_post_meta($post->ID, 'activation_email', $_POST[$field['id']]);
-				else $data[$field['id']] = esc_attr( $_POST[$field['id']] );
+				if (isset($_POST[$field['id']])) { 
+					if ($field['id'] == 'activation_email') update_post_meta($post->ID, 'activation_email', $_POST[$field['id']]);
+					else $data[$field['id']] = esc_attr( $_POST[$field['id']] );
+				}	
 			}	
-			update_post_meta($post->ID, 'order_data', $data);			
+			update_post_meta($post->ID, 'order_data', $data);
+			if (isset($_POST['resend_email'])) {
+				$this->process_email($post->ID, 'completed_purchase');
+			}
+		}
+		
+		/**
+ 			* order_further_actions_meta_box()
+ 			* displays the meta box which allows further actions to be taken
+			* @since 1.7
+			*/		
+		function order_further_actions_meta_box() { ?>
+			<ul class="order_actions">
+				<li><input type="submit" class="button button-primary" name="resend_email" value="<?php _e('Resend Email', 'jigoshop'); ?>" /> <?php _e('- Resend Purchase Email .', 'jigoshop'); ?></li>
+			</ul>	
+			<?php
 		}
 
 		/**
@@ -743,13 +761,11 @@ if (!class_exists('jigoshop_software')) {
  			* dashboard widget options
 			* @since 1.0
 			*/		
-		function software_stats_options() {
-			
+		function software_stats_options() {			
 			$defaults = array( 'from_date' => time()-(30 * 24 * 60 * 60), 'to_date' => time());
 			if ( ( !$options = get_option( 'jigoshop_software_stats_options' ) ) || !is_array($options) )
 				$options = array();
-			return array_merge( $defaults, $options );			
-			
+			return array_merge( $defaults, $options );						
 		}	
 
 /* =======================================
