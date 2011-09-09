@@ -353,6 +353,8 @@ class jigoshop_software_api extends jigoshop_software {
 			else $output[$v] = $data[$v];
 		}
 		
+		$output['timestamp'] = time();
+		
 		$sig_out = $output;
 		$sig_array = array_merge($sig_array, $sig_out);
 		foreach ($sig_array as $k => $v) {
@@ -400,6 +402,7 @@ class jigoshop_software_api extends jigoshop_software {
 			$error[$k] = $v;
 		}	
 		$secret = ($secret) ? $secret : 'null';
+		$error['timestamp'] = time();
 		foreach ($error as $k => $v) {
 			if ($v === false) $v = "false";
 			if ($v === true) $v = "true";

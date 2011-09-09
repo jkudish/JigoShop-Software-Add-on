@@ -7,6 +7,10 @@ The code is well documented (inline) with more documentation to come. The projec
 Changelog
 ===========
 
+### 1.8
+* Add timestamp to all API requests
+* Fix PHP notice bug with the updater class from 1.7
+
 ### 1.7
 * Ability to resend purchase e-mail to customers from backend
 * Fix PHP memory bug with the updater class
@@ -51,4 +55,4 @@ Current Version
 
 The line below is used for the updater API, please leave it untouched unless bumping the version up :)
 
-~Current Version:1.7~
+~Current Version:1.8~
