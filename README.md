@@ -7,6 +7,10 @@ The code is well documented (inline) with more documentation to come. The projec
 Changelog
 ===========
 
+### 1.6
+* Store transaction ID for each order
+* Process and send e-mail with Paypal IPN response, making it more bullet-proof
+
 ### 1.5.3
 * fix a WP_Error bug with the updater class
 

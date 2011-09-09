@@ -3,14 +3,14 @@
 Plugin Name: JigoShop - Software Add-On
 Plugin URI: https://github.com/jkudish/JigoShop-Software-Add-on/
 Description: Extends JigoShop to a full-blown software shop, including license activation, license retrieval, activation e-mails and more
-Version: 1.5.3
+Version: 1.6
 Author: Joachim Kudish
 Author URI: http://jkudish.com
 License: GPL v3
 */
 
 /**
-	* @version 1.5.3
+	* @version 1.6
 	* @author Joachim Kudish <info@jkudish.com>
 	* @link http://jkudish.com
 	* @uses JigoShop @link http://jigoshop.com
@@ -58,8 +58,9 @@ if (!class_exists('jigoshop_software')) {
 
 		// define the order metadata fields used by this plugin		
 		static $order_fields = array(
-			array('id' => 'activation_email', 'label' => 'Activation Email:', 'title' => 'Activation Email', 'placeholder' => '', 'type' => 'text'),			
-			array('id' => 'paypal_name', 'label' => 'Paypal Name to show on transaction receipts:', 'title' => 'Paypal Name to show on transaction receipts', 'placeholder' => 'ex: Google Inc.', 'type' => 'text'),			
+			array('id' => 'activation_email', 'label' => 'Activation Email:', 'title' => 'Activation Email', 'placeholder' => '', 'type' => 'text'),
+			array('id' => 'paypal_name', 'label' => 'Paypal Name to show on transaction receipts:', 'title' => 'Paypal Name to show on transaction receipts', 'placeholder' => 'ex: Google Inc.', 'type' => 'text'),
+			array('id' => 'transaction_id', 'label' => 'Transaction ID:', 'title' => 'Transaction ID', 'placeholder' => '', 'type' => 'text'),			
 			array('id' => 'license_key', 'label' => 'License Key:', 'title' => 'License Key', 'placeholder' => '', 'type' => 'text'),
 			array('id' => 'productid', 'label' => 'Product ID:', 'title' => 'Product ID', 'placeholder' => '', 'type' => 'text'),
 			array('id' => 'activations_possible', 'label' => 'Max Activations Allowed:', 'title' => 'Max Activations Allowed', 'placeholder' => '', 'type' => 'text'),			
@@ -124,7 +125,7 @@ if (!class_exists('jigoshop_software')) {
 			add_action( 'wp_ajax_jgs_lost_license', array(&$this, 'ajax_jgs_lost_license')); 
 			
 			// payment stuff
-			add_action('thankyou_paypal', array(&$this, 'process_paypal_payment'));
+			add_action('thankyou_paypal', array(&$this, 'post_paypal_payment'));
 			
 			// email stuff
 			remove_action('order_status_pending_to_processing', 'jigoshop_new_order_notification');
@@ -134,7 +135,7 @@ if (!class_exists('jigoshop_software')) {
 			remove_action('order_status_pending_to_processing', 'jigoshop_processing_order_customer_notification');
 			remove_action('order_status_pending_to_on-hold', 'jigoshop_processing_order_customer_notification');
 			remove_action('order_status_completed', 'jigoshop_completed_order_customer_notification');
-			
+			add_action('order_status_completed', array(&$this, 'completed_order'));			
 			
 			// filters
 			add_filter('add_to_cart_redirect', array(&$this, 'add_to_cart_redirect'));
@@ -300,6 +301,7 @@ if (!class_exists('jigoshop_software')) {
 					<?php 
 						foreach (self::$order_fields as $field) : 						
 							@$value = ($field['id'] == 'activation_email') ? get_post_meta($post->ID, 'activation_email', true) : $data[$field['id']];
+							@$value = ($field['id'] == 'transaction_id') ? get_post_meta($post->ID, 'transaction_id', true) : $value;
 							@$value = ($field['id'] == 'old_order_id') ? get_post_meta($post->ID, 'old_order_id', true) : $value;
 							switch ($field['type']) :
 								case 'text' :
@@ -1148,20 +1150,29 @@ if (!class_exists('jigoshop_software')) {
 			echo $response;			
 			exit;
 		}		
-
+	
 		/**
- 			* process_paypal_payment()
- 			* record paypal transaction id into the order, for some reason jigoshop doesn't do this by default
-			* also send the purchase email to the customer
-			* @param $order_id (string), the order id to store the transaction id for
-			* @since 1.0
+ 			* post_paypal_payment()
+ 			* processes the order post payment
+			* @param $order_id (string), the order id to process
+			* @since 1.6
 			*/		
-		function process_paypal_payment($order_id) {
-			$order = new jigoshop_order( $order_id );
-			if ($order->status == 'completed') {
-				$this->process_email($order_id, 'completed_purchase');
-			}			
+		function post_paypal_payment($order_id) {
+			if (isset($_GET['tx'])) {
+				update_post_meta($order_id, 'transaction_id', $_GET['tx'], true);
+			}
 		}
+		
+		/**
+ 			* completed_order()
+ 			* sends out the completed order email
+			* @param $order_id (string), the order id to process
+			* @since 1.6
+			*/
+		function completed_order($order_id) {
+			$this->process_email($order_id, 'completed_purchase');
+		}
+		
 				
 		/**
  			* process_email()
