@@ -59,7 +59,8 @@ class jigoshop_software_api extends jigoshop_software {
 						}
 						
 						$data = get_post_meta($trial_prod->ID, 'product_data', true);
-						$to_output = array('duration' => 'trial', 'timestamp' => time(), 'units' => 'trial_unit');
+						$data['time'] = time();
+						$to_output = array('duration' => 'trial', 'timestamp' => 'time', 'units' => 'trial_unit');
 						$json = $this->prepare_output($to_output, $data);
 						
 					} else { 
@@ -132,7 +133,8 @@ class jigoshop_software_api extends jigoshop_software {
 												$output_data['activated'] = true;
 												$output_data['instanceid'] = $instance;
 												$output_data['message'] = $data['remaining_activations'].' out of '.$activations_possible.' activations remaining';
-												$to_output = array('activated', 'instanceid', 'message', 'timestamp' => time());
+												$output_data['time'] = time();
+												$to_output = array('activated', 'instanceid', 'message', 'timestamp' => 'time');
 												$json = $this->prepare_output($to_output, $output_data);
 											} else {
 												$this->error('102', 'This instance isn\'t active', null, array('activated' => false, 'secret' => $data['secret_product_key']));
@@ -180,7 +182,8 @@ class jigoshop_software_api extends jigoshop_software {
 											$output_data['activated'] = true;
 											$output_data['instanceid'] = $instance;
 											$output_data['message'] = $data['remaining_activations'].' out of '.$activations_possible.' activations remaining';
-											$to_output = array('activated', 'instanceid', 'message', 'timestamp' => time());
+											$output_data['time'] = time();
+											$to_output = array('activated', 'instanceid', 'message', 'timestamp' => 'time');
 											$json = $this->prepare_output($to_output, $output_data);
 											
 										} else {											
@@ -268,7 +271,7 @@ class jigoshop_software_api extends jigoshop_software {
 								$output_data = $data;
 								$output_data['reset'] = true;
 								$output_data['timestamp'] = time();
-								$to_output = array('reset');
+								$to_output = array('reset', 'timestamp');
 								$json = $this->prepare_output($to_output, $output_data);								
 								
 							} elseif (isset($__order_id)) {
@@ -294,7 +297,7 @@ class jigoshop_software_api extends jigoshop_software {
 								$output_data = $data;
 								$output_data['reset'] = true;
 								$output_data['timestamp'] = time();
-								$to_output = array('reset');
+								$to_output = array('reset', 'timestamp');
 								$json = $this->prepare_output($to_output, $output_data);																
 								
 							} else {
@@ -351,7 +354,7 @@ class jigoshop_software_api extends jigoshop_software {
 		$sig_array = array('secret' => $secret);
 
 		foreach ($to_output as $k => $v) {
-			if (is_string($k) || is_int($k)) $output[$k] = $data[$v];
+			if (is_string($k)) $output[$k] = $data[$v];
 			else $output[$v] = $data[$v];
 		}
 		
