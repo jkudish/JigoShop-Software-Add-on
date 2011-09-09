@@ -7,6 +7,9 @@ The code is well documented (inline) with more documentation to come. The projec
 Changelog
 ===========
 
+### 1.8.2
+* Fix timestamp output bug
+
 ### 1.8.1
 * Timestamp in correct order for sig in API requests
 
@@ -58,4 +61,4 @@ Current Version
 
 The line below is used for the updater API, please leave it untouched unless bumping the version up :)
 
-~Current Version:1.8.1~
+~Current Version:1.8.2~

@@ -351,7 +351,7 @@ class jigoshop_software_api extends jigoshop_software {
 		$sig_array = array('secret' => $secret);
 
 		foreach ($to_output as $k => $v) {
-			if (is_string($k)) $output[$k] = $data[$v];
+			if (is_string($k) || is_int($k)) $output[$k] = $data[$v];
 			else $output[$v] = $data[$v];
 		}
 		
