@@ -14,7 +14,7 @@ License: GPL v3
 	* @author Joachim Kudish <info@jkudish.com>
 	* @link http://jkudish.com
 	* @uses JigoShop @link http://jigoshop.com
-	* @uses automatic-theme-plugin-update @link https://github.com/jeremyclark13/automatic-theme-plugin-update
+	* @uses WordPress Github Plugin Updater @link https://github.com/jkudish/WordPress-GitHub-Plugin-Updater
 	* @license http://www.gnu.org/copyleft/gpl.html GNU Public License
 	* @copyright Copyright (c) 2011, Joachim Kudish
 	*
