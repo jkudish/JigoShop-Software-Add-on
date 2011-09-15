@@ -7,7 +7,11 @@ The code is well documented (inline) with more documentation to come. The projec
 Changelog
 ===========
 
-### 1.8.2
+### 1.8.4
+* Changed headers to resolve IE caching issues in the API
+* Added the ability to pass a nonce in the API
+
+### 1.8.3
 * Fix timestamp output bug again
 
 ### 1.8.2
@@ -64,4 +68,4 @@ Current Version
 
 The line below is used for the updater API, please leave it untouched unless bumping the version up :)
 
-~Current Version:1.8.3~
+~Current Version:1.8.4~
