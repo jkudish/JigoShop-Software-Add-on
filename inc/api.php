@@ -12,6 +12,7 @@ class jigoshop_software_api extends jigoshop_software {
 	
 	function __construct($debug = false) {
 		
+		global $method;
 		$this->debug = (WP_DEBUG) ? true : $debug; // always on if WP_DEBUG is on
 		if (isset($_GET['method'])) $method = $_GET['method'];
 		elseif (isset($_GET['productid'])) $method = $_GET;
@@ -360,7 +361,8 @@ class jigoshop_software_api extends jigoshop_software {
 		* @param $data (array), the data from which to pull the secret product key
 		* @return $output (array), the data ready for json including the md5 sig
 		*/
-	function prepare_output($to_output = array(), $data = array()) {
+	function prepare_output($to_output = array(), $data = array()) {		
+		global $method;
 		$secret = (isset($data['secret_product_key'])) ? $data['secret_product_key'] : 'null';
 		$sig_array = array('secret' => $secret);
 
@@ -368,6 +370,9 @@ class jigoshop_software_api extends jigoshop_software {
 			if (is_string($k)) $output[$k] = $data[$v];
 			else $output[$v] = $data[$v];
 		}
+		
+		if (isset($method['nonce'])) 
+			$output['nonce'] = $method['nonce'];
 		
 		$sig_out = $output;
 		$sig_array = array_merge($sig_array, $sig_out);
