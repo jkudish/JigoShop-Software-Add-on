@@ -334,10 +334,21 @@ class jigoshop_software_api extends jigoshop_software {
 		
 		header( "Cache-Control: no-store");
 		if (function_exists('header_remove')) {
+			header_remove("Cache-Control");
 			header_remove("Pragma");
+			header_remove("Expires");
+			header_remove("Last-Modified");
+			header_remove("X-Pingback");
+			header_remove("X-Powered-By");
+			header_remove("Set-Cookie");
 		} else {
-			header( "Pragma:");			
-		}
+			header("Cache-Control: ");
+			header("Pragma: ");
+			header("Expires: ");
+			header("X-Pingback: ");
+			header("X-Powered-By: ");
+			header("Set-Cookie: ");
+		}		
 		header( "Content-Type: application/json" );
 		die(json_encode($json));
 	}
