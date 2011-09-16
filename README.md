@@ -7,6 +7,10 @@ The code is well documented (inline) with more documentation to come. The projec
 Changelog
 ===========
 
+### 1.8.5
+* Fixed headers for error API responses
+* API nonce ordering in json responses
+
 ### 1.8.4
 * Changed headers to resolve IE caching issues in the API
 * Added the ability to pass a nonce in the API
@@ -68,4 +72,4 @@ Current Version
 
 The line below is used for the updater API, please leave it untouched unless bumping the version up :)
 
-~Current Version:1.8.4~
+~Current Version:1.8.5~

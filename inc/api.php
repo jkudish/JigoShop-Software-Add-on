@@ -15,13 +15,14 @@ class jigoshop_software_api extends jigoshop_software {
 		global $method;
 		$this->debug = (WP_DEBUG) ? true : $debug; // always on if WP_DEBUG is on
 		if (isset($_GET['method'])) $method = $_GET['method'];
-		elseif (isset($_GET['productid'])) $method = $_GET;
+		elseif (isset($_GET['productid']) || isset($_GET['nonce'])) $method = $_GET;
 		else $method = $_POST;
-					
 		
 		if (isset($_GET['request'])) { 
 
 			$request = $_GET['request'];
+			
+			$nonce = (isset($method['nonce'])) ? $method['nonce'] : false;
 
 			switch ($request) :
 				case 'trial' :
@@ -61,7 +62,13 @@ class jigoshop_software_api extends jigoshop_software {
 						
 						$data = get_post_meta($trial_prod->ID, 'product_data', true);
 						$data['time'] = time();
-						$to_output = array('duration' => 'trial', 'timestamp' => 'time', 'units' => 'trial_unit');
+						$to_output['duration'] = 'trial';
+						if ($nonce) { 
+							$data['nonce'] = $nonce;
+							$to_output['nonce'] = 'nonce';
+						}	
+						$to_output['timestamp'] = 'time';
+						$to_output['units'] = 'trial_unit';
 						$json = $this->prepare_output($to_output, $data);
 						
 					} else { 
@@ -135,7 +142,13 @@ class jigoshop_software_api extends jigoshop_software {
 												$output_data['instanceid'] = $instance;
 												$output_data['message'] = $data['remaining_activations'].' out of '.$activations_possible.' activations remaining';
 												$output_data['time'] = time();
-												$to_output = array('activated', 'instanceid', 'message', 'timestamp' => 'time');
+												$to_output = array('activated', 'instanceid');
+												if ($nonce) { 
+													$output_data['nonce'] = $nonce;
+													$to_output['nonce'] = 'nonce';
+												}													
+												$to_output['message'] = 'message';
+												$to_output['timestamp'] = 'time';
 												$json = $this->prepare_output($to_output, $output_data);
 											} else {
 												$this->error('102', 'This instance isn\'t active', null, array('activated' => false, 'secret' => $data['secret_product_key']));
@@ -184,7 +197,13 @@ class jigoshop_software_api extends jigoshop_software {
 											$output_data['instanceid'] = $instance;
 											$output_data['message'] = $data['remaining_activations'].' out of '.$activations_possible.' activations remaining';
 											$output_data['time'] = time();
-											$to_output = array('activated', 'instanceid', 'message', 'timestamp' => 'time');
+											$to_output = array('activated', 'instanceid');
+											if ($nonce) { 
+												$output_data['nonce'] = $nonce;
+												$to_output['nonce'] = 'nonce';
+											}													
+											$to_output['message'] = 'message';
+											$to_output['timestamp'] = 'time';
 											$json = $this->prepare_output($to_output, $output_data);
 											
 										} else {											
@@ -272,7 +291,13 @@ class jigoshop_software_api extends jigoshop_software {
 								$output_data = $data;
 								$output_data['reset'] = true;
 								$output_data['timestamp'] = time();
-								$to_output = array('reset', 'timestamp');
+								$to_output = array();
+								if ($nonce) { 
+									$output_data['nonce'] = $nonce;
+									$to_output['nonce'] = 'nonce';
+								}								
+								$to_output['reset'] = 'reset';
+								$to_output['timestamp'] = 'timestamp';
 								$json = $this->prepare_output($to_output, $output_data);								
 								
 							} elseif (isset($__order_id)) {
@@ -298,7 +323,13 @@ class jigoshop_software_api extends jigoshop_software {
 								$output_data = $data;
 								$output_data['reset'] = true;
 								$output_data['timestamp'] = time();
-								$to_output = array('reset', 'timestamp');
+								$to_output = array();
+								if ($nonce) { 
+									$output_data['nonce'] = $nonce;
+									$to_output['nonce'] = 'nonce';
+								}								
+								$to_output['reset'] = 'reset';
+								$to_output['timestamp'] = 'timestamp';
 								$json = $this->prepare_output($to_output, $output_data);																
 								
 							} else {
@@ -371,9 +402,6 @@ class jigoshop_software_api extends jigoshop_software {
 			else $output[$v] = $data[$v];
 		}
 		
-		if (isset($method['nonce'])) 
-			$output['nonce'] = $method['nonce'];
-		
 		$sig_out = $output;
 		$sig_array = array_merge($sig_array, $sig_out);
 		foreach ($sig_array as $k => $v) {
@@ -434,10 +462,21 @@ class jigoshop_software_api extends jigoshop_software {
 		$json = $error;
 		header( "Cache-Control: no-store");
 		if (function_exists('header_remove')) {
+			header_remove("Cache-Control");
 			header_remove("Pragma");
+			header_remove("Expires");
+			header_remove("Last-Modified");
+			header_remove("X-Pingback");
+			header_remove("X-Powered-By");
+			header_remove("Set-Cookie");
 		} else {
-			header( "Pragma:");			
-		}
+			header("Cache-Control: ");
+			header("Pragma: ");
+			header("Expires: ");
+			header("X-Pingback: ");
+			header("X-Powered-By: ");
+			header("Set-Cookie: ");
+		}		
 		header( "Content-Type: application/json" );
 		die(json_encode($json));
 		exit;
