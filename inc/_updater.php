@@ -1,6 +1,6 @@
 <?php
 
-if (!class_exists('github_updater')) :
+if (!class_exists('wp_github_updater')) :
 
 class wp_github_updater {
 	

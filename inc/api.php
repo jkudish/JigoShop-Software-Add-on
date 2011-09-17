@@ -45,11 +45,7 @@ class jigoshop_software_api extends jigoshop_software {
 									array(
 										'key' => 'soft_product_id',
 										'value' => $product_id,
-										),
-									// array(
-									// 	'key' => '',
-									// 	'value' => $product_id,
-									// 	),										
+										),									
 									)
 								));
 
@@ -143,11 +139,11 @@ class jigoshop_software_api extends jigoshop_software {
 												$output_data['message'] = $data['remaining_activations'].' out of '.$activations_possible.' activations remaining';
 												$output_data['time'] = time();
 												$to_output = array('activated', 'instanceid');
+												$to_output['message'] = 'message';
 												if ($nonce) { 
 													$output_data['nonce'] = $nonce;
 													$to_output['nonce'] = 'nonce';
-												}													
-												$to_output['message'] = 'message';
+												}												
 												$to_output['timestamp'] = 'time';
 												$json = $this->prepare_output($to_output, $output_data);
 											} else {
@@ -198,11 +194,11 @@ class jigoshop_software_api extends jigoshop_software {
 											$output_data['message'] = $data['remaining_activations'].' out of '.$activations_possible.' activations remaining';
 											$output_data['time'] = time();
 											$to_output = array('activated', 'instanceid');
+											$to_output['message'] = 'message';
 											if ($nonce) { 
 												$output_data['nonce'] = $nonce;
 												$to_output['nonce'] = 'nonce';
-											}													
-											$to_output['message'] = 'message';
+											}											
 											$to_output['timestamp'] = 'time';
 											$json = $this->prepare_output($to_output, $output_data);
 											
