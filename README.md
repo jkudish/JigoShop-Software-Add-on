@@ -7,6 +7,10 @@ The code is well documented (inline) with more documentation to come. The projec
 Changelog
 ===========
 
+### 1.8.8
+* Prevent timeout in updater class
+* Only run the updater in the admin
+
 ### 1.8.7
 * Fixed wp_error in updater class
 
@@ -80,4 +84,4 @@ Current Version
 
 The line below is used for the updater API, please leave it untouched unless bumping the version up :)
 
-~Current Version:1.8.7~
+~Current Version:1.8.8~
