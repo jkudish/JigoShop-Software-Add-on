@@ -107,14 +107,14 @@ if (!class_exists('jigoshop_software')) {
 			
 			
 			// frontend stuff
-			remove_action( 'simple_add_to_cart', 'jigoshop_simple_add_to_cart' ); 
-			remove_action( 'virtual_add_to_cart', 'jigoshop_simple_add_to_cart' ); 
-			remove_action( 'downloadable_add_to_cart', 'jigoshop_downloadable_add_to_cart' ); 
-			remove_action( 'jigoshop_after_shop_loop_item', 'jigoshop_template_loop_add_to_cart', 10, 2);
-			add_action( 'simple_add_to_cart', array(&$this, 'add_to_cart')); 
-			add_action( 'virtual_add_to_cart', array(&$this, 'add_to_cart')); 
-			add_action( 'downloadable_add_to_cart', array(&$this, 'add_to_cart')); 
-			add_action( 'jigoshop_after_shop_loop_item', array(&$this, 'loop_add_to_cart'), 10, 2); 
+			remove_action('simple_add_to_cart', 'jigoshop_simple_add_to_cart');
+			remove_action('virtual_add_to_cart', 'jigoshop_simple_add_to_cart');
+			remove_action('downloadable_add_to_cart', 'jigoshop_downloadable_add_to_cart');
+			remove_action('jigoshop_after_shop_loop_item', 'jigoshop_template_loop_add_to_cart', 10, 2);
+			add_action('simple_add_to_cart', array(&$this, 'add_to_cart'));
+			add_action('virtual_add_to_cart', array(&$this, 'add_to_cart'));
+			add_action('downloadable_add_to_cart', array(&$this, 'add_to_cart'));
+			add_action('jigoshop_after_shop_loop_item', array(&$this, 'loop_add_to_cart'), 10, 2);
 			add_filter('init', array(&$this, 'init_output_buffer'));
 
 			add_action( 'wp_print_styles', array(&$this, 'print_styles')); 
