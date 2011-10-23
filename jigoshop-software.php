@@ -98,10 +98,10 @@ if (!class_exists('jigoshop_software')) {
 			add_action('jigoshop_process_shop_order_meta', array(&$this, 'order_save_data'), 1, 2);
 			add_action('admin_print_styles', array(&$this, 'admin_print_styles'));
 			add_action('admin_menu', array(&$this, 'admin_menu'));
-			add_action( 'wp_ajax_nopriv_jgs_import', array(&$this, 'import_ajax')); 
-			add_action( 'wp_ajax_jgs_import', array(&$this, 'import_ajax'));			
-			add_action( 'wp_ajax_nopriv_jgs_do_import', array(&$this, 'import')); 
-			add_action( 'wp_ajax_jgs_do_import', array(&$this, 'import'));			
+			add_action('wp_ajax_nopriv_jgs_import', array(&$this, 'import_ajax')); 
+			add_action('wp_ajax_jgs_import', array(&$this, 'import_ajax'));			
+			add_action('wp_ajax_nopriv_jgs_do_import', array(&$this, 'import')); 
+			add_action('wp_ajax_jgs_do_import', array(&$this, 'import'));			
 			
 			add_action('admin_head', array(&$this, 'filter_order_search'));
 			
