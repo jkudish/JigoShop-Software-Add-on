@@ -4,8 +4,15 @@ This plugin extends the WordPress [JigoShop](http://jigoshop.com/) e-commerce pl
 
 The code is well documented (inline) with more documentation to come. The project started off as a private client request, but is now public for anyone to collaborate on. That being said, the client continues to use this plugin and its updates, and thus there may be certain constraints before pushing an update (otherwise a branch may be required). We are open to any suggestions :)
 
+The plugin now requires JigoShop 0.9.9.1 or higher. If you need compatibility with an older version, please use version 1.8.8 or below of this plugin.
+
 Changelog
 ===========
+
+### 1.8.9
+* Remove some whitespace
+* Fix compatibility for cart with JigoShop 0.9.9.1
+* The plugin now requires JigoShop 0.9.9.1. If you need compatibility with an older version, please use version 1.8.8 or below of this plugin.
 
 ### 1.8.8
 * Prevent timeout in updater class
@@ -84,4 +91,4 @@ Current Version
 
 The line below is used for the updater API, please leave it untouched unless bumping the version up :)
 
-~Current Version:1.8.8~
+~Current Version:1.8.9~

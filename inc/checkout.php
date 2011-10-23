@@ -11,10 +11,12 @@ if (!empty($_GET['empty']) && $_GET['empty'] == true) {
 	wp_redirect(site_url('/checkout')); exit;
 }
 
+
 if ( sizeof(jigoshop_cart::$cart_contents) > 0 ) : 
-	foreach (jigoshop_cart::$cart_contents as $item_id => $values) :
-		
+	foreach (jigoshop_cart::$cart_contents as $item => $values) :
+				
 		// data
+		$item_id = $values['product_id'];
 		$qty = 1; // force it
 		$data = $values['data']->data;
 		$up_name = $data['upgradable_product'];

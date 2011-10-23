@@ -3,14 +3,14 @@
 Plugin Name: JigoShop - Software Add-On
 Plugin URI: https://github.com/jkudish/JigoShop-Software-Add-on/
 Description: Extends JigoShop to a full-blown software shop, including license activation, license retrieval, activation e-mails and more
-Version: 1.8.8
+Version: 1.8.9
 Author: Joachim Kudish
 Author URI: http://jkudish.com
 License: GPL v3
 */
 
 /**
-	* @version 1.8.8
+	* @version 1.8.9
 	* @author Joachim Kudish <info@jkudish.com>
 	* @link http://jkudish.com
 	* @uses JigoShop @link http://jigoshop.com
@@ -110,10 +110,12 @@ if (!class_exists('jigoshop_software')) {
 			remove_action('simple_add_to_cart', 'jigoshop_simple_add_to_cart');
 			remove_action('virtual_add_to_cart', 'jigoshop_simple_add_to_cart');
 			remove_action('downloadable_add_to_cart', 'jigoshop_downloadable_add_to_cart');
+			add_action( 'grouped_add_to_cart', 'jigoshop_grouped_add_to_cart' ); 
 			remove_action('jigoshop_after_shop_loop_item', 'jigoshop_template_loop_add_to_cart', 10, 2);
 			add_action('simple_add_to_cart', array(&$this, 'add_to_cart'));
 			add_action('virtual_add_to_cart', array(&$this, 'add_to_cart'));
 			add_action('downloadable_add_to_cart', array(&$this, 'add_to_cart'));
+			add_action('grouped_add_to_cart', array(&$this, 'add_to_cart'));
 			add_action('jigoshop_after_shop_loop_item', array(&$this, 'loop_add_to_cart'), 10, 2);
 			add_filter('init', array(&$this, 'init_output_buffer'));
 
