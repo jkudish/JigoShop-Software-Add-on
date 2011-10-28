@@ -9,6 +9,9 @@ The plugin now requires JigoShop 0.9.9.1 or higher. If you need compatibility wi
 Changelog
 ===========
 
+### 2.0
+* activation reset method of the API now requires a valid license key (extra security measure)
+
 ### 1.9
 * Remove all whitespace in all files
 * Fix bug where number of possible activations would sometimes be reset to 0
@@ -95,4 +98,4 @@ Current Version
 
 The line below is used for the updater API, please leave it untouched unless bumping the version up :)
 
-~Current Version:1.9~
+~Current Version:2.0~

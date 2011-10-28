@@ -228,7 +228,7 @@ class jigoshop_software_api extends jigoshop_software {
 
 				case 'activation_reset' :
 
-				$required = array('email', 'productid');
+				$required = array('email', 'productid', 'licensekey');
 				$i = 0;
 				$missing = '';
 				foreach ($required as $req) {
@@ -255,16 +255,17 @@ class jigoshop_software_api extends jigoshop_software {
 					'meta_query' => array(
 						array(
 							'key' => 'activation_email',
-							'value' => $email
-						)
+							'value' => $email,
+						),
 					)
 				));
 
 				if (is_array($_orders) && count($_orders) > 0) {
+					$no_match_license_key = 0;
+					$no_match_product_id = 0;
 					foreach ($_orders as $order) {
 						$data = get_post_meta($order->ID, 'order_data', true);
 						if (@$data['productid'] == $product_id) {
-							$__order_id = $order->ID; // product id matches, let's store a var and come back to this one later if need be
 							if (@$data['license_key'] == $license_key) {
 
 								// get global and purchase only activations
@@ -296,44 +297,24 @@ class jigoshop_software_api extends jigoshop_software {
 								$to_output['timestamp'] = 'timestamp';
 								$json = $this->prepare_output($to_output, $output_data);
 
-							} elseif (isset($__order_id)) {
-
-								// get global and purchase only activations
-								$global_activations = get_option('jigoshop_software_global_activations');
-								$activations = get_post_meta($__order_id, 'activations', true);
-
-								// loop through the activations and deactivate them
-								foreach ($activations as $instance => $activation) {
-									$global_activations[$instance]['active'] = false;
-									$activations[$instance]['active'] = false;
-								}
-
-								update_option('jigoshop_software_global_activations', $global_activations);
-								update_post_meta($__order_id, 'activations', $activations);
-
-								// reset number of activations
-								$data['remaining_activations'] = $data['activations_possible'];
-								update_post_meta($__order_id, 'order_data', $data);
-
-								$output_data = $data;
-								$output_data['reset'] = true;
-								$output_data['timestamp'] = time();
-								$to_output = array();
-								if ($nonce) {
-									$output_data['nonce'] = $nonce;
-									$to_output['nonce'] = 'nonce';
-								}
-								$to_output['reset'] = 'reset';
-								$to_output['timestamp'] = 'timestamp';
-								$json = $this->prepare_output($to_output, $output_data);
-
 							} else {
-								$this->error('101', 'No purchase orders match this product ID and/or license key', null, $data);
+								$no_match_license_key++;
 							}
+						} else {
+							$no_match_product_id++;
+						}
+					}
+					if (!isset($json)) {
+						if ($no_match_license_key > 0) {
+							$this->error('101', 'No purchase orders match this license key', null, array('reset' => false));
+						} elseif($no_match_product_id > 0) {
+							$this->error('100', 'No purchase orders match this productid', null, array('reset' => false));
+						} else {
+							$this->error('100', 'An undisclosed error occurred', null, array('reset' => false));
 						}
 					}
 				} else {
-					$this->error('101', 'No purchase orders match this email');
+					$this->error('101', 'No purchase orders match this email', null, array('reset' => false));
 				}
 
 				break;
