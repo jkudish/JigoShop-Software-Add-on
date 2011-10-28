@@ -5,47 +5,47 @@
 	* @since 1.0
 	* @author Joachim Kudish <info@jkudish.com>
 	*/
-	
+
 class jigoshop_software_api extends jigoshop_software {
-	
+
 	public $debug;
-	
+
 	function __construct($debug = false) {
-		
+
 		global $method;
 		$this->debug = (WP_DEBUG) ? true : $debug; // always on if WP_DEBUG is on
 		if (isset($_GET['method'])) $method = $_GET['method'];
 		elseif (isset($_GET['productid']) || isset($_GET['nonce'])) $method = $_GET;
 		else $method = $_POST;
-		
-		if (isset($_GET['request'])) { 
+
+		if (isset($_GET['request'])) {
 
 			$request = $_GET['request'];
-			
+
 			$nonce = (isset($method['nonce'])) ? $method['nonce'] : false;
 
 			switch ($request) :
 				case 'trial' :
-					
+
 					if (isset($method['productid'])) {
-						
-						$product_id = $method['productid'];				
+
+						$product_id = $method['productid'];
 
 						$__prod = get_post($product_id); // first trying to see if this is a post_id
 						if ($__prod) {
-							$trial_prod = $__prod; 
+							$trial_prod = $__prod;
 
 						} else {
 							// if that was not a post_id, let's do some meta_query stuff to find the right product
 							$_prod = get_posts( array(
-								'post_type' => 'product', 
+								'post_type' => 'product',
 								'posts_per_page' => 1,
 								'meta_query' => array(
 									'relation' => 'OR',
 									array(
 										'key' => 'soft_product_id',
 										'value' => $product_id,
-										),									
+										),
 									)
 								));
 
@@ -53,29 +53,29 @@ class jigoshop_software_api extends jigoshop_software {
 								$trial_prod = $_prod[0]; // there is a match, use that
 							} else {
 								$this->error('100', 'Product ID not found');
-							}							
+							}
 						}
-						
+
 						$data = get_post_meta($trial_prod->ID, 'product_data', true);
 						$data['time'] = time();
 						$to_output['duration'] = 'trial';
-						if ($nonce) { 
+						if ($nonce) {
 							$data['nonce'] = $nonce;
 							$to_output['nonce'] = 'nonce';
-						}	
+						}
 						$to_output['timestamp'] = 'time';
 						$to_output['units'] = 'trial_unit';
 						$json = $this->prepare_output($to_output, $data);
-						
-					} else { 
+
+					} else {
 
 						$this->error('100', 'No product ID given');
 
-					}	
-					
+					}
+
 				break;
 				case 'activation' :
-				
+
 				$required = array('email', 'licensekey', 'productid');
 				$i = 0;
 				$missing = '';
@@ -83,26 +83,26 @@ class jigoshop_software_api extends jigoshop_software {
 					if (!isset($method[$req]) || $req == '') {
 						$i++;
 						if ($i > 1) $missing .= ', ';
-						$missing .= $req;						
+						$missing .= $req;
 					}
 				}
-				
+
 				if ($missing != '') {
 					$this->error('100', 'The following required information is missing: '.$missing, null, array('activated' => false));
-				} 
-				
+				}
+
 				$email = (isset($method['email'])) ? $method['email'] : null;
 				$license_key = (isset($method['licensekey'])) ? $method['licensekey'] : null;
 				$product_id = (isset($method['productid'])) ? $method['productid'] : null;
 				$version = (isset($method['version'])) ? $method['version'] : null;
 				$os = (isset($method['os'])) ? $method['os'] : null;
-				$instance = (isset($method['instanceid'])) ? $method['instanceid'] : null;				
-				
+				$instance = (isset($method['instanceid'])) ? $method['instanceid'] : null;
+
 				if (!is_email($email)) $this->error('100', 'The email provided is invalid', null, array('activated' => false));
-				
+
 				$_orders = get_posts(array(
 					'post_type' => 'shop_order',
-					'posts_per_page' => -1,					
+					'posts_per_page' => -1,
 					'meta_query' => array(
 						array(
 							'key' => 'activation_email',
@@ -110,23 +110,23 @@ class jigoshop_software_api extends jigoshop_software {
 						)
 					)
 				));
-				
+
 				if (is_array($_orders) && count($_orders) > 0) {
 					foreach ($_orders as $order) {
 						$data = get_post_meta($order->ID, 'order_data', true);
 						if (@$data['productid'] == $product_id) {
 							if (@$data['license_key'] == $license_key) {
-		
+
 								// we have a match, let's make sure it's a completed sale
 								$order_status = wp_get_post_terms($order->ID, 'shop_order_status');
 								$order_status = $order_status[0]->slug;
 								if ($order_status == 'completed') {
-									
+
 									$global_activations = get_option('jigoshop_software_global_activations');
 									$activations = get_post_meta($order->ID, 'activations', true);
 									$activations_possible = $data['activations_possible'];
 									$remaining_activations = $data['remaining_activations'];
-																		
+
 									if ($instance) { // checking existing activation
 										$activations = get_post_meta($order->ID, 'activations', true);
 
@@ -140,24 +140,24 @@ class jigoshop_software_api extends jigoshop_software {
 												$output_data['time'] = time();
 												$to_output = array('activated', 'instanceid');
 												$to_output['message'] = 'message';
-												if ($nonce) { 
+												if ($nonce) {
 													$output_data['nonce'] = $nonce;
 													$to_output['nonce'] = 'nonce';
-												}												
+												}
 												$to_output['timestamp'] = 'time';
 												$json = $this->prepare_output($to_output, $output_data);
 											} else {
 												$this->error('102', 'This instance isn\'t active', null, array('activated' => false, 'secret' => $data['secret_product_key']));
-											}	
+											}
 
 										} else { // the instance doesn't exist
-											
+
 											$this->error('102', 'This instance doesn\'t exist', null, array('activated' => false, 'secret' => $data['secret_product_key']));
-											
+
 										}
-										
-									} else { // new activation																			
-										
+
+									} else { // new activation
+
 										// check number of remaining activations
 										if ($remaining_activations > 0) {
 											// let's activate
@@ -168,17 +168,17 @@ class jigoshop_software_api extends jigoshop_software {
 											// store the activation globally
 											$global_activations[$instance] = $activation;
 											update_option('jigoshop_software_global_activations', $global_activations);
-											
+
 											// store the activation for this purchase only now
 											unset($activation['product_id']);
 											$activations[$instance] = $activation;
 											update_post_meta($order->ID, 'activations', $activations);
-											
+
 											// update the order data
 											update_post_meta($order->ID, 'order_data', $data);
-											
+
 											// send email to the customer
-											$order_items = get_post_meta($order->ID, 'order_items', true);											
+											$order_items = get_post_meta($order->ID, 'order_items', true);
 											$email_data = array(
 												'email' => get_post_meta($order->ID, 'activation_email', true),
 												'remaining_activations' => $data['remaining_activations'],
@@ -186,7 +186,7 @@ class jigoshop_software_api extends jigoshop_software {
 												'product' => $order_items[0]['name'],
 											);
 											parent::process_email($email_data, 'new_activation');
-											
+
 											// return the json
 											$output_data = $data;
 											$output_data['activated'] = true;
@@ -195,37 +195,37 @@ class jigoshop_software_api extends jigoshop_software {
 											$output_data['time'] = time();
 											$to_output = array('activated', 'instanceid');
 											$to_output['message'] = 'message';
-											if ($nonce) { 
+											if ($nonce) {
 												$output_data['nonce'] = $nonce;
 												$to_output['nonce'] = 'nonce';
-											}											
+											}
 											$to_output['timestamp'] = 'time';
 											$json = $this->prepare_output($to_output, $output_data);
-											
-										} else {											
+
+										} else {
 											$this->error('103', 'Remaining activations is equal to zero', null, array('activated' => false, 'secret' => $data['secret_product_key']));
 										}
-										
+
 									}
 								} else {
 									$this->error('101', 'The purchase matching this product is not complete', null,  array('activated' => false, 'secret' => $data['secret_product_key']));
 								}
 							}
-						} 					
+						}
 					}
 					if (!isset($activated)) {
 						// if we got here than there were no matches for productid and license key
 						$data = array('activated' => false);
 						$this->error('101', 'No purchase orders match this product ID and license key', null, $data);
-					}		
-				} else { 
+					}
+				} else {
 					$data = array('activated' => false);
 					$this->error('101', 'No purchase orders match this e-mail', null, $data);
-				}					
-				
-				
+				}
+
+
 				break;
-				
+
 				case 'activation_reset' :
 
 				$required = array('email', 'productid');
@@ -235,20 +235,20 @@ class jigoshop_software_api extends jigoshop_software {
 					if (!isset($method[$req]) || $req == '') {
 						$i++;
 						if ($i > 1) $missing .= ', ';
-						$missing .= $req;						
+						$missing .= $req;
 					}
 				}
-				
+
 				if ($missing != '') {
 					$this->error('100', 'The following required information is missing: '.$missing, null, array('reset' => false));
-				} 
-				
+				}
+
 				$email = (isset($method['email'])) ? $method['email'] : null;
 				$license_key = (isset($method['licensekey'])) ? $method['licensekey'] : null;
-				$product_id = (isset($method['productid'])) ? $method['productid'] : null;				
-				
+				$product_id = (isset($method['productid'])) ? $method['productid'] : null;
+
 				if (!is_email($email)) $this->error('100', 'The email provided is invalid', null, array('reset' => false));
-				
+
 				$_orders = get_posts(array(
 					'post_type' => 'shop_order',
 					'posts_per_page' => -1,
@@ -259,107 +259,106 @@ class jigoshop_software_api extends jigoshop_software {
 						)
 					)
 				));
-				
+
 				if (is_array($_orders) && count($_orders) > 0) {
 					foreach ($_orders as $order) {
 						$data = get_post_meta($order->ID, 'order_data', true);
-						if (@$data['productid'] == $product_id) {							
+						if (@$data['productid'] == $product_id) {
 							$__order_id = $order->ID; // product id matches, let's store a var and come back to this one later if need be
 							if (@$data['license_key'] == $license_key) {
-								
+
 								// get global and purchase only activations
 								$global_activations = get_option('jigoshop_software_global_activations');
 								$activations = get_post_meta($order->ID, 'activations', true);
-								
+
 								// loop through the activations and deactivate them
 								foreach ($activations as $instance => $activation) {
 									$global_activations[$instance]['active'] = false;
 									$activations[$instance]['active'] = false;
 								}
-								
+
 								update_option('jigoshop_software_global_activations', $global_activations);
 								update_post_meta($order->ID, 'activations', $activations);
 
 								// reset number of activations
 								$data['remaining_activations'] = $data['activations_possible'];
 								update_post_meta($order->ID, 'order_data', $data);
-								
+
 								$output_data = $data;
 								$output_data['reset'] = true;
 								$output_data['timestamp'] = time();
 								$to_output = array();
-								if ($nonce) { 
+								if ($nonce) {
 									$output_data['nonce'] = $nonce;
 									$to_output['nonce'] = 'nonce';
-								}								
+								}
 								$to_output['reset'] = 'reset';
 								$to_output['timestamp'] = 'timestamp';
-								$json = $this->prepare_output($to_output, $output_data);								
-								
+								$json = $this->prepare_output($to_output, $output_data);
+
 							} elseif (isset($__order_id)) {
-								
+
 								// get global and purchase only activations
 								$global_activations = get_option('jigoshop_software_global_activations');
 								$activations = get_post_meta($__order_id, 'activations', true);
-								
+
 								// loop through the activations and deactivate them
 								foreach ($activations as $instance => $activation) {
 									$global_activations[$instance]['active'] = false;
 									$activations[$instance]['active'] = false;
 								}
-								
+
 								update_option('jigoshop_software_global_activations', $global_activations);
 								update_post_meta($__order_id, 'activations', $activations);
 
 								// reset number of activations
-								$remaining_activations = $data['remaining_activations'];
-								$data['activations_possible'] = $remaining_activations;
+								$data['remaining_activations'] = $data['activations_possible'];
 								update_post_meta($__order_id, 'order_data', $data);
-								
+
 								$output_data = $data;
 								$output_data['reset'] = true;
 								$output_data['timestamp'] = time();
 								$to_output = array();
-								if ($nonce) { 
+								if ($nonce) {
 									$output_data['nonce'] = $nonce;
 									$to_output['nonce'] = 'nonce';
-								}								
+								}
 								$to_output['reset'] = 'reset';
 								$to_output['timestamp'] = 'timestamp';
-								$json = $this->prepare_output($to_output, $output_data);																
-								
+								$json = $this->prepare_output($to_output, $output_data);
+
 							} else {
 								$this->error('101', 'No purchase orders match this product ID and/or license key', null, $data);
-							}								
-						} 
-					}						
+							}
+						}
+					}
 				} else {
 					$this->error('101', 'No purchase orders match this email');
-				}	
-				
+				}
+
 				break;
-				
+
 				case 'generate_key' :
-				
+
 				$key = parent::generate_license_key();
 				$json = array('key' => $key);
-				
+
 				if (isset($method['format']) && $method['format'] == 'plain') {
 					die($key);
 				}
-				
+
 				break;
-				
+
 			endswitch;
-			
+
 			if (!isset($json)) $this->error('100', 'Invalid API Request');
 
 		} else {
-			
+
 			$this->error('100', 'No API Request Made');
-			
+
 		}
-		
+
 		header( "Cache-Control: no-store");
 		if (function_exists('header_remove')) {
 			header_remove("Cache-Control");
@@ -376,11 +375,11 @@ class jigoshop_software_api extends jigoshop_software {
 			header("X-Pingback: ");
 			header("X-Powered-By: ");
 			header("Set-Cookie: ");
-		}		
+		}
 		header( "Content-Type: application/json" );
 		die(json_encode($json));
 	}
-	
+
 	/**
 	 	* prepare_output()
 	 	* prepare the array which will be used for the json response. does all the magic for the sig to work
@@ -388,7 +387,7 @@ class jigoshop_software_api extends jigoshop_software {
 		* @param $data (array), the data from which to pull the secret product key
 		* @return $output (array), the data ready for json including the md5 sig
 		*/
-	function prepare_output($to_output = array(), $data = array()) {		
+	function prepare_output($to_output = array(), $data = array()) {
 		global $method;
 		$secret = (isset($data['secret_product_key'])) ? $data['secret_product_key'] : 'null';
 		$sig_array = array('secret' => $secret);
@@ -397,12 +396,12 @@ class jigoshop_software_api extends jigoshop_software {
 			if (is_string($k)) $output[$k] = $data[$v];
 			else $output[$v] = $data[$v];
 		}
-		
+
 		$sig_out = $output;
 		$sig_array = array_merge($sig_array, $sig_out);
 		foreach ($sig_array as $k => $v) {
 			if ($v === false) $v = "false";
-			if ($v === true) $v = "true";			
+			if ($v === true) $v = "true";
 			$sigjoined[] = "$k=$v";
 		}
 		$sig = implode('&', $sigjoined);
@@ -410,7 +409,7 @@ class jigoshop_software_api extends jigoshop_software {
 		$output['sig'] = $sig;
 		return $output;
 	}
-	
+
 	/**
 	 	* error()
 	 	* spits out an error in json
@@ -428,7 +427,7 @@ class jigoshop_software_api extends jigoshop_software {
 			break;
 			case '103' :
 				$error = array('error' => 'Exceeded maximum number of activations', 'code' => '103');
-			break;		
+			break;
 			default :
 				$error = array('error' => 'Invalid Request', 'code' => '100');
 			break;
@@ -436,14 +435,14 @@ class jigoshop_software_api extends jigoshop_software {
 		if (isset($this->debug) && $this->debug == true) {
 			if (@!$debug_message) $debug_message = 'No debug information available';
 			$error['additional info'] = $debug_message;
-		}	
+		}
 		if (isset($addtl_data['secret'])) {
 			$secret = $addtl_data['secret'];
 			unset($addtl_data['secret']);
 		}
 		foreach ($addtl_data as $k => $v) {
 			$error[$k] = $v;
-		}	
+		}
 		$secret = ($secret) ? $secret : 'null';
 		$error['timestamp'] = time();
 		foreach ($error as $k => $v) {
@@ -454,7 +453,7 @@ class jigoshop_software_api extends jigoshop_software {
 		$sig = implode('&', $sigjoined);
 		$sig = 'secret='.$secret.'&'.$sig;
 		if (!$this->debug) $sig = md5($sig);
-		$error['sig'] = $sig;		
+		$error['sig'] = $sig;
 		$json = $error;
 		header( "Cache-Control: no-store");
 		if (function_exists('header_remove')) {
@@ -472,12 +471,12 @@ class jigoshop_software_api extends jigoshop_software {
 			header("X-Pingback: ");
 			header("X-Powered-By: ");
 			header("Set-Cookie: ");
-		}		
+		}
 		header( "Content-Type: application/json" );
 		die(json_encode($json));
 		exit;
 	}
-		
+
 }
 
 new jigoshop_software_api(); // run the API

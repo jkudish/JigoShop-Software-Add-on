@@ -1,8 +1,7 @@
 #activations-table {margin: 20px 0;}
 #activations-table tbody td {padding: 10px 7px;}
-	
+
 .jgs_loader.loading {padding: 0 0 0 20px; background: url('../../../../wp-admin/images/wpspin_light.gif') 0 50% no-repeat; }
 #jgs_import_feedback {display: none; color: red;}
 #jgs_import_feedback.doing_import {color: green;}
 #jgs_import_feedback_done {display: none;}
-	

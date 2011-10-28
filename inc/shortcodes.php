@@ -13,9 +13,9 @@
 function jigoshop_software_checkout( $atts ) {
 
 	if (!defined('JIGOSHOP_CHECKOUT')) define('JIGOSHOP_CHECKOUT', true);
-			
+
 	include_once('checkout.php');
-	
+
 }
 remove_shortcode('jigoshop_checkout', 'jigoshop_checkout');
 add_shortcode('jigoshop_checkout', 'jigoshop_software_checkout');
@@ -28,8 +28,8 @@ add_shortcode('jigoshop_software_checkout', 'jigoshop_software_checkout');
 	* @since 1.0
 	*/
 function jigoshop_software_lost_license( $atts ) {
-			
+
 	include_once('lost-license.php');
-	
+
 }
 add_shortcode('jigoshop_software_lost_license', 'jigoshop_software_lost_license');
