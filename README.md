@@ -4,10 +4,21 @@ This plugin extends the WordPress [JigoShop](http://jigoshop.com/) e-commerce pl
 
 The code is well documented (inline) with more documentation to come. The project started off as a private client request, but is now public for anyone to collaborate on. That being said, the client continues to use this plugin and its updates, and thus there may be certain constraints before pushing an update (otherwise a branch may be required). We are open to any suggestions :)
 
-The plugin now requires JigoShop 0.9.9.1 or higher. If you need compatibility with an older version, please use version 1.8.8 or below of this plugin.
+The plugin requires JigoShop 1.1.1 or higher.
 
 Changelog
 ===========
+
+### 2.1
+* Made some adjustments to the code, to adhere to WordPress coding standards
+* Modified all &$this to $this (not required in PHP 5+)
+* Internationalize plugin
+* Complete phpDocs
+* use $_REQUEST instead of $method in the API
+* Stats page: visual bug when no activations yet
+* Added a new Deactivation API
+* Add an optional license key prefix per product
+* Verify and ensure compatibility with JigoShop 1.1.1 (which is now required)
 
 ### 2.0
 * activation reset method of the API now requires a valid license key (extra security measure)
