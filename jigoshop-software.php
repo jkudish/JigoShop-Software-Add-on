@@ -275,10 +275,11 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 		function product_write_panel() {
 			global $post;
 			$data = get_post_meta( $post->ID, 'product_data', true );
+			$this->define_fields();
 		?>
 			<div id="software_data" class="panel jigoshop_options_panel">
 			<?php
-				foreach (self::$product_fields as $field) :
+				foreach ($this->product_fields as $field) :
 					if ( $field['id'] == 'soft_product_id' ) $value = get_post_meta( $post->ID, 'soft_product_id', true );
 					else @$value = ( $field['id'] == 'up_license_keys' || $field['id'] == 'used_license_keys' ) ? $this->un_array_ify_keys( $data[$field['id']] ) : $data[$field['id']];
 					switch ($field['type']) :
@@ -340,12 +341,13 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 		function order_meta_box() {
 			global $post;
 			$data = (array) get_post_meta( $post->ID, 'order_data', true );
+			$this->define_fields();
 		?>
 			<div class="panel-wrap jigoshop">
 				<div id="order_software_data" class="panel jigoshop_options_panel">
 					<?php
-						foreach (self::$order_fields as $field) :
-							@$value = ( $field['id'] == 'activation_email' ) ? get_post_meta( $post->ID, 'activation_email', true ) : $data[$field['id']];
+						foreach ($this->order_fields as $field) :
+							@$value = ( $field['id'] == 'activation_email' ) ? get_post_meta( $post->ID, 'activation_email', true ) : ( isset( $data[$field['id']] ) ) ? $data[$field['id']] : null;
 							@$value = ( $field['id'] == 'transaction_id' ) ? get_post_meta( $post->ID, 'transaction_id', true ) : $value;
 							@$value = ( $field['id'] == 'old_order_id' ) ? get_post_meta( $post->ID, 'old_order_id', true ) : $value;
 							switch ($field['type']) :
@@ -1096,7 +1098,7 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 
 				// activation stuff
 				$order['version'] = $product['version'];
-				$order['license_key'] = ( get_post_meta( $item_id, 'license_key_prefix', true ) ) ? get_post_meta( $item_id, 'license_key_prefix', true ).$this->generate_license_key() : $this->generate_license_key();
+				$order['license_key'] = ( !empty( $product['license_key_prefix'] ) ) ? $product['license_key_prefix'].$this->generate_license_key() : $this->generate_license_key();
 				$order['activations_possible'] = $product['activations'];
 				$order['remaining_activations'] = $product['activations'];
 				$order['secret_product_key'] = $product['secret_product_key'];
