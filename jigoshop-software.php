@@ -7,6 +7,7 @@ Version: 2.1
 Author: Joachim Kudish
 Author URI: http://jkudish.com
 License: GPL v2
+Text Domain: jigoshop-software
 */
 
 /**
@@ -71,6 +72,8 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 			/**
 			 * hooks
 			 */
+
+			add_action( 'init', array( $this, 'load_lang' ) );
 
 			// backend stuff
 			add_action( 'product_write_panel_tabs', array( $this, 'product_write_panel_tab' ) );
@@ -183,8 +186,12 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 				array( 'id' => 'upgrade_name', 'label' => __( 'Upgraded from', 'jigoshop-software' ), 'title' => __( 'Upgraded from', 'jigoshop-software' ), 'placeholder' => '', 'type' => 'text' ),
 				array( 'id' => 'upgrade_price', 'label' => __( 'Upgrade price ($)', 'jigoshop-software' ), 'title' => __( 'Upgrade price ($)', 'jigoshop-software' ), 'placeholder' => '', 'type' => 'text' ),
 				array( 'id' => 'original_price', 'label' => __( 'Original price ($)', 'jigoshop-software' ), 'title' => __( 'Original price ($)', 'jigoshop-software' ), 'placeholder' => '', 'type' => 'text' ),
-		);
+			);
 
+		}
+
+		function load_lang() {
+			load_plugin_textdomain( 'jigoshop-software', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
 		}
 
 		/**
