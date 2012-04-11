@@ -757,7 +757,7 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 												<?php endif; ?>
 							        <?php endforeach; ?>
 										<?php else : ?>
-											<tr>No activations yet</tr>
+											<tr><td colspan="6"> No activations yet</td></tr>
 										<?php endif; ?>
 						      </tbody>
 						    </table>
