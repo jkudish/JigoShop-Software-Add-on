@@ -43,6 +43,7 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 		static $product_fields = array(
 			array( 'id' => 'is_software', 'label' => 'This product is Software', 'title' => 'This product is Software', 'placeholder' => '', 'type' => 'checkbox' ),
 			array( 'id' => 'soft_product_id', 'label' => 'Product ID to use for API:', 'title' => 'Product ID to use for API', 'placeholder' => 'ex: PRODUCT1', 'type' => 'text' ),
+			array( 'id' => 'license_key_prefix', 'label' => 'Prefix for License Key:', 'title' => 'Optional prefix for the license key', 'placeholder' => 'ex: SC-', 'type' => 'text' ),
 			array( 'id' => 'secret_product_key', 'label' => 'Secret Product Key to use for API:', 'title' => 'Secret Product Key to use  for API', 'placeholder' => 'any random string', 'type' => 'text' ),
 			array( 'id' => 'version', 'label' => 'Version Number:', 'title' => 'Version Number', 'placeholder' => 'ex: 1.0', 'type' => 'text' ),
 			array( 'id' => 'activations', 'label' => 'Amount of activations possible:', 'title' => 'Amount of activations possible', 'placeholder' => 'ex: 5', 'type' => 'text' ),
@@ -93,10 +94,10 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 			// backend stuff
 			add_action( 'product_write_panel_tabs', array( $this, 'product_write_panel_tab' ) );
 			add_action( 'product_write_panels', array( $this, 'product_write_panel' ) );
-			add_filter( 'process_product_meta', array( $this, 'product_save_data' ) );
+			add_filter( 'jigoshop_process_product_meta', array( $this, 'product_save_data' ) );
 			add_action( 'add_meta_boxes', array( $this, 'add_meta_boxes' ) );
 			add_action( 'jigoshop_process_shop_order_meta', array( $this, 'order_save_data' ), 1, 2 );
-			add_action( 'admin_print_styles', array( $this, 'admin_print_styles' ) );
+			add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue' ) );
 			add_action( 'admin_menu', array( $this, 'admin_menu' ) );
 			add_action( 'wp_ajax_nopriv_jgs_import', array( $this, 'import_ajax' ) );
 			add_action( 'wp_ajax_jgs_import', array( $this, 'import_ajax' ) );
@@ -276,14 +277,13 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 
 		/**
  			* product_save_data()
- 			* saves the data inputed into the product boxes
+ 			* saves the data inputed into the product boxes into a serialized array
  			*
-			* @see product_write_panel()
-			* @since 1.0
-			* @param array $data the data to save
+			* @since 2.0
 			*/
-		function product_save_data( $data ) {
+		function product_save_data() {
 			global $post;
+			$data = get_post_meta( $post->ID, 'product_data', true );
 			foreach ( self::$product_fields as $field ) {
 				if ( $field['id'] == 'up_license_keys' || $field['id'] == 'used_license_keys' ) {
 					$data[$field['id']] = $this->array_ify_keys( $_POST[$field['id']] );
@@ -293,7 +293,7 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 					$data[$field['id']] = esc_attr( $_POST[$field['id']] );
 				}
 			}
-			return $data;
+			update_post_meta( $post->ID, 'product_data', $data );
 		}
 
 		/**
@@ -388,15 +388,15 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 		function order_save_data() {
 			global $post;
 			$data = get_post_meta($post->ID, 'order_data', true);
-			foreach (self::$order_fields as $field) {
-				if (isset($_POST[$field['id']])) {
-					if ($field['id'] == 'activation_email') update_post_meta($post->ID, 'activation_email', $_POST[$field['id']]);
+			foreach ( self::$order_fields as $field ) {
+				if ( isset( $_POST[$field['id']] ) ) {
+					if ( $field['id'] == 'activation_email' ) update_post_meta( $post->ID, 'activation_email', $_POST[$field['id']] );
 					else $data[$field['id']] = esc_attr( $_POST[$field['id']] );
 				}
 			}
-			update_post_meta($post->ID, 'order_data', $data);
-			if (isset($_POST['resend_email'])) {
-				$this->process_email($post->ID, 'completed_purchase');
+			update_post_meta( $post->ID, 'order_data', $data );
+			if ( isset( $_POST['resend_email'] ) ) {
+				$this->process_email( $post->ID, 'completed_purchase' );
 			}
 		}
 
@@ -407,17 +407,17 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 			*/
 		function order_further_actions_meta_box() { ?>
 			<ul class="order_actions">
-				<li><input type="submit" class="button button-primary" name="resend_email" value="<?php _e( 'Resend Email', 'jigoshop' ); ?>" /> <?php _e( '- Resend Purchase Email .' , 'jigoshop' ); ?></li>
+				<li><input type="submit" class="button button-primary" name="resend_email" value="<?php _e( 'Resend Email', 'jigoshop' ); ?>" /> &mdash; <?php _e( 'Resend Purchase Email' , 'jigoshop' ); ?></li>
 			</ul>
 			<?php
 		}
 
 		/**
- 			* admin_print_styles()
+ 			* admin_enqueue()
  			* adds css to the back-end
-			* @since 1.0
+			* @since 2.0
 			*/
-    function admin_print_styles() {
+    function admin_enqueue() {
 			wp_register_style( 'jigoshop_software_backend', plugins_url( 'inc/back-end.css', __FILE__ ) );
 			wp_enqueue_style( 'jigoshop_software_backend' );
     }
@@ -717,7 +717,10 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 						<div class="postbox">
 							<h3>Activations <?php echo $date_str?></h3>
 							<div class="inside">
-								<?php $activations = array_reverse( get_option( 'jigoshop_software_global_activations' ) ); ?>
+								<?php
+								$activations = get_option( 'jigoshop_software_global_activations' );
+								$activations = ( is_array( $activations ) ) ? array_reverse( $activations ) : $activations;
+								?>
 						    <table id="activations-table" class="widefat" style="width: 100%; max-width: 1000px">
 						      <thead>
 						        <tr>
@@ -977,7 +980,7 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 			/**
 			 * @todo use add_query_arg
 			 */
-			if ($no_js) wp_safe_redirect( jigoshop_cart::get_checkout_url() . '?no-js=trues' );
+			if ($no_js) wp_safe_redirect( jigoshop_cart::get_checkout_url() . '?no-js=true' );
 
 			$item_id = esc_attr( $_POST['item_id']) ;
 			$qty = 1; // always 1 because it's a buy now situation not a cart situation
@@ -986,7 +989,11 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 			// nonce verification
 			if ( isset( $_POST['jgs_checkout_nonce'] ) && !wp_verify_nonce( $_POST['jgs_checkout_nonce'], 'jgs_checkout' ) ) $messages['nonce'] = 'An error has occurred, please try again';
 
-			$key = esc_attr( $_POST['up_key'] );
+			if ( isset($_POST['up_key']) ) {
+				$key = esc_attr( $_POST['up_key'] );
+			} else {
+				$key = null;
+			}
 
 			// email validation
 			$email = strtolower( esc_attr( $_POST['jgs_email'] ) );
@@ -994,12 +1001,11 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 			elseif ( !is_email( $email ) ) $messages['email'] = 'Please enter a valid email address';
 
 			// key validation
-			if ( $key != '' && !$this->is_valid_upgrade_key( $key, $item_id ) ) $messages['key'] = 'The key you have entered is not valid, please try again or contact us if you need additional help';
+			if ( $key && $key != '' && !$this->is_valid_upgrade_key( $key, $item_id ) ) $messages['key'] = 'The key you have entered is not valid, please try again or contact us if you need additional help';
 
 			// if there is no message, then validation passed
 			if ( !$messages ) {
-
-				if ($this->is_valid_upgrade_key($key, $item_id)) $upgrade = true;
+				if ( $this->is_valid_upgrade_key( $key, $item_id ) ) $upgrade = true;
 
 				$success = true;
 
@@ -1011,8 +1017,8 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 				);
 
 				$product = get_post_meta( $item_id, 'product_data', true );
-				$sale_price = $product['sale_price'];
-				$regular_price = $product['regular_price'];
+				$sale_price = get_post_meta( $item_id, 'sale_price', true );
+				$regular_price = get_post_meta( $item_id, 'regular_price', true );
 				$price = ( $sale_price && $sale_price != '' ) ? $sale_price : $regular_price;
 
 				if ( $upgrade ) {
@@ -1040,7 +1046,7 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 
 				// activation stuff
 				$order['version'] = $product['version'];
-				$order['license_key'] = $this->generate_license_key();
+				$order['license_key'] = ( get_post_meta( $item_id, 'license_key_prefix', true ) ) ? get_post_meta( $item_id, 'license_key_prefix', true ).$this->generate_license_key() : $this->generate_license_key();
 				$order['activations_possible'] = $product['activations'];
 				$order['remaining_activations'] = $product['activations'];
 				$order['secret_product_key'] = $product['secret_product_key'];
@@ -1623,5 +1629,5 @@ if ( is_admin() ) {
 		'requires' => JIGOSHOP_SOFTWARE_REQUIRES_WP,
 		'tested' => JIGOSHOP_SOFTWARE_TESTED_WP,
 	);
-	new wp_github_updater( $config );
+	$github_updater = new wp_github_updater( $config );
 }

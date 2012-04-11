@@ -6,39 +6,40 @@
 	* @author Joachim Kudish <info@jkudish.com>
 	*/
 
-if (!empty($_GET['empty']) && $_GET['empty'] == true) {
+if ( !empty( $_GET['empty'] ) && $_GET['empty'] == true ) {
 	jigoshop_cart::empty_cart();
-	wp_redirect(site_url('/checkout')); exit;
+	wp_redirect( site_url( '/checkout' ) ); exit;
 }
 
 
-if ( sizeof(jigoshop_cart::$cart_contents) > 0 ) :
+if ( sizeof( jigoshop_cart::$cart_contents ) > 0 ) :
 	foreach (jigoshop_cart::$cart_contents as $item => $values) :
 
 		// data
 		$item_id = $values['product_id'];
 		$qty = 1; // force it
-		$data = $values['data']->data;
-		$up_name = $data['upgradable_product'];
-		$version = $data['version'];
+		$data = $values['data']->meta;
+		$product_data = maybe_unserialize($data['product_data'][0]);
+		$up_name = $product_data['upgradable_product'];
+		$version = $product_data['version'];
 
 		// prices
-		$sale_price = $data['sale_price'];
-		$regular_price = $data['regular_price'];
-		$price = ($sale_price && $sale_price != '') ? $sale_price : $regular_price;
-		$up_price = $data['up_price'];
+		$sale_price = $data['sale_price'][0];
+		$regular_price = $data['regular_price'][0];
+		$price = ($sale_price && $sale_price != '' && $sale_price != 0 && $sale_price != '0') ? $sale_price : $regular_price;
+		$up_price = $product_data['up_price'];
 
 		// prices format in US dollars
-		setlocale(LC_MONETARY, 'en_US');
-		@$echo_price = money_format('%(#10n', $price);
-		@$echo_up_price = money_format('%(#10n', $up_price);
+		setlocale( LC_MONETARY, 'en_US' );
+		@$echo_price = money_format( '%(#10n', $price );
+		@$echo_up_price = money_format( '%(#10n', $up_price );
 
 
 	?>
 			<div class="jgs_page" id="jgs_checkout">
-				<form id="jgs_checkout_form" action="<?php echo admin_url('admin-ajax.php') ?>" method="post">
+				<form id="jgs_checkout_form" action="<?php echo admin_url( 'admin-ajax.php' ) ?>" method="post">
 					<div class="form-row">
-						<h2>Purchasing: <?php echo get_the_title($item_id) ?></h2>
+						<h2>Purchasing: <?php echo get_the_title( $item_id ) ?></h2>
 						<p>
 							<strong>Price</strong>: <?php echo $echo_price ?><br>
 							<strong>Quantity</strong>: <?php echo $qty ?><br>
