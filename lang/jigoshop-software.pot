@@ -1,0 +1,648 @@
+# Copyright (C) 2012 JigoShop - Software Add-On
+# This file is distributed under the same license as the JigoShop - Software Add-On package.
+msgid ""
+msgstr ""
+"Project-Id-Version: JigoShop - Software Add-On 2.1\n"
+"Report-Msgid-Bugs-To: http://wordpress.org/tag/jigoshop-software\n"
+"POT-Creation-Date: 2012-04-11 05:56:39+00:00\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2012-04-10 22:58-0800\n"
+"Last-Translator: Joachim Kudish <info@jkudish.com>\n"
+"Language-Team: Joachim Kudish <info@jkudish.com>\n"
+"X-Poedit-Language: English\n"
+"X-Poedit-Country: United States\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+
+#: inc/api.php:62
+msgid "Product ID not found"
+msgstr ""
+
+#: inc/api.php:77
+msgid "No product ID given"
+msgstr ""
+
+#: inc/api.php:95
+#: inc/api.php:245
+#: inc/api.php:349
+msgid "The following required information is missing"
+msgstr ""
+
+#: inc/api.php:105
+#: inc/api.php:252
+#: inc/api.php:356
+msgid "The email provided is invalid"
+msgstr ""
+
+#: inc/api.php:156
+msgid "This instance isn't active"
+msgstr ""
+
+#: inc/api.php:160
+msgid "This instance doesn't exist"
+msgstr ""
+
+#: inc/api.php:198
+#: jigoshop-software.php:1344
+msgid "out of"
+msgstr ""
+
+#: inc/api.php:198
+#: jigoshop-software.php:1344
+msgid "activations remaining"
+msgstr ""
+
+#: inc/api.php:209
+msgid "Remaining activations is equal to zero"
+msgstr ""
+
+#: inc/api.php:213
+msgid "The purchase matching this product is not complete"
+msgstr ""
+
+#: inc/api.php:221
+msgid "No purchase orders match this product ID and license key"
+msgstr ""
+
+#: inc/api.php:225
+msgid "No purchase orders match this e-mail"
+msgstr ""
+
+#: inc/api.php:311
+#: inc/api.php:419
+msgid "No purchase orders match this license key"
+msgstr ""
+
+#: inc/api.php:313
+msgid "No purchase orders match this productid"
+msgstr ""
+
+#: inc/api.php:315
+#: inc/api.php:421
+msgid "An undisclosed error occurred"
+msgstr ""
+
+#: inc/api.php:319
+#: inc/api.php:425
+msgid "No purchase orders match this email"
+msgstr ""
+
+#: inc/api.php:388
+msgid "The instance ID provided is already deactivated"
+msgstr ""
+
+#: inc/api.php:391
+msgid "The instance ID provided is invalid"
+msgstr ""
+
+#: inc/api.php:432
+msgid "Invalid API Request"
+msgstr ""
+
+#: inc/api.php:434
+msgid "No API Request Made"
+msgstr ""
+
+#: inc/api.php:496
+msgid "Invalid License Key"
+msgstr ""
+
+#: inc/api.php:499
+msgid "Software has been deactivated"
+msgstr ""
+
+#: inc/api.php:502
+msgid "Exceeded maximum number of activations"
+msgstr ""
+
+#: inc/api.php:505
+msgid "Invalid Instance ID"
+msgstr ""
+
+#: inc/api.php:508
+msgid "Invalid Request"
+msgstr ""
+
+#: inc/api.php:512
+msgid "No debug information available"
+msgstr ""
+
+#: inc/checkout.php:43
+msgid "Purchasing"
+msgstr ""
+
+#: inc/checkout.php:45
+msgid "Price"
+msgstr ""
+
+#: inc/checkout.php:46
+msgid "Quantity"
+msgstr ""
+
+#: inc/checkout.php:47
+msgid "Total"
+msgstr ""
+
+#: inc/checkout.php:49
+msgid "Please enter your email below, then click <em>purchase now</em> below to complete the purchase with Paypal."
+msgstr ""
+
+#: inc/checkout.php:50
+#: inc/lost-license.php:15
+msgid "You need javascript in order to be able to checkout. Please enable javascript and try again."
+msgstr ""
+
+#: inc/checkout.php:53
+#: inc/lost-license.php:18
+msgid "Your email address"
+msgstr ""
+
+#: inc/checkout.php:58
+msgid "Upgrade from"
+msgstr ""
+
+#: inc/checkout.php:59
+msgid "If you have a valid %s license key, you can upgrade to the current version (%s). Please enter your old license key below and click upgrade now. The order information below will update once you complete this step."
+msgstr ""
+
+#: inc/checkout.php:60
+msgid "Upgrade Price"
+msgstr ""
+
+#: inc/checkout.php:63
+msgid "Key"
+msgstr ""
+
+#: inc/checkout.php:94
+#: jigoshop-software.php:1438
+msgid "An error has occurred, please refresh the page and try again."
+msgstr ""
+
+#: inc/checkout.php:100
+msgid "An error has occurred, please try again."
+msgstr ""
+
+#: inc/checkout.php:115
+msgctxt "...shop"
+msgid "You haven't bought anything yet. Go back to the"
+msgstr ""
+
+#: inc/checkout.php:115
+msgid "Shop"
+msgstr ""
+
+#: inc/lost-license.php:12
+msgid "Lost License"
+msgstr ""
+
+#: inc/lost-license.php:13
+msgid "Please tell us the email address used during the purchase. Your license along with the order receipt will be sent by email."
+msgstr ""
+
+#: inc/lost-license.php:14
+msgid "If your email address has changed, please"
+msgstr ""
+
+#: inc/lost-license.php:14
+msgid "contact us"
+msgstr ""
+
+#: jigoshop-software.php:160
+msgid "This product is Software"
+msgstr ""
+
+#: jigoshop-software.php:161
+msgid "Product ID to use for API"
+msgstr ""
+
+#: jigoshop-software.php:161
+msgid "ex: PRODUCT1"
+msgstr ""
+
+#: jigoshop-software.php:162
+msgid "Prefix for License Key"
+msgstr ""
+
+#: jigoshop-software.php:162
+msgid "Optional prefix for the license key"
+msgstr ""
+
+#: jigoshop-software.php:162
+msgid "ex: SC-"
+msgstr ""
+
+#: jigoshop-software.php:163
+#: jigoshop-software.php:182
+msgid "Secret Product Key to use for API"
+msgstr ""
+
+#: jigoshop-software.php:163
+msgid "Secret Product Key to use  for API"
+msgstr ""
+
+#: jigoshop-software.php:163
+#: jigoshop-software.php:182
+msgid "any random string"
+msgstr ""
+
+#: jigoshop-software.php:164
+msgid "Version Number"
+msgstr ""
+
+#: jigoshop-software.php:164
+msgid "ex: 1.0"
+msgstr ""
+
+#: jigoshop-software.php:165
+msgid "Amount of activations possible"
+msgstr ""
+
+#: jigoshop-software.php:165
+msgid "ex: 5"
+msgstr ""
+
+#: jigoshop-software.php:166
+msgid "Trial Period (amount of days or hours)"
+msgstr ""
+
+#: jigoshop-software.php:166
+msgid "ex: 15"
+msgstr ""
+
+#: jigoshop-software.php:167
+msgid "Trial Units"
+msgstr ""
+
+#: jigoshop-software.php:168
+msgid "Upgradable Product Name"
+msgstr ""
+
+#: jigoshop-software.php:169
+msgid "Upgradable Product Keys"
+msgstr ""
+
+#: jigoshop-software.php:169
+#: jigoshop-software.php:170
+msgid "Comma separated list"
+msgstr ""
+
+#: jigoshop-software.php:170
+msgid "Used Upgrade Keys"
+msgstr ""
+
+#: jigoshop-software.php:171
+msgid "Upgrade Price ($)"
+msgstr ""
+
+#: jigoshop-software.php:171
+msgid "ex: 1.00"
+msgstr ""
+
+#: jigoshop-software.php:172
+#: jigoshop-software.php:177
+msgid "Paypal Name to show on transaction receipts"
+msgstr ""
+
+#: jigoshop-software.php:172
+#: jigoshop-software.php:177
+msgid "ex: Google Inc."
+msgstr ""
+
+#: jigoshop-software.php:176
+msgid "Activation Email"
+msgstr ""
+
+#: jigoshop-software.php:178
+msgid "Transaction ID"
+msgstr ""
+
+#: jigoshop-software.php:179
+#: jigoshop-software.php:769
+#: jigoshop-software.php:779
+msgid "Product ID"
+msgstr ""
+
+#: jigoshop-software.php:180
+msgid "Max Activations Allowed"
+msgstr ""
+
+#: jigoshop-software.php:181
+msgid "Remaining Activations"
+msgstr ""
+
+#: jigoshop-software.php:183
+#: jigoshop-software.php:389
+#: jigoshop-software.php:398
+#: jigoshop-software.php:773
+#: jigoshop-software.php:783
+msgid "Version"
+msgstr ""
+
+#: jigoshop-software.php:184
+msgid "Legacy order ID"
+msgstr ""
+
+#: jigoshop-software.php:185
+msgid "This is an upgrade if checked"
+msgstr ""
+
+#: jigoshop-software.php:186
+msgid "Upgraded from"
+msgstr ""
+
+#: jigoshop-software.php:187
+msgid "Upgrade price ($)"
+msgstr ""
+
+#: jigoshop-software.php:188
+msgid "Original price ($)"
+msgstr ""
+
+#: jigoshop-software.php:210
+msgctxt "A link to JigoShop is provided in the placeholders"
+msgid "The JigoShop Software Add-On requires %s to be activated in order to work. Please activate %s first."
+msgstr ""
+
+#: jigoshop-software.php:210
+msgctxt "Activation failed, so go back to the plugins page"
+msgid "Go Back"
+msgstr ""
+
+#: jigoshop-software.php:217
+msgctxt "title of a page"
+msgid "Lost License"
+msgstr ""
+
+#: jigoshop-software.php:230
+msgctxt "title of a page"
+msgid "API"
+msgstr ""
+
+#: jigoshop-software.php:252
+msgid "Software Purchase Details"
+msgstr ""
+
+#: jigoshop-software.php:253
+#: jigoshop-software.php:1344
+msgid "Activations"
+msgstr ""
+
+#: jigoshop-software.php:254
+msgid "Further Actions"
+msgstr ""
+
+#: jigoshop-software.php:265
+msgid "Software"
+msgstr ""
+
+#: jigoshop-software.php:386
+#: jigoshop-software.php:395
+#: jigoshop-software.php:770
+#: jigoshop-software.php:780
+msgid "Instance"
+msgstr ""
+
+#: jigoshop-software.php:387
+#: jigoshop-software.php:396
+#: jigoshop-software.php:771
+#: jigoshop-software.php:781
+msgid "Status"
+msgstr ""
+
+#: jigoshop-software.php:388
+#: jigoshop-software.php:397
+#: jigoshop-software.php:772
+#: jigoshop-software.php:782
+msgid "Date & Time"
+msgstr ""
+
+#: jigoshop-software.php:390
+#: jigoshop-software.php:399
+#: jigoshop-software.php:774
+#: jigoshop-software.php:784
+msgid "Operating System"
+msgstr ""
+
+#: jigoshop-software.php:406
+msgid "Activated"
+msgstr ""
+
+#: jigoshop-software.php:406
+msgid "Deactivated"
+msgstr ""
+
+#: jigoshop-software.php:415
+msgid "No activations yet"
+msgstr ""
+
+#: jigoshop-software.php:449
+msgid "Resend Email"
+msgstr ""
+
+#: jigoshop-software.php:449
+msgid "Resend Purchase Email"
+msgstr ""
+
+#: jigoshop-software.php:507
+msgid "Stats"
+msgstr ""
+
+#: jigoshop-software.php:508
+#: jigoshop-software.php:1385
+msgid "Import"
+msgstr ""
+
+#: jigoshop-software.php:534
+#: jigoshop-software.php:564
+msgid "Software Sales & Activations"
+msgstr ""
+
+#: jigoshop-software.php:540
+msgid "Choose dates to show for stats"
+msgstr ""
+
+#: jigoshop-software.php:544
+msgid "Start date"
+msgstr ""
+
+#: jigoshop-software.php:549
+msgid "End date"
+msgstr ""
+
+#: jigoshop-software.php:683
+msgid "Number of sales"
+msgstr ""
+
+#: jigoshop-software.php:683
+msgid "Sales amount"
+msgstr ""
+
+#: jigoshop-software.php:683
+msgid "Number of activations"
+msgstr ""
+
+#: jigoshop-software.php:855
+#: jigoshop-software.php:871
+msgid "Buy Now"
+msgstr ""
+
+#: jigoshop-software.php:1040
+#: jigoshop-software.php:1178
+msgid "An error has occurred, please try again"
+msgstr ""
+
+#: jigoshop-software.php:1050
+#: jigoshop-software.php:1182
+msgid "Please enter your email"
+msgstr ""
+
+#: jigoshop-software.php:1051
+#: jigoshop-software.php:1183
+msgid "Please enter a valid email address"
+msgstr ""
+
+#: jigoshop-software.php:1054
+msgid "The key you have entered is not valid, please try again or contact us if you need additional help"
+msgstr ""
+
+#: jigoshop-software.php:1198
+msgid "There are no purchase records for this email address. Please try again. If you think there is a mistake, please contact us."
+msgstr ""
+
+#: jigoshop-software.php:1231
+msgid "Your request has been accepted. You should receive an email shortly with all of your purchase history."
+msgstr ""
+
+#: jigoshop-software.php:1234
+msgid "Your purchases are not completed. If you think there is a mistake, please contact us."
+msgstr ""
+
+#: jigoshop-software.php:1310
+msgid "Purchase Confirmation"
+msgstr ""
+
+#: jigoshop-software.php:1325
+msgid "Recovered Licenses"
+msgstr ""
+
+#: jigoshop-software.php:1335
+msgid "Order"
+msgstr ""
+
+#: jigoshop-software.php:1337
+msgid "Item"
+msgstr ""
+
+#: jigoshop-software.php:1338
+msgid "Item Price"
+msgstr ""
+
+#: jigoshop-software.php:1339
+msgid "Purchase date"
+msgstr ""
+
+#: jigoshop-software.php:1340
+msgid "Account Name"
+msgstr ""
+
+#: jigoshop-software.php:1341
+msgid "License Key"
+msgstr ""
+
+#: jigoshop-software.php:1342
+msgid "Transaction Total"
+msgstr ""
+
+#: jigoshop-software.php:1342
+msgid "via paypal"
+msgstr ""
+
+#: jigoshop-software.php:1343
+msgid "Currency"
+msgstr ""
+
+#: jigoshop-software.php:1353
+msgid "Activation Confirmation"
+msgstr ""
+
+#: jigoshop-software.php:1391
+msgid "Enter the path/filename of the import file"
+msgstr ""
+
+#: jigoshop-software.php:1393
+msgid "Recommended"
+msgstr ""
+
+#: jigoshop-software.php:1393
+msgid "back up the database before proceeding"
+msgstr ""
+
+#: jigoshop-software.php:1415
+msgid "Importing"
+msgstr ""
+
+#: jigoshop-software.php:1415
+msgid "records. Please be patient."
+msgstr ""
+
+#: jigoshop-software.php:1422
+msgid "All Records Imported!"
+msgstr ""
+
+#: jigoshop-software.php:1428
+msgid "An error has occurred and the import did not complete, please refresh the page and try again."
+msgstr ""
+
+#: jigoshop-software.php:1472
+msgid "This file doesn't contain an $import array, please try again."
+msgstr ""
+
+#: jigoshop-software.php:1474
+msgid "This file doesn't exist or doesn't have read permissions, please try again."
+msgstr ""
+
+#: jigoshop-software.php:1626
+msgid "The following record failed to import"
+msgstr ""
+
+#: jigoshop-software.php:1630
+msgid "The following record was a duplicate"
+msgstr ""
+
+#: jigoshop-software.php:1633
+msgid "records successfully imported."
+msgstr ""
+
+#: pomo/sample/app.php:56
+msgid "Welcome %s!"
+msgstr ""
+
+#: pomo/sample/app.php:60
+msgid "A string with low priority!"
+msgstr ""
+
+#: pomo/sample/app.php:62
+msgid "Bye\n"
+msgstr ""
+
+#. Plugin Name of the plugin/theme
+msgid "JigoShop - Software Add-On"
+msgstr ""
+
+#. Plugin URI of the plugin/theme
+msgid "https://github.com/jkudish/JigoShop-Software-Add-on/"
+msgstr ""
+
+#. Description of the plugin/theme
+msgid "Extends JigoShop to a full-blown software shop, including license activation, license retrieval, activation e-mails and more"
+msgstr ""
+
+#. Author of the plugin/theme
+msgid "Joachim Kudish"
+msgstr ""
+
+#. Author URI of the plugin/theme
+msgid "http://jkudish.com"
+msgstr ""
+

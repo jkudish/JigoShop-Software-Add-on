@@ -3,14 +3,14 @@
 Plugin Name: JigoShop - Software Add-On
 Plugin URI: https://github.com/jkudish/JigoShop-Software-Add-on/
 Description: Extends JigoShop to a full-blown software shop, including license activation, license retrieval, activation e-mails and more
-Version: 2.0
+Version: 2.1
 Author: Joachim Kudish
 Author URI: http://jkudish.com
-License: GPL v3
+License: GPL v2
 */
 
 /**
-	* @version 2.0
+	* @version 2.1
 	* @author Joachim Kudish <info@jkudish.com>
 	* @link http://jkudish.com
 	* @uses JigoShop @link http://jigoshop.com
@@ -39,48 +39,29 @@ License: GPL v3
 if ( !class_exists( 'Jigoshop_Software' ) ) {
 	class Jigoshop_Software {
 
-		// define the product metadata fields used by this plugin
-		static $product_fields = array(
-			array( 'id' => 'is_software', 'label' => 'This product is Software', 'title' => 'This product is Software', 'placeholder' => '', 'type' => 'checkbox' ),
-			array( 'id' => 'soft_product_id', 'label' => 'Product ID to use for API:', 'title' => 'Product ID to use for API', 'placeholder' => 'ex: PRODUCT1', 'type' => 'text' ),
-			array( 'id' => 'license_key_prefix', 'label' => 'Prefix for License Key:', 'title' => 'Optional prefix for the license key', 'placeholder' => 'ex: SC-', 'type' => 'text' ),
-			array( 'id' => 'secret_product_key', 'label' => 'Secret Product Key to use for API:', 'title' => 'Secret Product Key to use  for API', 'placeholder' => 'any random string', 'type' => 'text' ),
-			array( 'id' => 'version', 'label' => 'Version Number:', 'title' => 'Version Number', 'placeholder' => 'ex: 1.0', 'type' => 'text' ),
-			array( 'id' => 'activations', 'label' => 'Amount of activations possible:', 'title' => 'Amount of activations possible', 'placeholder' => 'ex: 5', 'type' => 'text' ),
-			array( 'id' => 'trial', 'label' => 'Trial Period (amount of days or hours):', 'title' => 'Trial Period (amount of days or hours)', 'placeholder' => 'ex: 15', 'type' => 'text' ),
-			array( 'id' => 'trial_unit', 'label' => 'Trial Units:', 'title' => 'Trial Units', 'type' => 'select', 'values' => array( 'days' => 'Days', 'hours' => 'Hours' ) ),
-			array( 'id' => 'upgradable_product', 'label' => 'Upgradable Product Name:', 'title' => 'Upgradable Product Name', 'placeholder' => '', 'type' => 'text' ),
-			array( 'id' => 'up_license_keys', 'label' => 'Upgradable Product Keys:', 'title' => 'Upgradable Product Keys', 'placeholder' => 'Comma separated list', 'type' => 'textarea' ),
-			array( 'id' => 'used_license_keys', 'label' => 'Used Upgrade Keys:', 'title' => 'Used Upgrade Keys', 'placeholder' => 'Comma separated list', 'type' => 'textarea' ),
-			array( 'id' => 'up_price', 'label' => 'Upgrade Price ($):', 'title' => 'Upgrade Price ($)', 'placeholder' => 'ex: 1.00', 'type' => 'text' ),
-			array( 'id' => 'paypal_name', 'label' => 'Paypal Name to show on transaction receipts:', 'title' => 'Paypal Name to show on transaction receipts', 'placeholder' => 'ex: Google Inc.', 'type' => 'text' ),
-		);
+		/**
+		 * the product fields
+		 * @var array
+		 */
+		static $product_fields;
 
-		// define the order metadata fields used by this plugin
-		static $order_fields = array(
-			array( 'id' => 'activation_email', 'label' => 'Activation Email:', 'title' => 'Activation Email', 'placeholder' => '', 'type' => 'text' ),
-			array( 'id' => 'paypal_name', 'label' => 'Paypal Name to show on transaction receipts:', 'title' => 'Paypal Name to show on transaction receipts', 'placeholder' => 'ex: Google Inc.', 'type' => 'text' ),
-			array( 'id' => 'transaction_id', 'label' => 'Transaction ID:', 'title' => 'Transaction ID', 'placeholder' => '', 'type' => 'text' ),
-			array( 'id' => 'productid', 'label' => 'Product ID:', 'title' => 'Product ID', 'placeholder' => '', 'type' => 'text' ),
-			array( 'id' => 'activations_possible', 'label' => 'Max Activations Allowed:', 'title' => 'Max Activations Allowed', 'placeholder' => '', 'type' => 'text' ),
-			array( 'id' => 'remaining_activations', 'label' => 'Remaining Activations:', 'title' => 'Remaining Activations', 'placeholder' => '', 'type' => 'text' ),
-			array( 'id' => 'secret_product_key', 'label' => 'Secret Product Key to use for API:', 'title' => 'Secret Product Key to use for API', 'placeholder' => 'any random string', 'type' => 'text' ),
-			array( 'id' => 'version', 'label' => 'Version:', 'title' => 'Version', 'placeholder' => '', 'type' => 'text' ),
-			array( 'id' => 'old_order_id', 'label' => 'Legacy order ID:', 'title' => 'Legacy order ID', 'placeholder' => '', 'type' => 'text' ),
-			array( 'id' => 'is_upgrade', 'label' => 'This is an upgrade if checked', 'title' => 'This is an upgrade if checked', 'placeholder' => '', 'type' => 'checkbox' ),
-			array( 'id' => 'upgrade_name', 'label' => 'Upgraded from:', 'title' => 'License Key', 'placeholder' => '', 'type' => 'text' ),
-			array( 'id' => 'upgrade_price', 'label' => 'Upgrade price ($):', 'title' => 'License Key', 'placeholder' => '', 'type' => 'text' ),
-			array( 'id' => 'original_price', 'label' => 'Original price ($):', 'title' => 'License Key', 'placeholder' => '', 'type' => 'text' ),
-		);
+		/**
+		 * the order fields
+		 * @var array
+		 */
+		static $order_fields;
 
 	/**
-		* __construct()
+		* class constructor
 		* plugin activation, hooks & filters, etc..
+		*
 		* @since 1.0
+		* @return void
 		*/
 		function __construct() {
 
 			$this->define_constants();
+			$this->define_fields();
 
 			// set the right time zone from WP options
 			if ( get_option( 'timezone_string' ) != '' ) {
@@ -147,9 +128,10 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 		}
 
 		/**
- 			* define_constants()
  			* defines the constants we need for the plugin
+ 			*
 			* @since 1.3
+			* @return void
 			*/
 		function define_constants() {
 			if ( !defined( 'JIGOSHOP_SOFTWARE_PATH' ) ) define( 'JIGOSHOP_SOFTWARE_PATH', dirname( __FILE__ ) );
@@ -164,25 +146,68 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 		}
 
 		/**
- 			* activation()
+ 			* defines the fields used in the plugin
+ 			*
+			* @since 2.1
+			* @return void
+			*/
+		function define_fields() {
+					// define the product metadata fields used by this plugin
+			$this->product_fields = array(
+				array( 'id' => 'is_software', 'label' => __( 'This product is Software', 'jigoshop-software' ), 'title' => __( 'This product is Software', 'jigoshop-software' ), 'placeholder' => '', 'type' => 'checkbox' ),
+				array( 'id' => 'soft_product_id', 'label' => __( 'Product ID to use for API', 'jigoshop-software' ), 'title' => __( 'Product ID to use for API', 'jigoshop-software' ), 'placeholder' => __( 'ex: PRODUCT1', 'jigoshop-software' ), 'type' => 'text' ),
+				array( 'id' => 'license_key_prefix', 'label' => __( 'Prefix for License Key', 'jigoshop-software' ), 'title' => __( 'Optional prefix for the license key', 'jigoshop-software' ), 'placeholder' => __( 'ex: SC-', 'jigoshop-software' ), 'type' => 'text' ),
+				array( 'id' => 'secret_product_key', 'label' => __( 'Secret Product Key to use for API', 'jigoshop-software' ), 'title' => __( 'Secret Product Key to use  for API', 'jigoshop-software' ), 'placeholder' => __( 'any random string', 'jigoshop-software' ), 'type' => 'text' ),
+				array( 'id' => 'version', 'label' => __( 'Version Number', 'jigoshop-software' ), 'title' => __( 'Version Number', 'jigoshop-software' ), 'placeholder' => __( 'ex: 1.0', 'jigoshop-software' ), 'type' => 'text' ),
+				array( 'id' => 'activations', 'label' => __( 'Amount of activations possible', 'jigoshop-software' ), 'title' => __( 'Amount of activations possible', 'jigoshop-software' ), 'placeholder' => __( 'ex: 5', 'jigoshop-software' ), 'type' => 'text' ),
+				array( 'id' => 'trial', 'label' => __( 'Trial Period (amount of days or hours)', 'jigoshop-software' ), 'title' => __( 'Trial Period (amount of days or hours)', 'jigoshop-software' ), 'placeholder' => __( 'ex: 15', 'jigoshop-software' ), 'type' => 'text' ),
+				array( 'id' => 'trial_unit', 'label' => __( 'Trial Units', 'jigoshop-software' ), 'title' => __( 'Trial Units', 'jigoshop-software' ), 'type' => 'select', 'values' => array( 'days' => 'Days', 'hours' => 'Hours' ) ),
+				array( 'id' => 'upgradable_product', 'label' => __( 'Upgradable Product Name', 'jigoshop-software' ), 'title' => __( 'Upgradable Product Name', 'jigoshop-software' ), 'placeholder' => '', 'type' => 'text' ),
+				array( 'id' => 'up_license_keys', 'label' => __( 'Upgradable Product Keys', 'jigoshop-software' ), 'title' => __( 'Upgradable Product Keys', 'jigoshop-software' ), 'placeholder' => __( 'Comma separated list', 'jigoshop-software' ), 'type' => 'textarea' ),
+				array( 'id' => 'used_license_keys', 'label' => __( 'Used Upgrade Keys', 'jigoshop-software' ), 'title' => __( 'Used Upgrade Keys', 'jigoshop-software' ), 'placeholder' => __( 'Comma separated list', 'jigoshop-software' ), 'type' => 'textarea' ),
+				array( 'id' => 'up_price', 'label' => __( 'Upgrade Price ($)', 'jigoshop-software' ), 'title' => __( 'Upgrade Price ($)', 'jigoshop-software' ), 'placeholder' => __( 'ex: 1.00', 'jigoshop-software' ), 'type' => 'text' ),
+				array( 'id' => 'paypal_name', 'label' => __( 'Paypal Name to show on transaction receipts', 'jigoshop-software' ), 'title' => __( 'Paypal Name to show on transaction receipts', 'jigoshop-software' ), 'placeholder' => __( 'ex: Google Inc.', 'jigoshop-software' ), 'type' => 'text' ),
+			);
+
+			$this->order_fields = array(
+				array( 'id' => 'activation_email', 'label' => __( 'Activation Email', 'jigoshop-software' ), 'title' => __( 'Activation Email', 'jigoshop-software' ), 'placeholder' => '', 'type' => 'text' ),
+				array( 'id' => 'paypal_name', 'label' => __( 'Paypal Name to show on transaction receipts', 'jigoshop-software' ), 'title' => __( 'Paypal Name to show on transaction receipts', 'jigoshop-software' ), 'placeholder' => __( 'ex: Google Inc.', 'jigoshop-software' ), 'type' => 'text' ),
+				array( 'id' => 'transaction_id', 'label' => __( 'Transaction ID', 'jigoshop-software' ), 'title' => __( 'Transaction ID', 'jigoshop-software' ), 'placeholder' => '', 'type' => 'text' ),
+				array( 'id' => 'productid', 'label' => __( 'Product ID', 'jigoshop-software' ), 'title' => __( 'Product ID', 'jigoshop-software' ), 'placeholder' => '', 'type' => 'text' ),
+				array( 'id' => 'activations_possible', 'label' => __( 'Max Activations Allowed', 'jigoshop-software' ), 'title' => __( 'Max Activations Allowed', 'jigoshop-software' ), 'placeholder' => '', 'type' => 'text' ),
+				array( 'id' => 'remaining_activations', 'label' => __( 'Remaining Activations', 'jigoshop-software' ), 'title' => __( 'Remaining Activations', 'jigoshop-software' ), 'placeholder' => '', 'type' => 'text' ),
+				array( 'id' => 'secret_product_key', 'label' => __( 'Secret Product Key to use for API', 'jigoshop-software' ), 'title' => __( 'Secret Product Key to use for API', 'jigoshop-software' ), 'placeholder' => __( 'any random string', 'jigoshop-software' ), 'type' => 'text' ),
+				array( 'id' => 'version', 'label' => __( 'Version', 'jigoshop-software' ), 'title' => __( 'Version', 'jigoshop-software' ), 'placeholder' => '', 'type' => 'text' ),
+				array( 'id' => 'old_order_id', 'label' => __( 'Legacy order ID', 'jigoshop-software' ), 'title' => __( 'Legacy order ID', 'jigoshop-software' ), 'placeholder' => '', 'type' => 'text' ),
+				array( 'id' => 'is_upgrade', 'label' => __( 'This is an upgrade if checked', 'jigoshop-software' ), 'title' => __( 'This is an upgrade if checked', 'jigoshop-software' ), 'placeholder' => '', 'type' => 'checkbox' ),
+				array( 'id' => 'upgrade_name', 'label' => __( 'Upgraded from', 'jigoshop-software' ), 'title' => __( 'Upgraded from', 'jigoshop-software' ), 'placeholder' => '', 'type' => 'text' ),
+				array( 'id' => 'upgrade_price', 'label' => __( 'Upgrade price ($)', 'jigoshop-software' ), 'title' => __( 'Upgrade price ($)', 'jigoshop-software' ), 'placeholder' => '', 'type' => 'text' ),
+				array( 'id' => 'original_price', 'label' => __( 'Original price ($)', 'jigoshop-software' ), 'title' => __( 'Original price ($)', 'jigoshop-software' ), 'placeholder' => '', 'type' => 'text' ),
+		);
+
+		}
+
+		/**
  			* runs various functions when the plugin first activates
+ 			*
 			* @see register_activation_hook()
 			* @link http://codex.wordpress.org/Function_Reference/register_activation_hook
 			* @since 1.0
+			* @return void
 			*/
 		function activation() {
 
 			// checks if the jigoshop plugin is running and disables this plugin if it's not (and displays a message)
 			if ( !is_plugin_active( 'jigoshop/jigoshop.php' ) ) {
 				deactivate_plugins( plugin_basename( __FILE__ ) );
-				wp_die( __( 'The JigoShop Software Add-On requires <a href="http://jigoshop.com" target="_blank">JigoShop</a> to be activated in order to work. Please activate <a href="http://jigoshop.com" target="_blank">JigoShop</a> first. <a href="'.admin_url( 'plugins.php' ).'"> <br> &laquo; Go Back</a>', 'jigoshop-software' ) );
+				wp_die( sprintf( _x( 'The JigoShop Software Add-On requires %s to be activated in order to work. Please activate %s first.', 'A link to JigoShop is provided in the placeholders', 'jigoshop-software' ), '<a href="http://jigoshop.com" target="_blank">JigoShop</a>', '<a href="http://jigoshop.com" target="_blank">JigoShop</a>' ) . '<a href="'.admin_url( 'plugins.php' ).'"> <br> &laquo; ' . _x( 'Go Back', 'Activation failed, so go back to the plugins page', 'jigoshop-software' ) . '</a>' );
 			}
 
 			// creates the lost license page with the right shortcode in it
 			$lost_license_page_id = get_option( 'jigoshop_lost_license_page_id' );
 			if ( !$lost_license_page_id || $lost_license_page_id == '' ) {
 				$lost_license_page = array(
-					'post_title' => 'Lost License',
+					'post_title' => _x( 'Lost License', 'title of a page', 'jigoshop-software' ),
 					'post_content' => '[jigoshop_software_lost_license]',
 					'post_status' => 'publish',
 					'post_type' => 'page',
@@ -195,7 +220,7 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 			$jigoshop_api_page_id = get_option( 'jigoshop_api_page_id' );
 			if ( !$jigoshop_api_page_id || $jigoshop_api_page_id == '' ) {
 				$api_page = array(
-					'post_title' => 'API',
+					'post_title' => _x( 'API', 'title of a page', 'jigoshop-software' ),
 					'post_content' => '',
 					'post_status' => 'publish',
 					'post_type' => 'page',
@@ -211,31 +236,34 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 ==========================================*/
 
 		/**
- 			* add_meta_boxes()
  			* registers meta boxes
+ 			*
 			* @since 1.0
+			* @return void
 			*/
 		function add_meta_boxes() {
-			add_meta_box( 'jigoshop-software-order-data', __( 'Software Purchase Details', 'jigoshop' ), array( $this, 'order_meta_box' ), 'shop_order', 'normal', 'high' );
-			add_meta_box( 'jigoshop-software-activation-data', __( 'Activations', 'jigoshop' ), array( $this, 'activation_meta_box' ), 'shop_order', 'normal', 'high' );
-			add_meta_box( 'jigoshop-software-further-actions', __( 'Further Actions', 'jigoshop' ), array( $this, 'order_further_actions_meta_box' ), 'shop_order', 'side', 'low' );
+			add_meta_box( 'jigoshop-software-order-data', __( 'Software Purchase Details', 'jigoshop-software' ), array( $this, 'order_meta_box' ), 'shop_order', 'normal', 'high' );
+			add_meta_box( 'jigoshop-software-activation-data', __( 'Activations', 'jigoshop-software' ), array( $this, 'activation_meta_box' ), 'shop_order', 'normal', 'high' );
+			add_meta_box( 'jigoshop-software-further-actions', __( 'Further Actions', 'jigoshop-software' ), array( $this, 'order_further_actions_meta_box' ), 'shop_order', 'side', 'low' );
 		}
 
 		/**
- 			* product_write_panel_tab()
  			* adds a new tab to the product interface
+ 			*
 			* @since 1.0
+			* @return void
 			*/
 		function product_write_panel_tab() {
 		?>
-			<li><a href="#software_data"><?php _e( 'Software', 'jigoshop' ); ?></a></li>
+			<li><a href="#software_data"><?php _e( 'Software', 'jigoshop-software' ); ?></a></li>
 		<?php
 		}
 
 		/**
- 			* product_write_panel()
  			* adds the panel to the product interface
+ 			*
 			* @since 1.0
+			* @return void
 			*/
 		function product_write_panel() {
 			global $post;
@@ -276,10 +304,10 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 		}
 
 		/**
- 			* product_save_data()
  			* saves the data inputed into the product boxes into a serialized array
  			*
-			* @since 2.0
+			* @since 2.1
+			* @return void
 			*/
 		function product_save_data() {
 			global $post;
@@ -297,9 +325,10 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 		}
 
 		/**
- 			* order_meta_box()
  			* adds meta fields to the order screens
+			*
 			* @since 1.0
+			* @return void
 			*/
 		function order_meta_box() {
 			global $post;
@@ -335,10 +364,11 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 		}
 
 		/**
- 			* activation_meta_box()
  			* adds activations meta box
+ 			*
 			* @since 1.0
 			* @param object $post the current post object
+			* @return void
 			*/
 		function activation_meta_box( $post ) {
 		  $activations = get_post_meta( $post->ID, 'activations', true );
@@ -346,27 +376,27 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 		    <table id="activations-table" class="widefat">
 		      <thead>
 		        <tr>
-		          <th>Instance</th>
-		          <th>Status</th>
-		          <th>Date & Time</th>
-		          <th>Version</th>
-		          <th>Operating System</th>
+		          <th><?php _e( 'Instance', 'jigoshop-software' ) ?></th>
+		          <th><?php _e( 'Status', 'jigoshop-software' ) ?></th>
+		          <th><?php _e( 'Date & Time', 'jigoshop-software' ) ?></th>
+		          <th><?php _e( 'Version', 'jigoshop-software' ) ?></th>
+		          <th><?php _e( 'Operating System', 'jigoshop-software' ) ?></th>
 		        </tr>
 		      </thead>
 		      <tfoot>
 		        <tr>
-		          <th>Instance</th>
-		          <th>Status</th>
-		          <th>Date & Time</th>
-		          <th>Version</th>
-		          <th>Operating System</th>
+		          <th><?php _e( 'Instance', 'jigoshop-software' ) ?></th>
+		          <th><?php _e( 'Status', 'jigoshop-software' ) ?></th>
+		          <th><?php _e( 'Date & Time', 'jigoshop-software' ) ?></th>
+		          <th><?php _e( 'Version', 'jigoshop-software' ) ?></th>
+		          <th><?php _e( 'Operating System', 'jigoshop-software' ) ?></th>
 		        </tr>
 		      </tfoot>
 		      <tbody>
 		        <?php $i = 0; foreach ($activations as $activation) : $i++ ?>
 			         <tr<?php if ( $i / 2 == 1 ) echo ' class="alternate"' ?>>
 			           <td><?php echo $activation['instance'] ?></td>
-			           <td><?php echo ( $activation['active'] ) ? 'Activated' : 'Deactivated' ?></td>
+			           <td><?php echo ( $activation['active'] ) ? __( 'Activated', 'jigoshop-software' ) : __( 'Deactivated', 'jigoshop-software' ) ?></td>
 			           <td><?php echo date( 'D j M Y', $activation['time'] ).' at '.date( 'h:ia T', $activation['time'] ) ?></td>
 			           <td><?php echo $activation['version'] ?></td>
 			           <td><?php echo ucwords( $activation['os'] ) ?></td>
@@ -375,15 +405,16 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 		      </tbody>
 		    </table>
 		  <?php } else { ?>
-		    <p>No activations yet</p>
+		    <p><?php _e( 'No activations yet', 'jigoshop-software' ) ?></p>
 		  <? }
 		}
 
 		/**
- 			* order_save_data()
  			* saves the data inputed into the order boxes
+ 			*
 			* @see order_meta_box()
 			* @since 1.0
+			* @return void
 			*/
 		function order_save_data() {
 			global $post;
@@ -401,21 +432,23 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 		}
 
 		/**
- 			* order_further_actions_meta_box()
  			* displays the meta box which allows further actions to be taken
+ 			*
 			* @since 1.7
+			* @return void
 			*/
 		function order_further_actions_meta_box() { ?>
 			<ul class="order_actions">
-				<li><input type="submit" class="button button-primary" name="resend_email" value="<?php _e( 'Resend Email', 'jigoshop' ); ?>" /> &mdash; <?php _e( 'Resend Purchase Email' , 'jigoshop' ); ?></li>
+				<li><input type="submit" class="button button-primary" name="resend_email" value="<?php _e( 'Resend Email', 'jigoshop-software' ); ?>" /> &mdash; <?php _e( 'Resend Purchase Email' , 'jigoshop-software' ); ?></li>
 			</ul>
 			<?php
 		}
 
 		/**
- 			* admin_enqueue()
  			* adds css to the back-end
-			* @since 2.0
+ 			*
+			* @since 2.1
+			* @return void
 			*/
     function admin_enqueue() {
 			wp_register_style( 'jigoshop_software_backend', plugins_url( 'inc/back-end.css', __FILE__ ) );
@@ -424,11 +457,11 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 
 
 		/**
- 			* filter_order_search()
  			* filters search results on the orders page to allow search by email
 			* will only do it when it's a valid email, otherwise will revert back to regular old search
+			*
 			* @since 1.2
-			* @todo this should be refactored for performance
+			* @return void
 			*/
 		function filter_order_search() {
 			global $pagenow, $wp_query;
@@ -449,28 +482,30 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 		}
 
 		/**
- 			* get_search_query_when_order()
  			* filters the "search results" subtitle on the orders page to show the e-mail address
+			*
 			* @since 1.2
+			* @return string the current searched GET string
 			*/
 		function get_search_query_when_order() {
 			return $_GET['s'];
 		}
 
 		/**
- 			* admin_menu()
  			* registers the stats page & import page
 			* @since 1.0
+			* @return void
 			*/
 		function admin_menu() {
-			add_submenu_page( 'jigoshop', __( 'Stats', 'jigoshop' ),  __( 'Stats', 'jigoshop' ) , 'manage_options', 'jgs_stats', array( $this, 'software_stats' ) );
-			add_submenu_page( 'jigoshop', __( 'Import', 'jigoshop' ),  __( 'Import', 'jigoshop' ) , 'manage_options', 'jgs_import', array( $this, 'import_page' ) );
+			add_submenu_page( 'jigoshop', __( 'Stats', 'jigoshop-software' ),  __( 'Stats', 'jigoshop-software' ) , 'manage_options', 'jgs_stats', array( $this, 'software_stats' ) );
+			add_submenu_page( 'jigoshop', __( 'Import', 'jigoshop-software' ),  __( 'Import', 'jigoshop-software' ) , 'manage_options', 'jgs_import', array( $this, 'import_page' ) );
 		}
 
 		/**
- 			* software_stats()
- 			* admin page with stats
+ 			* generate admin page with stats
+ 			*
 			* @since 1.0
+			* @return void
 			*/
 		function software_stats() {
 			$options = $this->software_stats_options();
@@ -489,26 +524,26 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 			?>
 			<div class="wrap jigoshop">
 				<div class="icon32 jigoshop_icon" id="icon-jigoshop"><br/></div>
-		    <h2><?php _e( 'Software Sales & Activations', 'jigoshop' ) ?></h2>
+		    <h2><?php _e( 'Software Sales & Activations', 'jigoshop-software' ) ?></h2>
 
 				<div class="metabox-holder" style="margin-top:25px">
 					<div class="postbox-container" style="width:25%;">
 
 						<div class="postbox">
-							<h3>Choose dates to show for stats</h3>
+							<h3><?php _e( 'Choose dates to show for stats', 'jigoshop-software' ) ?></h3>
 							<div class="inside">
 								<form method="post">
 									<p>
-										<label for="from_date"><?php _e( 'Start date', 'jigoshop' ); ?>:
+										<label for="from_date"><?php _e( 'Start date', 'jigoshop-software' ); ?>:
 											<input type="date" id="from_date" name="from_date" value="<?php echo date( 'Y-m-d', $options['from_date'] ) ?>">
 										</label>
 							 		</p>
 									<p>
-										<label for="to_date"><?php _e( 'End date', 'jigoshop' ); ?>:
+										<label for="to_date"><?php _e( 'End date', 'jigoshop-software' ); ?>:
 											<input type="date" id="to_date" name="to_date" value="<?php echo date( 'Y-m-d', $options['to_date'] ) ?>">
 										</label>
 							 		</p>
-									<? wp_nonce_field( 'update_jgs_stats_options', 'update_jgs_stats_options' ); ?>
+									<?php wp_nonce_field( 'update_jgs_stats_options', 'update_jgs_stats_options' ); ?>
 									<p><input type="submit" class="button-primary" name="submit" value="Submit"></p>
 								</form>
 							</div>
@@ -519,7 +554,7 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 					<div class="postbox-container" style="width:65%; margin-left:25px">
 
 						<div class="postbox">
-							<h3>Software Sales & Activations <?php echo $date_str?></h3>
+							<h3><?php _e( 'Software Sales & Activations', 'jigoshop-software' ) ?> <?php echo $date_str ?></h3>
 							<div class="inside">
 								<div id="placeholder" style="width:100%; height:300px; position:relative; margin: 50px 0; max-width: 1000px"></div>
 								<script type="text/javascript">
@@ -638,7 +673,7 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 											];
 									    for (var i = 0; i < d2.length; ++i) d2[i][0] += 60 * 60 * 1000;
 
-										var plot = jQuery.plot(jQuery("#placeholder"), [ { label: "Number of sales", data: d }, { label: "Sales amount", data: d2, yaxis: 2 },  { label: "Number of activations", data: d3 } ], {
+										var plot = jQuery.plot(jQuery("#placeholder"), [ { label: "<?php _e( 'Number of sales', 'jigoshop-software' ) ?>", data: d }, { label: "<?php _e( 'Sales amount', 'jigoshop-software' ) ?>", data: d2, yaxis: 2 },  { label: "<?php _e( 'Number of activations', 'jigoshop-software' ) ?>", data: d3 } ], {
 											series: {
 												lines: { show: true },
 												points: { show: true }
@@ -724,22 +759,22 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 						    <table id="activations-table" class="widefat" style="width: 100%; max-width: 1000px">
 						      <thead>
 						        <tr>
-						          <th>Product ID</th>
-						          <th>Instance</th>
-						          <th>Status</th>
-						          <th>Date & Time</th>
-						          <th>Version</th>
-						          <th>Operating System</th>
+						          <th><?php _e( 'Product ID', 'jigoshop-software' ) ?></th>
+						          <th><?php _e( 'Instance', 'jigoshop-software' ) ?></th>
+						          <th><?php _e( 'Status', 'jigoshop-software' ) ?></th>
+						          <th><?php _e( 'Date & Time', 'jigoshop-software' ) ?></th>
+						          <th><?php _e( 'Version', 'jigoshop-software' ) ?></th>
+						          <th><?php _e( 'Operating System', 'jigoshop-software' ) ?></th>
 						        </tr>
 						      </thead>
 						      <tfoot>
 						        <tr>
-						          <th>Product ID</th>
-						          <th>Instance</th>
-						          <th>Status</th>
-						          <th>Date & Time</th>
-						          <th>Version</th>
-						          <th>Operating System</th>
+						          <th><?php _e( 'Product ID', 'jigoshop-software' ) ?></th>
+						          <th><?php _e( 'Instance', 'jigoshop-software' ) ?></th>
+						          <th><?php _e( 'Status', 'jigoshop-software' ) ?></th>
+						          <th><?php _e( 'Date & Time', 'jigoshop-software' ) ?></th>
+						          <th><?php _e( 'Version', 'jigoshop-software' ) ?></th>
+						          <th><?php _e( 'Operating System', 'jigoshop-software' ) ?></th>
 						        </tr>
 						      </tfoot>
 						      <tbody>
@@ -772,9 +807,10 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 		}
 
 		/**
- 			* software_stats_options()
- 			* dashboard widget options
+ 			* save dashboard widget options
+ 			*
 			* @since 1.0
+			* @return array the dashboard options
 			*/
 		function software_stats_options() {
 			$defaults = array( 'from_date' => time() - ( 30 * 24 * 60 * 60 ), 'to_date' => time() );
@@ -788,9 +824,10 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 ==========================================*/
 
 		/**
-			* print_styles()
 			* adds css to the front-end
+			*
 			* @since 1.0
+			* @return void
 			*/
 		function print_styles() {
 			wp_register_style( 'jigoshop_software', plugins_url( 'inc/front-end.css', __FILE__ ) );
@@ -798,47 +835,52 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 		}
 
 		/**
- 			* add_to_cart()
  			* replace the default jigoshop add to cart button
-			* @see downloadable_add_to_cart() from jigoshop
+ 			*
+			* @see downloadable_add_to_cart()
 			* @since 1.0
+			* @return void
 			*/
 		function add_to_cart() {
 			global $_product; $availability = $_product->get_availability();
 			if ($availability['availability']) : ?><p class="stock <?php echo $availability['class'] ?>"><?php echo $availability['availability']; ?></p><?php endif; ?>
 			<form action="<?php echo $_product->add_to_cart_url(); ?>" class="cart" method="post">
-				<button type="submit" class="button-alt"><?php _e( 'Buy Now', 'jigoshop' ); ?></button>
+				<button type="submit" class="button-alt"><?php _e( 'Buy Now', 'jigoshop-software' ); ?></button>
 				<?php do_action( 'jigoshop_add_to_cart_form' ); ?>
 			</form>
 		<?php
 		}
 
 		/**
- 			* loop_add_to_cart()
  			* replace the default jigoshop add to cart button
+ 			*
 			* @see jigoshop_template_loop_add_to_cart()
 			* @since 1.0
-			* @todo  {@internal} params
+			* @param object $post the current post object
+			* @param object $_product the current product object
+			* @return void
 			*/
 		function loop_add_to_cart( $post, $_product ) {
-			?><a href="<?php echo $_product->add_to_cart_url(); ?>" class="button"><?php _e( 'Buy Now' , 'jigoshop' ); ?></a><?php
+			?><a href="<?php echo $_product->add_to_cart_url(); ?>" class="button"><?php _e( 'Buy Now' , 'jigoshop-software' ); ?></a><?php
 		}
 
 		/**
- 			* add_to_cart_redirect()
  			* redirect the user to checkout after they've clicked "buy now"
+ 			*
 			* @see jigoshop_add_to_cart_action()
 			* @since 1.0
+			* @return void
 			*/
 		function add_to_cart_redirect() {
 			return jigoshop_cart::get_checkout_url();
 		}
 
 		/**
- 			* locate_api_template()
  			* filters the template for the api page so that it just does the json stuff
+			*
 			* @since 1.0
-			* @todo  {@internal} params
+			* @param string $template the template file
+			* @return string filtered template file location
 			*/
 		function locate_api_template( $template ) {
 			global $post;
@@ -847,14 +889,13 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 		}
 
 		/**
-			* jigoshop_software_filter_price_paypal()
-			* very hack way to filter out the price sent to paypal when it's an upgrade, but the only way to do it w/out changing core jigoshop
+			* very hacky way to filter out the price sent to paypal when it's an upgrade, but the only way to do it w/out changing core jigoshop
+			*
 			* @see $this->init_output_buffer()
-			* @param $buffer (string) the original buffer output
-			* @return $buffer (string) the filtered buffer output
 			* @todo find a better a way to do this
 			* @since 1.0
-			* @todo  {@internal} params
+			* @param string $buffer what's being sent to paypal
+			* @return string $buffer what's being sent to paypal
 			*/
 		function jigoshop_software_filter_price_paypal( $buffer ) {
 			if ( isset($_GET['order']) ) {
@@ -874,11 +915,11 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 ==========================================*/
 
 		/**
- 			* array_ify_keys()
  			* transforms a comma separated list of license keys into an array in order to store in the DB
-			* @param (string) $keys, a comma separated list of keys
+ 			*
 			* @since 1.0
-			* @todo  {@internal} params
+			* @param string $keys a comma separated list of keys
+			* @return array $keys_array an array of keys
 			*/
 		function array_ify_keys( $keys = null ) {
 			$keys = esc_attr( $keys );
@@ -890,11 +931,11 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 		}
 
 		/**
- 			* un_array_ify_keys()
  			* transforms an array of license keys into a comma separated list in order to display it
-			* @param (array) $keys, the array of keys
+			*
 			* @since 1.0
-			* @todo  {@internal} params
+			* @param array $keys the array of keys
+			* @return string $keys_string the string of keys
 			*/
 		function un_array_ify_keys( $keys = null ) {
 			$i = 0;
@@ -913,12 +954,12 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 		}
 
 		/**
- 			* is_valid_upgrade_key()
  			* checks if a key is a valid upgrade key for a particular product
-			* @param (string) $key, the key to validate
-			* @param (int) $item_id, the product to validate for
+			*
 			* @since 1.0
-			* @todo  {@internal} params
+			* @param string $key the key to validate
+			* @param int $item_id the product to validate for
+			* @return bool valid key or not
 			*/
 		function is_valid_upgrade_key( $key = null, $item_id = null ) {
 			if ( $key && $item_id ) {
@@ -931,9 +972,10 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 		}
 
 		/**
- 			* generate_license_key()
  			* generates a unique id that is used as the license code
+			*
 			* @since 1.0
+			* @return string the unique ID
 			*/
 		function generate_license_key() {
 
@@ -948,9 +990,10 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 		}
 
 		/**
- 			* redirect_away_from_cart()
  			* redirect the user away from cart page, either to checkout or to home
+ 			*
 			* @since 1.0
+			* @return void
 			*/
 		function redirect_away_from_cart() {
 			if ( is_cart() ) {
@@ -964,10 +1007,10 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 ==========================================*/
 
 		/**
- 			* ajax_jgs_checkout()
  			* process the ajax request to checkout
+ 			*
 			* @since 1.0
-			* @todo  internationalize
+			* @return void
 			*/
 		function ajax_jgs_checkout() {
 
@@ -982,12 +1025,12 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 			 */
 			if ($no_js) wp_safe_redirect( jigoshop_cart::get_checkout_url() . '?no-js=true' );
 
-			$item_id = esc_attr( $_POST['item_id']) ;
+			$item_id = esc_attr( $_POST['item_id'] );
 			$qty = 1; // always 1 because it's a buy now situation not a cart situation
 			$upgrade = false; // default
 
 			// nonce verification
-			if ( isset( $_POST['jgs_checkout_nonce'] ) && !wp_verify_nonce( $_POST['jgs_checkout_nonce'], 'jgs_checkout' ) ) $messages['nonce'] = 'An error has occurred, please try again';
+			if ( isset( $_POST['jgs_checkout_nonce'] ) && !wp_verify_nonce( $_POST['jgs_checkout_nonce'], 'jgs_checkout' ) ) $messages['nonce'] = __( 'An error has occurred, please try again', 'jigoshop-software' );
 
 			if ( isset($_POST['up_key']) ) {
 				$key = esc_attr( $_POST['up_key'] );
@@ -997,11 +1040,11 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 
 			// email validation
 			$email = strtolower( esc_attr( $_POST['jgs_email'] ) );
-			if ( !$email || $email == '') $messages['email'] = 'Please enter your email';
-			elseif ( !is_email( $email ) ) $messages['email'] = 'Please enter a valid email address';
+			if ( !$email || $email == '') $messages['email'] = __( 'Please enter your email', 'jigoshop-software');
+			elseif ( !is_email( $email ) ) $messages['email'] = __( 'Please enter a valid email address', 'jigoshop-software');
 
 			// key validation
-			if ( $key && $key != '' && !$this->is_valid_upgrade_key( $key, $item_id ) ) $messages['key'] = 'The key you have entered is not valid, please try again or contact us if you need additional help';
+			if ( $key && $key != '' && !$this->is_valid_upgrade_key( $key, $item_id ) ) $messages['key'] = __( 'The key you have entered is not valid, please try again or contact us if you need additional help', 'jigoshop-software' );
 
 			// if there is no message, then validation passed
 			if ( !$messages ) {
@@ -1125,12 +1168,12 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 			if ( $no_js ) wp_safe_redirect( get_permalink( get_option( 'jigoshop_lost_license_page_id' ) ) . '?no-js=true' );
 
 			// nonce verification
-			if ( $_POST['jgs_lost_license_nonce'] && !wp_verify_nonce( $_POST['jgs_lost_license_nonce'], 'jgs_lost_license' ) ) $messages['nonce'] = 'An error has occurred, please try again';
+			if ( $_POST['jgs_lost_license_nonce'] && !wp_verify_nonce( $_POST['jgs_lost_license_nonce'], 'jgs_lost_license' ) ) $messages['nonce'] = __( 'An error has occurred, please try again', 'jigoshop-software' );
 
 			// email validation
 			$email = esc_attr( $_POST['jgs_email'] );
-			if ( !$email || $email == '' ) $messages['email'] = 'Please enter your email';
-			elseif ( !is_email( $email ) ) $messages['email'] = 'Please enter a valid email address';
+			if ( !$email || $email == '' ) $messages['email'] = __( 'Please enter your email', 'jigoshop-software' );
+			elseif ( !is_email( $email ) ) $messages['email'] = __( 'Please enter a valid email address', 'jigoshop-software' );
 			else {
 				$_orders = get_posts(
 								array(
@@ -1145,7 +1188,7 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 								)
 				);
 				if ( !is_array( $_orders ) || count( $_orders ) < 1 ) {
-					$messages['email'] = 'There are no purchase records for this email address. Please try again. If you think there is a mistake, please contact us.';
+					$messages['email'] = __( 'There are no purchase records for this email address. Please try again. If you think there is a mistake, please contact us.', 'jigoshop-software' );
 				}
 			}
 
@@ -1178,10 +1221,10 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 				if ( isset( $data['purchases'] ) && is_array( $data['purchases'] ) && count( $data['purchases'] ) > 0 ) {
 					$success = true;
 					$this->process_email( $data, 'lost_license' );
-					$message = 'Your request has been accepted. You should receive an email shortly with all of your purchase history.';
+					$message = __( 'Your request has been accepted. You should receive an email shortly with all of your purchase history.', 'jigoshop-software' );
 				} else {
 					$success = false;
-					$message = 'Your purchases are not completed. If you think there is a mistake, please contact us.';
+					$message = __( 'Your purchases are not completed. If you think there is a mistake, please contact us.', 'jigoshop-software' );
 				}
 			} else {
 				// building a message string from all of the $messages above
@@ -1205,11 +1248,11 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 		}
 
 		/**
- 			* post_paypal_payment()
  			* processes the order post payment
-			* @param $order_id (string), the order id to process
+			*
 			* @since 1.6
-			* @todo  {@internal} params
+			* @param int $order_id the order id to process
+			* @return void
 			*/
 		function post_paypal_payment( $order_id ) {
 			if ( isset( $_GET['tx'] ) ) {
@@ -1218,11 +1261,11 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 		}
 
 		/**
- 			* completed_order()
  			* sends out the completed order email
-			* @param $order_id (string), the order id to process
+			*
 			* @since 1.6
-			* @todo  {@internal} params
+			* @param int $order_id the order id to process
+			* @return void
 			*/
 		function completed_order( $order_id ) {
 			$this->process_email( $order_id, 'completed_purchase' );
@@ -1230,9 +1273,10 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 
 
 		/**
- 			* process_email()
  			* process emails and send them out
+ 			*
 			* @since 1.0
+			* @return void
 			*/
 		function process_email( $data, $type ) {
 
@@ -1256,7 +1300,7 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 					$paypal_name = $data['paypal_name'];
 
 					$send_to = get_post_meta( $order_id, 'activation_email', true );
-					$subject = $product . ' ' . __( 'Purchase Confirmation','jigoshop' );
+					$subject = $product . ' ' . __( 'Purchase Confirmation','jigoshop-software' );
 					$message = file_get_contents( JIGOSHOP_SOFTWARE_PATH . '/inc/email-purchase.txt' );
 					$message = str_replace( '{date}', $date, $message );
 					$message = str_replace( '{product}', $product, $message );
@@ -1271,7 +1315,7 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 
 				case 'lost_license' :
 
-					$subject = __( 'Recovered Licenses', 'jigoshop' );
+					$subject = __( 'Recovered Licenses', 'jigoshop-software' );
 					$send_to = $data['email'];
 					$message = file_get_contents( JIGOSHOP_SOFTWARE_PATH . '/inc/email-lost-license.txt' );
 					$orders = '';
@@ -1281,16 +1325,16 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 						$i++;
 						$orders .=
 						'====================================================================='."\n"
-						.'Order '.$i.''."\n"
+						.__( 'Order', 'jigoshop-software' ) . ' '.$i.''."\n"
 						.'====================================================================='."\n\n"
-						.'Item: '.$purchase['product']."\n"
-						.'Item Price: $'.$purchase['price']."\n"
-						.'Purchase date: '.$purchase['date']."\n\n"
-						.'Account Name: '.$purchase['activation_email']."\n"
-						.'License Key: '.$purchase['license_key']."\n"
-						.'Transaction Total: $'.$purchase['order_total'].' via paypal'."\n"
-						.'Currency: USD'."\n"
-						.'Activations: '.$purchase['remaining_activations'].' out of '.$purchase['activations_possible'].' activations remaining'."\n\n\n";
+						.__( 'Item', 'jigoshop-software' ) . ': '.$purchase['product']."\n"
+						.__( 'Item Price', 'jigoshop-software' ) . ': $'.$purchase['price']."\n"
+						.__( 'Purchase date', 'jigoshop-software' ) . ': '.$purchase['date']."\n\n"
+						.__( 'Account Name', 'jigoshop-software' ) . ': '.$purchase['activation_email']."\n"
+						.__( 'License Key', 'jigoshop-software' ) . ': '.$purchase['license_key']."\n"
+						.__( 'Transaction Total', 'jigoshop-software' ) . ': $' . $purchase['order_total'] . ' ' . __( 'via paypal', 'jigoshop-software' ) . "\n"
+						.__( 'Currency', 'jigoshop-software' ) . ': USD'."\n"
+						.__( 'Activations', 'jigoshop-software' ) . ': ' . $purchase['remaining_activations'] . ' ' . __( 'out of', 'jigoshop-software' ) . ' ' . $purchase['activations_possible'] . ' ' . __( 'activations remaining', 'jigoshop-software' ) . "\n\n\n";
 					}
 
 				$message = str_replace( '{orders}', $orders, $message );
@@ -1299,7 +1343,7 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 
 				case 'new_activation' :
 
-					$subject = $data['product'] . ' ' . __( 'Activation Confirmation', 'jigoshop' );
+					$subject = $data['product'] . ' ' . __( 'Activation Confirmation', 'jigoshop-software' );
 					$send_to = $data['email'];
 					$message = file_get_contents( JIGOSHOP_SOFTWARE_PATH . '/inc/email-activation.txt' );
 					$date = date( 'l, F j Y', time() );
@@ -1323,22 +1367,23 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 ==========================================*/
 
 	/**
-		* import_page()
 		* creates a backend page for the importer
+		*
 		* @since 1.1
+		* @return void
 		*/
 		function import_page() { ?>
 			<div class="wrap jigoshop">
 				<div class="icon32 icon32-jigoshop-debug" id="icon-jigoshop"><br/></div>
-	    	<h2><?php _e( 'Import','jigoshop' ) ?></h2>
+	    	<h2><?php _e( 'Import', 'jigoshop-software' ) ?></h2>
 
 				<div class="metabox-holder" style="margin-top:25px">
 					<div class="postbox-container" style="width:700px;">
 
 						<div class="postbox">
-							<h3>Enter the path/filename of the import file</h3>
+							<h3><?php _e( 'Enter the path/filename of the import file', 'jigoshop-software' ) ?></h3>
 							<div class="inside">
-								<p><strong>Recommended:</strong> back up the database before proceeding</p>
+								<p><strong><?php _e( 'Recommended', 'jigoshop-software' ) ?>:</strong> <?php _e( 'back up the database before proceeding', 'jigoshop-software' ) ?></p>
 								<form id="jgs_import" action="<?php echo admin_url( 'admin-ajax.php' ) ?>" method="post">
 									<?php $value = ( isset( $_POST['import_path'] ) && $_POST['import_path'] != '' ) ? esc_attr( $_POST['import_path'] ) : 'wp-content/plugins/jigoshop-software/inc/import.php' ?>
 									<p><?php echo ABSPATH ?><input type="text" style="width: 350px" id="import_path" name="import_path" value="<?php echo $value ?>"></p>
@@ -1360,20 +1405,20 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 										$.each(inputs,function(i,input) { args[input['name']]=input['value']; });
 										$.post("<?php echo admin_url( 'admin-ajax.php' ) ?>", args, function(response){
 											if (response.success) {
-												$('#jgs_import_feedback').addClass('doing_import').html('Importing '+response.total_count+' records. Please be patient.').fadeIn();
+												$('#jgs_import_feedback').addClass('doing_import').html("<?php _e( 'Importing', 'jigoshop-software' ) ?>" + response.total_count + " <?php _e( 'records. Please be patient.', 'jigoshop-software' ) ?>").fadeIn();
 												args['action']='jgs_do_import';
 												args['import']=response.import;
 												$.post("<?php echo admin_url( 'admin-ajax.php' ) ?>", args, function(resp){
 													if (resp.success) {
 														load.removeClass('loading');
 														$('#jgs_import_feedback').fadeOut('normal', function(){
-															$(this).html('All Records Imported!').fadeIn();
+															$(this).html("<?php _e( 'All Records Imported!', 'jigoshop-software' ) ?>").fadeIn();
 															$('#jgs_import_feedback_done').html(resp.feedback).fadeIn();
 														});
 													} else {
 														load.removeClass('loading');
 														$('#jgs_import_feedback').fadeOut('normal', function(){
-															$(this).removeClass('doing_import').html('An error has occurred and the import did not complete, please refresh the page and try again.').fadeIn();
+															$(this).removeClass('doing_import').html("<?php _e( 'An error has occurred and the import did not complete, please refresh the page and try again.', 'jigoshop-software' ) ?>").fadeIn();
 														});
 													}
 												});
@@ -1383,7 +1428,7 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 													$('#jgs_import_feedback').html(response.message).fadeIn();
 												} else {
 													load.removeClass('loading');
-													$('#jgs_import_feedback').html('An error has occurred, please refresh the page and try again.').fadeIn();
+													$('#jgs_import_feedback').html("<?php _e( 'An error has occurred, please refresh the page and try again.', 'jigoshop-software' ) ?>").fadeIn();
 												}
 											}
 										});
@@ -1417,9 +1462,9 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 			$file_path = ABSPATH . $import_path;
 			if ( is_file( $file_path ) ) {
 				include_once( $file_path );
-				if ( !is_array( $import ) ) $messages['missing_array'] = 'This file doesn\'t contain an $import array, please try again.';
+				if ( !is_array( $import ) ) $messages['missing_array'] = __( 'This file doesn\'t contain an $import array, please try again.', 'jigoshop-software' );
 			} else {
-				$messages['missing_file'] = 'This file doesn\'t exist or doesn\'t have read permissions, please try again.';
+				$messages['missing_file'] = __( 'This file doesn\'t exist or doesn\'t have read permissions, please try again.', 'jigoshop-software' );
 			}
 
 			// if there is no message, then validation passed
@@ -1571,14 +1616,14 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 			}
 
 			foreach ( $failures as $fail ) {
-				$feedback[] = 'The following record failed to import: ORDER ID = ' . $fail;
+				$feedback[] = __( 'The following record failed to import', 'jigoshop-software' ) . ': ORDER ID = ' . $fail;
 			}
 
 			foreach ( $duplicate as $dupe ) {
-				$feedback[] = 'The following record was a duplicate: ORDER ID = ' . $dupe;
+				$feedback[] = __( 'The following record was a duplicate', 'jigoshop-software' ) . ': ORDER ID = ' . $dupe;
 			}
 
-			$feedback[] = count( $succesful ) . ' records successfully imported.';
+			$feedback[] = count( $succesful ) . ' ' . __( 'records successfully imported.', 'jigoshop-software' );
 
 			$feedback_string = '<ul>';
 			foreach ( $feedback as $fdb ) {
@@ -1600,6 +1645,12 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 
 	} // end class
 
+	/**
+	 * init the class
+	 *
+	 * @since 1.0
+	 * @return void
+	 */
 	add_action( 'init', 'jigoshop_software_init' );
 	function jigoshop_software_init() {
 		global $jigoshopsoftware;
@@ -1612,6 +1663,7 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 
 /**
  	* run the plugin activation hook
+ 	*
 	* @since 1.0
 	*/
 register_activation_hook( __FILE__, array( 'jigoshop_software', 'activation' ) );
