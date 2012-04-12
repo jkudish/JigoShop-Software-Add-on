@@ -3,7 +3,7 @@
 Plugin Name: JigoShop - Software Add-On
 Plugin URI: https://github.com/jkudish/JigoShop-Software-Add-on/
 Description: Extends JigoShop to a full-blown software shop, including license activation, license retrieval, activation e-mails and more
-Version: 2.1
+Version: 2.1.1
 Author: Joachim Kudish
 Author URI: http://jkudish.com
 License: GPL v2
@@ -11,7 +11,7 @@ Text Domain: jigoshop-software
 */
 
 /**
-	* @version 2.1
+	* @version 2.1.1
 	* @author Joachim Kudish <info@jkudish.com>
 	* @link http://jkudish.com
 	* @uses JigoShop @link http://jigoshop.com
@@ -80,7 +80,7 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 			add_action( 'product_write_panels', array( $this, 'product_write_panel' ) );
 			add_filter( 'jigoshop_process_product_meta', array( $this, 'product_save_data' ) );
 			add_action( 'add_meta_boxes', array( $this, 'add_meta_boxes' ) );
-			add_action( 'jigoshop_process_shop_order_meta', array( $this, 'order_save_data' ), 1, 2 );
+			add_action( 'jigoshop_process_shop_order_meta', array( $this, 'order_save_data' ) );
 			add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue' ) );
 			add_action( 'admin_menu', array( $this, 'admin_menu' ) );
 			add_action( 'wp_ajax_nopriv_jgs_import', array( $this, 'import_ajax' ) );
@@ -320,7 +320,7 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 		function product_save_data() {
 			global $post;
 			$data = get_post_meta( $post->ID, 'product_data', true );
-			foreach ( self::$product_fields as $field ) {
+			foreach ( $this->product_fields as $field ) {
 				if ( $field['id'] == 'up_license_keys' || $field['id'] == 'used_license_keys' ) {
 					$data[$field['id']] = $this->array_ify_keys( $_POST[$field['id']] );
 				} elseif ( $field['id'] == 'soft_product_id' ) {
@@ -347,9 +347,17 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 				<div id="order_software_data" class="panel jigoshop_options_panel">
 					<?php
 						foreach ($this->order_fields as $field) :
-							@$value = ( $field['id'] == 'activation_email' ) ? get_post_meta( $post->ID, 'activation_email', true ) : ( isset( $data[$field['id']] ) ) ? $data[$field['id']] : null;
-							@$value = ( $field['id'] == 'transaction_id' ) ? get_post_meta( $post->ID, 'transaction_id', true ) : $value;
-							@$value = ( $field['id'] == 'old_order_id' ) ? get_post_meta( $post->ID, 'old_order_id', true ) : $value;
+							if ( $field['id'] == 'activation_email' ) {
+								$value = get_post_meta( $post->ID, 'activation_email', true );
+							} elseif ( $field['id'] == 'transaction_id' ) {
+								$value = get_post_meta( $post->ID, 'transaction_id', true );
+							} elseif ( $field['id'] == 'old_order_id' ) {
+								$value = get_post_meta( $post->ID, 'old_order_id', true );
+							} elseif ( isset( $data[$field['id']] ) ) {
+								$value = $data[$field['id']];
+							} else {
+								$value = null;
+							}
 							switch ($field['type']) :
 								case 'text' :
 									echo '<p class="form-field"><label for="'.$field['id'].'">'.$field['label'].'</label><input type="text" id="'.$field['id'].'" name="'.$field['id'].'" value="'.$value.'" placeholder="'.$field['placeholder'].'"/></p>';
@@ -426,12 +434,19 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 			* @return void
 			*/
 		function order_save_data() {
-			global $post;
+			global $post, $wpdb;
 			$data = get_post_meta($post->ID, 'order_data', true);
-			foreach ( self::$order_fields as $field ) {
+			foreach ( $this->order_fields as $field ) {
 				if ( isset( $_POST[$field['id']] ) ) {
-					if ( $field['id'] == 'activation_email' ) update_post_meta( $post->ID, 'activation_email', $_POST[$field['id']] );
-					else $data[$field['id']] = esc_attr( $_POST[$field['id']] );
+					if ( $field['id'] == 'activation_email' ) {
+						update_post_meta( $post->ID, 'activation_email', $_POST['activation_email'] );
+					} elseif ( $field['id'] == 'transaction_id' ) {
+						update_post_meta( $post->ID, 'transaction_id', $_POST['transaction_id'] );
+					} elseif ( $field['id'] == 'old_order_id' ) {
+						update_post_meta( $post->ID, 'old_order_id', $_POST['old_order_id'] );
+					} else {
+						$data[$field['id']] = $wpdb->escape( $_POST[$field['id']] );
+					}
 				}
 			}
 			update_post_meta( $post->ID, 'order_data', $data );

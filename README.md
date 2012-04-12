@@ -9,6 +9,9 @@ The plugin requires JigoShop 1.1.1 or higher.
 Changelog
 ===========
 
+### 2.1.1
+* Fix several minor bugs with retrieving and saving product & order data
+
 ### 2.1
 * Made some adjustments to the code, to adhere to WordPress coding standards
 * Modified all &$this to $this (not required in PHP 5+)
@@ -109,4 +112,4 @@ Current Version
 
 The line below is used for the updater API, please leave it untouched unless bumping the version up :)
 
-~Current Version:2.1~
+~Current Version:2.1.1~
