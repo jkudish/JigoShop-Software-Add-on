@@ -3,7 +3,7 @@
 Plugin Name: JigoShop - Software Add-On
 Plugin URI: https://github.com/jkudish/JigoShop-Software-Add-on/
 Description: Extends JigoShop to a full-blown software shop, including license activation, license retrieval, activation e-mails and more
-Version: 2.1.2
+Version: 2.1.3
 Author: Joachim Kudish
 Author URI: http://jkudish.com
 License: GPL v2
@@ -11,7 +11,7 @@ Text Domain: jigoshop-software
 */
 
 /**
-	* @version 2.1.2
+	* @version 2.1.3
 	* @author Joachim Kudish <info@jkudish.com>
 	* @link http://jkudish.com
 	* @uses JigoShop @link http://jigoshop.com
@@ -1114,7 +1114,7 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 
 				// activation stuff
 				$order['version'] = $product['version'];
-				$order['license_key'] = ( !empty( $product['license_key_prefix'] ) ) ? $product['license_key_prefix'].$this->generate_license_key() : $this->generate_license_key();
+				$order['license_key'] = ( !empty( $product['license_key_prefix'] ) ) ? strtolower( $product['license_key_prefix'].$this->generate_license_key() ) : $this->generate_license_key();
 				$order['activations_possible'] = $product['activations'];
 				$order['remaining_activations'] = $product['activations'];
 				$order['secret_product_key'] = $product['secret_product_key'];
