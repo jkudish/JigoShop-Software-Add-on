@@ -9,6 +9,9 @@ The plugin requires JigoShop 1.1.1 or higher.
 Changelog
 ===========
 
+### 2.1.2
+* Add license key field to order listings
+
 ### 2.1.1
 * Fix several minor bugs with retrieving and saving product & order data
 
@@ -112,4 +115,4 @@ Current Version
 
 The line below is used for the updater API, please leave it untouched unless bumping the version up :)
 
-~Current Version:2.1.1~
+~Current Version:2.1.2~
