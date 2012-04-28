@@ -3,7 +3,7 @@
 Plugin Name: JigoShop - Software Add-On
 Plugin URI: https://github.com/jkudish/JigoShop-Software-Add-on/
 Description: Extends JigoShop to a full-blown software shop, including license activation, license retrieval, activation e-mails and more
-Version: 2.1.5
+Version: 2.1.6
 Author: Joachim Kudish
 Author URI: http://jkudish.com
 License: GPL v2
@@ -11,7 +11,7 @@ Text Domain: jigoshop-software
 */
 
 /**
-	* @version 2.1.5
+	* @version 2.1.6
 	* @author Joachim Kudish <info@jkudish.com>
 	* @link http://jkudish.com
 	* @uses JigoShop @link http://jigoshop.com
@@ -111,7 +111,7 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 			add_action( 'wp_ajax_jgs_lost_license', array( $this, 'ajax_jgs_lost_license' ) );
 
 			// payment stuff
-			add_action( 'init', array( $this, 'init_output_buffer') );
+			add_action( 'init', array( $this, 'init_actions' ), 1 );
 			add_action( 'thankyou_paypal', array( $this, 'post_paypal_payment' ) );
 			add_action( 'order_status_cancelled', array( $this, 'cancel_order' ) );
 
@@ -926,15 +926,22 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 
 		/**
 		 * runs an output buffer on the price sent to paypal when upgrading
+		 * empties the cart before something is added to it
 		 *
 		 * @see jigoshop_software_filter_price_paypal
 		 * @since 2.1.4
 		 * @return void
 		 */
-		function init_output_buffer() {
+		function init_actions() {
+
+			if ( !empty( $_GET['add-to-cart'] ) && jigoshop::verify_nonce( 'add_to_cart', '_GET' ) ) {
+				jigoshop_cart::empty_cart();
+			}
+
 			if ( isset( $_GET['order'] ) && isset( $_GET['key'] ) ) {
 				ob_start( array( $this, 'filter_price_paypal' ) );
 			}
+
 		}
 
 		/**

@@ -9,6 +9,9 @@ The plugin requires JigoShop 1.1.1 or higher.
 Changelog
 ===========
 
+### 2.1.6
+* Empty the cart whenever something is added to it (to make sure only 1 item is there at a time)
+
 ### 2.1.5
 * Empty the cart when a sale is completed
 
@@ -126,4 +129,4 @@ Current Version
 
 The line below is used for the updater API, please leave it untouched unless bumping the version up :)
 
-~Current Version:2.1.5~
+~Current Version:2.1.6~
