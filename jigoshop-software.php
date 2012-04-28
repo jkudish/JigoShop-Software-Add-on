@@ -3,7 +3,7 @@
 Plugin Name: JigoShop - Software Add-On
 Plugin URI: https://github.com/jkudish/JigoShop-Software-Add-on/
 Description: Extends JigoShop to a full-blown software shop, including license activation, license retrieval, activation e-mails and more
-Version: 2.1.4
+Version: 2.1.5
 Author: Joachim Kudish
 Author URI: http://jkudish.com
 License: GPL v2
@@ -11,7 +11,7 @@ Text Domain: jigoshop-software
 */
 
 /**
-	* @version 2.1.4
+	* @version 2.1.5
 	* @author Joachim Kudish <info@jkudish.com>
 	* @link http://jkudish.com
 	* @uses JigoShop @link http://jigoshop.com
@@ -1309,12 +1309,14 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 
 		/**
  			* sends out the completed order email
+ 			* & empties the cart
 			*
 			* @since 1.6
 			* @param int $order_id the order id to process
 			* @return void
 			*/
 		function completed_order( $order_id ) {
+			jigoshop_cart::empty_cart();
 			$this->process_email( $order_id, 'completed_purchase' );
 		}
 

@@ -9,6 +9,9 @@ The plugin requires JigoShop 1.1.1 or higher.
 Changelog
 ===========
 
+### 2.1.5
+* Empty the cart when a sale is completed
+
 ### 2.1.4
 * Empty cart when order is cancelled at paypal
 * Minor adjustment to output buffer used to modify price sent to paypal
@@ -123,4 +126,4 @@ Current Version
 
 The line below is used for the updater API, please leave it untouched unless bumping the version up :)
 
-~Current Version:2.1.4~
+~Current Version:2.1.5~
