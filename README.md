@@ -9,6 +9,11 @@ The plugin requires JigoShop 1.1.1 or higher.
 Changelog
 ===========
 
+### 2.1.4
+* Empty cart when order is cancelled at paypal
+* Minor adjustment to output buffer used to modify price sent to paypal
+* Fix php notice in number_format function
+
 ### 2.1.3
 * Save license keys with prefixes as lowercase
 
@@ -118,4 +123,4 @@ Current Version
 
 The line below is used for the updater API, please leave it untouched unless bumping the version up :)
 
-~Current Version:2.1.3~
+~Current Version:2.1.4~

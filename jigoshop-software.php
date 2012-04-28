@@ -3,7 +3,7 @@
 Plugin Name: JigoShop - Software Add-On
 Plugin URI: https://github.com/jkudish/JigoShop-Software-Add-on/
 Description: Extends JigoShop to a full-blown software shop, including license activation, license retrieval, activation e-mails and more
-Version: 2.1.3
+Version: 2.1.4
 Author: Joachim Kudish
 Author URI: http://jkudish.com
 License: GPL v2
@@ -11,7 +11,7 @@ Text Domain: jigoshop-software
 */
 
 /**
-	* @version 2.1.3
+	* @version 2.1.4
 	* @author Joachim Kudish <info@jkudish.com>
 	* @link http://jkudish.com
 	* @uses JigoShop @link http://jigoshop.com
@@ -102,7 +102,6 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 			add_action( 'downloadable_add_to_cart', array( $this, 'add_to_cart' ) );
 			add_action( 'grouped_add_to_cart', array( $this, 'add_to_cart' ) );
 			add_action( 'jigoshop_after_shop_loop_item', array( $this, 'loop_add_to_cart' ), 10, 2 );
-			add_filter( 'init', array( $this, 'init_output_buffer' ) );
 
 			add_action( 'wp_print_styles', array( $this, 'print_styles' ) );
 			add_action( 'wp_head', array( $this, 'redirect_away_from_cart' ) );
@@ -112,7 +111,9 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 			add_action( 'wp_ajax_jgs_lost_license', array( $this, 'ajax_jgs_lost_license' ) );
 
 			// payment stuff
+			add_action( 'init', array( $this, 'init_output_buffer') );
 			add_action( 'thankyou_paypal', array( $this, 'post_paypal_payment' ) );
+			add_action( 'order_status_cancelled', array( $this, 'cancel_order' ) );
 
 			// email stuff
 			remove_action( 'order_status_pending_to_processing', 'jigoshop_new_order_notification' );
@@ -890,6 +891,16 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 		}
 
 		/**
+		 * empty the cart when an order is cancelled
+		 *
+		 * @param int the order id
+		 * @return void
+		 */
+		function cancel_order( $order_id ) {
+			jigoshop_cart::empty_cart();
+		}
+
+		/**
  			* redirect the user to checkout after they've clicked "buy now"
  			*
 			* @see jigoshop_add_to_cart_action()
@@ -914,6 +925,19 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 		}
 
 		/**
+		 * runs an output buffer on the price sent to paypal when upgrading
+		 *
+		 * @see jigoshop_software_filter_price_paypal
+		 * @since 2.1.4
+		 * @return void
+		 */
+		function init_output_buffer() {
+			if ( isset( $_GET['order'] ) && isset( $_GET['key'] ) ) {
+				ob_start( array( $this, 'filter_price_paypal' ) );
+			}
+		}
+
+		/**
 			* very hacky way to filter out the price sent to paypal when it's an upgrade, but the only way to do it w/out changing core jigoshop
 			*
 			* @see $this->init_output_buffer()
@@ -922,15 +946,13 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 			* @param string $buffer what's being sent to paypal
 			* @return string $buffer what's being sent to paypal
 			*/
-		function jigoshop_software_filter_price_paypal( $buffer ) {
-			if ( isset($_GET['order']) ) {
-				$order_id = $_GET['order'];
-				$data = get_post_meta( $order_id, 'order_data', true );
-				$original_price = $data['original_price'];
-				$correct_price = $data['order_total'];
-				if ( $original_price ) {
-					$buffer = str_replace( '"amount_1" value="' . $original_price . '"', '"amount_1" value="' . $correct_price . '"', $buffer );
-				}
+		function filter_price_paypal( $buffer ) {
+			$order_id = $_GET['order'];
+			$data = get_post_meta( $order_id, 'order_data', true );
+			$original_price = number_format( $data['original_price'], 2 );
+			$correct_price = number_format( $data['order_total'], 2 );
+			if ( $original_price ) {
+				$buffer = str_replace( '"amount_1" value="' . $original_price . '"', '"amount_1" value="' . $correct_price . '"', $buffer );
 			}
 			return $buffer;
 		}
@@ -1676,11 +1698,10 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 	 * @since 1.0
 	 * @return void
 	 */
-	add_action( 'init', 'jigoshop_software_init' );
+	add_action( 'plugins_loaded', 'jigoshop_software_init', 1 );
 	function jigoshop_software_init() {
 		global $jigoshopsoftware;
 		$jigoshopsoftware = new Jigoshop_Software();
-		ob_start( array( $jigoshopsoftware, 'jigoshop_software_filter_price_paypal' ) );
 		include_once( 'inc/shortcodes.php' );
 	}
 

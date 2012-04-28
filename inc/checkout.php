@@ -32,8 +32,8 @@ if ( sizeof( jigoshop_cart::$cart_contents ) > 0 ) :
 
 		// prices format in US dollars
 		setlocale( LC_MONETARY, 'en_US' );
-		@$echo_price = money_format( '%(#10n', $price );
-		@$echo_up_price = money_format( '%(#10n', $up_price );
+		@$echo_price = money_format( '%(#10n', (float) $price );
+		@$echo_up_price = money_format( '%(#10n', (float) $up_price );
 
 
 	?>
