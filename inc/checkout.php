@@ -21,19 +21,26 @@ if ( sizeof( jigoshop_cart::$cart_contents ) > 0 ) :
 		$qty = 1; // force it
 		$data = $values['data']->meta;
 		$product_data = maybe_unserialize( $data['product_data'][0] );
-		$up_name = $product_data['upgradable_product'];
 		$version = $product_data['version'];
 
 		// prices
 		$sale_price = $data['sale_price'][0];
 		$regular_price = $data['regular_price'][0];
 		$price = ($sale_price && $sale_price != '' && $sale_price != 0 && $sale_price != '0') ? $sale_price : $regular_price;
-		$up_price = $product_data['up_price'];
+
+		// upgrade
+		if ( !empty( $product_data['is_upgrade'] ) ) {
+			$is_upgrade = $product_data['is_upgrade'];
+			$upgrade_from_id = $product_data['upgrade_from'];
+			$upgrade_to_id = $product_data['upgrade_to'];
+			$is_upgrade = ( $is_upgrade && !empty( $upgrade_from_id ) && !empty( $upgrade_to_id ) );
+		} else {
+			$is_upgrade = false;
+		}
 
 		// prices format in US dollars
 		setlocale( LC_MONETARY, 'en_US' );
 		@$echo_price = money_format( '%(#10n', (float) $price );
-		@$echo_up_price = money_format( '%(#10n', (float) $up_price );
 
 
 	?>
@@ -46,29 +53,33 @@ if ( sizeof( jigoshop_cart::$cart_contents ) > 0 ) :
 							<strong><?php _e( 'Quantity', 'jigoshop-software' ) ?></strong>: <?php echo $qty ?><br>
 							<strong><?php _e( 'Total', 'jigoshop-software' ) ?></strong>: <?php echo $echo_price ?>
 						</p>
-						<p><?php _e( 'Please enter your email below, then click <em>purchase now</em> below to complete the purchase with Paypal.', 'jigoshop-software' ) ?></p>
+
 						<p id="jgs_validation"<?php if (isset($_GET['no-js'])) echo ' class="not-hidden"' ?>><?php if (isset($_GET['no-js'])) _e( 'You need javascript in order to be able to checkout. Please enable javascript and try again.', 'jigoshop-software' ) ?></p>
+
+						<?php if ( $is_upgrade ) : ?>
+							<p><?php printf( __( 'This upgrade to %s requires a %s license. Please enter your %s license email and key below, then click purchase now below to complete the purchase with credit card or PayPal.', 'jigoshop-software' ), get_the_title( $upgrade_to_id ), get_the_title( $upgrade_from_id ), get_the_title( $upgrade_from_id ) ); ?></p>
+						<?php else : ?>
+							<p><?php _e( 'Please enter your email below, then click <em>purchase now</em> below to complete the purchase with Paypal.', 'jigoshop-software' ) ?></p>
+						<?php endif; ?>
+
 					</div>
+
 					<div class="form-row">
 						<p><label for="jgs_email"><?php _e( 'Your email address', 'jigoshop-software' ) ?>:</label> <input type="text" id="jgs_email" name="jgs_email"></p>
 					</div>
 
-					<?php if ($up_name && $up_price && $up_name != '' && $up_price != '') : ?>
+					<?php if ( $is_upgrade ) : ?>
 						<div class="form-row">
-							<h2><?php _e( 'Upgrade from', 'jigoshop-software' ) ?> <?php echo $up_name ?>:</h2>
-							<p><?php sprintf( __( 'If you have a valid %s license key, you can upgrade to the current version (%s). Please enter your old license key below and click upgrade now. The order information below will update once you complete this step.', 'jigoshop-software' ), $up_name, $version ) ?></p>
-							<p><strong><?php _e( 'Upgrade Price', 'jigoshop-software' ) ?>:</strong> <?php echo $echo_up_price ?></p>
-						</div>
-						<div class="form-row">
-							<label for="up_key"><?php echo $up_name ?> <?php _e( 'Key', 'jigoshop-software' ) ?>:</label> <input type="text" id="up_key" name="up_key"><br><br>
+							<label for="up_key"><?php _e( 'Your license Key', 'jigoshop-software' ) ?>:</label> <input type="text" id="up_key" name="up_key"><br><br>
 						</div>
 					<?php endif; ?>
+
 					<div class="form-row">
 						<input type="hidden" name="action" value="jgs_checkout">
 						<?php wp_nonce_field( 'jgs_checkout', 'jgs_checkout_nonce' ); ?>
 						<input type="hidden" name="item_id" value="<?php echo $item_id ?>">
 						<noscript><input type="hidden" name="no_js" value="true"></noscript>
-						<div class="jgs_loader"><input type="submit" class="button-alt" name="jgs_purchase" id="jgs_purchase" value="Purchase Now"> <a class="button-alt" href="<? site_url('checkout') ?>?empty=true">Cancel Order</a></div>
+						<div class="jgs_loader"><input type="submit" class="button-alt" name="jgs_purchase" id="jgs_purchase" value="Purchase Now"> <a class="button-alt" href="<?php echo site_url('checkout') ?>?empty=true">Cancel Order</a></div>
 					</div>
 				</form>
 			</div>

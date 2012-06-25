@@ -9,6 +9,11 @@ The plugin requires JigoShop 1.1.1 or higher.
 Changelog
 ===========
 
+### 2.2
+* Major rewrite of how upgradable products work. If you are relying on the license key based upgrade system you may want to hold-off this update and/or [manually] convert your products to the new system
+* Products can now be configured as an upgrade from and to another product
+* Minor code cleanup
+
 ### 2.1.6
 * Empty the cart whenever something is added to it (to make sure only 1 item is there at a time)
 
@@ -129,4 +134,4 @@ Current Version
 
 The line below is used for the updater API, please leave it untouched unless bumping the version up :)
 
-~Current Version:2.1.6~
+~Current Version:2.2~

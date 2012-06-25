@@ -3,7 +3,7 @@
 Plugin Name: JigoShop - Software Add-On
 Plugin URI: https://github.com/jkudish/JigoShop-Software-Add-on/
 Description: Extends JigoShop to a full-blown software shop, including license activation, license retrieval, activation e-mails and more
-Version: 2.1.6
+Version: 2.2
 Author: Joachim Kudish
 Author URI: http://jkudish.com
 License: GPL v2
@@ -11,7 +11,7 @@ Text Domain: jigoshop-software
 */
 
 /**
-	* @version 2.1.6
+	* @version 2.2
 	* @author Joachim Kudish <info@jkudish.com>
 	* @link http://jkudish.com
 	* @uses JigoShop @link http://jigoshop.com
@@ -62,7 +62,6 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 		function __construct() {
 
 			$this->define_constants();
-			$this->define_fields();
 
 			// set the right time zone from WP options
 			if ( get_option( 'timezone_string' ) != '' ) {
@@ -156,9 +155,10 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 			* @return void
 			*/
 		function define_fields() {
-					// define the product metadata fields used by this plugin
+			// define the product metadata fields used by this plugin
 			$this->product_fields = array(
-				array( 'id' => 'is_software', 'label' => __( 'This product is Software', 'jigoshop-software' ), 'title' => __( 'This product is Software', 'jigoshop-software' ), 'placeholder' => '', 'type' => 'checkbox' ),
+				array( 'id' => 'is_software', 'label' => __( 'This product is Software', 'jigoshop-software' ), 'title' => __( 'This product is Software', 'jigoshop-software' ), 'placeholder' => '', 'type' => 'checkbox', 'never_hide' => true ),
+				array( 'id' => 'is_upgrade', 'label' => __( 'This product is solely an upgrade', 'jigoshop-software' ), 'title' => __( 'This product is solely an upgrade', 'jigoshop-software' ), 'placeholder' => '', 'type' => 'checkbox', 'never_hide' => true ),
 				array( 'id' => 'soft_product_id', 'label' => __( 'Product ID to use for API', 'jigoshop-software' ), 'title' => __( 'Product ID to use for API', 'jigoshop-software' ), 'placeholder' => __( 'ex: PRODUCT1', 'jigoshop-software' ), 'type' => 'text' ),
 				array( 'id' => 'license_key_prefix', 'label' => __( 'Prefix for License Key', 'jigoshop-software' ), 'title' => __( 'Optional prefix for the license key', 'jigoshop-software' ), 'placeholder' => __( 'ex: SC-', 'jigoshop-software' ), 'type' => 'text' ),
 				array( 'id' => 'secret_product_key', 'label' => __( 'Secret Product Key to use for API', 'jigoshop-software' ), 'title' => __( 'Secret Product Key to use  for API', 'jigoshop-software' ), 'placeholder' => __( 'any random string', 'jigoshop-software' ), 'type' => 'text' ),
@@ -166,10 +166,9 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 				array( 'id' => 'activations', 'label' => __( 'Amount of activations possible', 'jigoshop-software' ), 'title' => __( 'Amount of activations possible', 'jigoshop-software' ), 'placeholder' => __( 'ex: 5', 'jigoshop-software' ), 'type' => 'text' ),
 				array( 'id' => 'trial', 'label' => __( 'Trial Period (amount of days or hours)', 'jigoshop-software' ), 'title' => __( 'Trial Period (amount of days or hours)', 'jigoshop-software' ), 'placeholder' => __( 'ex: 15', 'jigoshop-software' ), 'type' => 'text' ),
 				array( 'id' => 'trial_unit', 'label' => __( 'Trial Units', 'jigoshop-software' ), 'title' => __( 'Trial Units', 'jigoshop-software' ), 'type' => 'select', 'values' => array( 'days' => 'Days', 'hours' => 'Hours' ) ),
-				array( 'id' => 'upgradable_product', 'label' => __( 'Upgradable Product Name', 'jigoshop-software' ), 'title' => __( 'Upgradable Product Name', 'jigoshop-software' ), 'placeholder' => '', 'type' => 'text' ),
-				array( 'id' => 'up_license_keys', 'label' => __( 'Upgradable Product Keys', 'jigoshop-software' ), 'title' => __( 'Upgradable Product Keys', 'jigoshop-software' ), 'placeholder' => __( 'Comma separated list', 'jigoshop-software' ), 'type' => 'textarea' ),
-				array( 'id' => 'used_license_keys', 'label' => __( 'Used Upgrade Keys', 'jigoshop-software' ), 'title' => __( 'Used Upgrade Keys', 'jigoshop-software' ), 'placeholder' => __( 'Comma separated list', 'jigoshop-software' ), 'type' => 'textarea' ),
-				array( 'id' => 'up_price', 'label' => __( 'Upgrade Price ($)', 'jigoshop-software' ), 'title' => __( 'Upgrade Price ($)', 'jigoshop-software' ), 'placeholder' => __( 'ex: 1.00', 'jigoshop-software' ), 'type' => 'text' ),
+				array( 'id' => 'upgrade_from', 'label' => __( 'Upgrade from', 'jigoshop-software' ), 'title' => __( 'Upgrade from', 'jigoshop-software' ), 'placeholder' => '', 'type' => 'select', 'values' => $this->get_product_upgrade_dropdown(), 'upgrade_field' => true ),
+				array( 'id' => 'upgrade_to', 'label' => __( 'Upgrade to', 'jigoshop-software' ), 'title' => __( 'Upgrade to', 'jigoshop-software' ), 'placeholder' => '', 'type' => 'select', 'values' => $this->get_product_upgrade_dropdown(), 'upgrade_field' => true ),
+				array( 'id' => 'upgrade_date_since', 'label' => __( 'Upgrade Date Threshold', 'jigoshop-software' ), 'title' => __( 'Original purchase must have occurred on or after the following date', 'jigoshop-software' ), 'placeholder' => 'ex: 2012-06-01', 'type' => 'text', 'upgrade_field' => true ),
 				array( 'id' => 'paypal_name', 'label' => __( 'Paypal Name to show on transaction receipts', 'jigoshop-software' ), 'title' => __( 'Paypal Name to show on transaction receipts', 'jigoshop-software' ), 'placeholder' => __( 'ex: Google Inc.', 'jigoshop-software' ), 'type' => 'text' ),
 			);
 
@@ -186,6 +185,8 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 				array( 'id' => 'old_order_id', 'label' => __( 'Legacy order ID', 'jigoshop-software' ), 'title' => __( 'Legacy order ID', 'jigoshop-software' ), 'placeholder' => '', 'type' => 'text' ),
 				array( 'id' => 'is_upgrade', 'label' => __( 'This is an upgrade if checked', 'jigoshop-software' ), 'title' => __( 'This is an upgrade if checked', 'jigoshop-software' ), 'placeholder' => '', 'type' => 'checkbox' ),
 				array( 'id' => 'upgrade_name', 'label' => __( 'Upgraded from', 'jigoshop-software' ), 'title' => __( 'Upgraded from', 'jigoshop-software' ), 'placeholder' => '', 'type' => 'text' ),
+				array( 'id' => 'upgraded_via', 'label' => __( 'Upgraded Using', 'jigoshop-software' ), 'title' => __( 'Upgraded Using', 'jigoshop-software' ), 'placeholder' => '', 'type' => 'text' ),
+				array( 'id' => 'upgraded_to', 'label' => __( 'Upgraded To', 'jigoshop-software' ), 'title' => __( 'Upgraded To', 'jigoshop-software' ), 'placeholder' => '', 'type' => 'text' ),
 				array( 'id' => 'upgrade_price', 'label' => __( 'Upgrade price ($)', 'jigoshop-software' ), 'title' => __( 'Upgrade price ($)', 'jigoshop-software' ), 'placeholder' => '', 'type' => 'text' ),
 				array( 'id' => 'original_price', 'label' => __( 'Original price ($)', 'jigoshop-software' ), 'title' => __( 'Original price ($)', 'jigoshop-software' ), 'placeholder' => '', 'type' => 'text' ),
 			);
@@ -245,6 +246,36 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 ==========================================*/
 
 		/**
+		 * gets array of values for the upgrade products dropdown
+		 *
+		 * @since 2.2
+		 * @return array the array of product IDs and product Names
+		 */
+		function get_product_upgrade_dropdown() {
+			$return = get_transient( 'jigoshop_software_get_product_upgrade_dropdown' );
+			if ( empty( $return ) ) {
+				$query_args = array(
+					'post_type' => 'product',
+					'posts_per_page' => -1,
+					'post__not_in' => array( get_queried_object_id() ),
+				);
+				$products = get_posts( $query_args );
+				$return = array( 0 => 'none' );
+				if ( !empty( $products ) ) {
+					foreach ( $products as $product ) {
+						$data = get_post_meta( $product->ID, 'product_data', true );
+						if ( empty( $data['is_upgrade'] ) ) {
+							$return[$product->ID] = $product->post_title;
+						}
+					}
+				}
+				wp_reset_query();
+				set_transient( 'jigoshop_software_get_product_upgrade_dropdown', $return );
+			}
+			return $return;
+		}
+
+		/**
  			* registers meta boxes
  			*
 			* @since 1.0
@@ -284,32 +315,61 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 				foreach ($this->product_fields as $field) :
 					if ( $field['id'] == 'soft_product_id' ) $value = get_post_meta( $post->ID, 'soft_product_id', true );
 					else @$value = ( $field['id'] == 'up_license_keys' || $field['id'] == 'used_license_keys' ) ? $this->un_array_ify_keys( $data[$field['id']] ) : $data[$field['id']];
+					echo '<p class="form-field jgs-product-field';
+					echo ( !empty( $field['upgrade_field'] ) && $field['upgrade_field'] ) ? ' jgs-upgrade-field' : '';
+					echo ( !empty( $field['never_hide'] ) && $field['never_hide'] ) ? ' jgs-never-hide' : '';
+					echo '">';
+					echo '<label for="'.$field['id'].'">'.$field['label'].'</label>';
 					switch ($field['type']) :
 						case 'text' :
-							echo '<p class="form-field"><label for="'.$field['id'].'">'.$field['label'].'</label><input type="text" id="'.$field['id'].'" name="'.$field['id'].'" value="'.$value.'" placeholder="'.$field['placeholder'].'"/></p>';
+							echo '<input type="text" id="'.$field['id'].'" name="'.$field['id'].'" value="'.$value.'" placeholder="'.$field['placeholder'].'"/>';
 						break;
 						case 'number' :
-							echo '<p class="form-field"><label for="'.$field['id'].'">'.$field['label'].'</label><input type="number" id="'.$field['id'].'" name="'.$field['id'].'" value="'.$value.'" placeholder="'.$field['placeholder'].'"/></p>';
+							echo '<input type="number" id="'.$field['id'].'" name="'.$field['id'].'" value="'.$value.'" placeholder="'.$field['placeholder'].'"/>';
 						break;
 						case 'textarea' :
-							echo '<p class="form-field"><label for="'.$field['id'].'">'.$field['label'].'</label><textarea id="'.$field['id'].'" name="'.$field['id'].'" placeholder="'.$field['placeholder'].'">'.$value.'</textarea></p>';
+							echo '<textarea id="'.$field['id'].'" name="'.$field['id'].'" placeholder="'.$field['placeholder'].'">'.$value.'</textarea>';
 						break;
 						case 'checkbox' :
 							$checked = ($value == 'on') ? ' checked=checked' : '';
-							echo '<p class="form-field"><label for="'.$field['id'].'">'.$field['label'].'</label><input type="checkbox" id="'.$field['id'].'" name="'.$field['id'].'" value="on"'.$checked.'></p>';
+							echo '<input type="checkbox" id="'.$field['id'].'" name="'.$field['id'].'" value="on"'.$checked.'>';
 						break;
 						case 'select' :
-							echo '<p class="form-field"><label for="'.$field['id'].'">'.$field['label'].'</label><select id="'.$field['id'].'" name="'.$field['id'].'">';
+							echo '<select id="'.$field['id'].'" name="'.$field['id'].'">';
 							foreach ($field['values'] as $k => $v) :
 								$selected = ($value == $k) ? ' selected="selected"' : '';
 								echo '<option value="'.$k.'"'.$selected.'>'.$v.'</option>';
 							endforeach;
-							echo '</select></p>';
+							echo '</select>';
 						break;
 					endswitch;
+					echo '</p>';
 				endforeach;
 				?>
 			</div>
+			<script>
+
+				function upgrade_checkboxes() {
+					if ( jQuery('#is_upgrade').prop( 'checked' ) ) {
+						jQuery('.jgs-upgrade-field').show();
+						jQuery('.jgs-product-field').not( '.jgs-never-hide' ).not( '.jgs-upgrade-field' ).hide();
+					} else {
+						jQuery('.jgs-upgrade-field').hide();
+						jQuery('.jgs-product-field').show();
+					}
+				}
+
+				jQuery(document).ready(function($){
+
+					upgrade_checkboxes();
+
+					$('#is_upgrade').change(function(){
+						upgrade_checkboxes();
+					});
+
+				});
+
+			</script>
 		<?php
 		}
 
@@ -321,6 +381,8 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 			*/
 		function product_save_data() {
 			global $post;
+			$this->define_fields();
+			delete_transient( 'jigoshop_software_get_product_upgrade_dropdown' );
 			$data = get_post_meta( $post->ID, 'product_data', true );
 			foreach ( $this->product_fields as $field ) {
 				if ( $field['id'] == 'up_license_keys' || $field['id'] == 'used_license_keys' ) {
@@ -437,6 +499,7 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 			*/
 		function order_save_data() {
 			global $post, $wpdb;
+			$this->define_fields();
 			$data = get_post_meta($post->ID, 'order_data', true);
 			foreach ( $this->order_fields as $field ) {
 				if ( isset( $_POST[$field['id']] ) ) {
@@ -1008,21 +1071,138 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 		}
 
 		/**
- 			* checks if a key is a valid upgrade key for a particular product
+ 			* checks if a key is a valid key for a particular product
 			*
-			* @since 1.0
-			* @param string $key the key to validate
-			* @param int $item_id the product to validate for
+			* @since 2.2
+			* @param string $license_key the key to validate
+			* @param string $email_address the email address asssociated with the purchase
+			* @param int $product_id the product to validate for
+			* @param string $date date after which purchase must have occurred
 			* @return bool valid key or not
 			*/
-		function is_valid_upgrade_key( $key = null, $item_id = null ) {
-			if ( $key && $item_id ) {
-				$product_data = get_post_meta( $item_id, 'product_data', true );
-				$_keys = (array) $product_data['up_license_keys'];
-				if ( in_array( $key, $_keys ) ) return true;
-				else return false;
+		function is_valid_license_key( $license_key = null, $email_address = null, $product_id = null, $date = null ) {
+
+			if ( empty( $license_key ) || empty( $email_address ) || empty( $product_id ) )
+				return false;
+
+			$orders = get_posts(
+				array(
+					'post_type' => 'shop_order',
+					'posts_per_page' => -1,
+					'meta_query' => array(
+						array(
+							'key' => 'activation_email',
+							'value' => $email_address,
+						),
+					),
+				)
+			);
+
+			if ( !empty( $orders ) ) {
+				foreach ( $orders as $order ) {
+					$data = get_post_meta( $order->ID, 'order_data', true );
+					if ( isset( $data['productid'] ) && $data['productid'] == $product_id && isset( $data['license_key'] ) && $data['license_key'] == $license_key ) {
+						// we have a match, let's make sure it's a completed sale
+						$order_status = wp_get_post_terms( $order->ID, 'shop_order_status' );
+						$order_status = $order_status[0]->slug;
+						if ( $order_status == 'completed' ) {
+							// finally let's make sure the date is within the threshold
+							if ( empty( $date ) || get_the_time( 'U', $order->ID ) >= strtotime( $date ) ) {
+								return true;
+							}
+						}
+					}
+				}
 			}
+
 			return false;
+		}
+
+		/**
+		 * checks if the given product is an upgrade for another product
+		 *
+		 * @since 2.2
+		 * @param $product_id the potential upgrade product
+		 * @return bool
+		 */
+		function is_upgradeable_product( $product_id ) {
+
+			$data = get_post_meta( $product_id, 'product_data', true );
+			return ( !empty( $data['is_upgrade'] ) && $data['is_upgrade'] );
+
+		}
+
+		/**
+		 * returns the ID of the product for which the given product is an upgrade from
+		 *
+		 * @since 2.2
+		 * @param $product_id the potential upgrade product
+		 * @return bool
+		 */
+		function get_upgrade_from_product_id( $product_id ) {
+
+			if ( !$this->is_upgradeable_product( $product_id ) )
+				return false;
+
+			$data = get_post_meta( $product_id, 'product_data', true );
+			if ( empty( $data['upgrade_from'] ) ) {
+				return false;
+			} else {
+				return $data['upgrade_from'];
+			}
+
+		}
+
+		/**
+		 * returns the ID of the product for which the given product is an upgrade to
+		 *
+		 * @since 2.2
+		 * @param $product_id the potential upgrade product
+		 * @return bool
+		 */
+		function get_upgrade_to_product_id( $product_id ) {
+
+			if ( !$this->is_upgradeable_product( $product_id ) )
+				return false;
+
+			$data = get_post_meta( $product_id, 'product_data', true );
+			if ( empty( $data['upgrade_to'] ) ) {
+				return false;
+			} else {
+				return $data['upgrade_to'];
+			}
+
+		}
+
+		/**
+		 * returns the PRODUCTID of the product for which the given product is an upgrade from
+		 *
+		 * @since 2.2
+		 * @param $product_id the upgraded product
+		 * @return bool
+		 */
+		function get_upgrade_from_product_productid( $product_id ) {
+
+			if ( !$this->is_upgradeable_product( $product_id ) )
+				return false;
+
+			$product_id = $this->get_upgrade_from_product_id( $product_id );
+			return get_post_meta( $product_id, 'soft_product_id', true );
+
+		}
+
+		function get_upgrade_date_threshold( $product_id ) {
+
+			if ( !$this->is_upgradeable_product( $product_id ) )
+				return false;
+
+			$data = get_post_meta( $product_id, 'product_data', true );
+			if ( empty( $data['upgrade_date_since'] ) ) {
+				return false;
+			} else {
+				return $data['upgrade_date_since'];
+			}
+
 		}
 
 		/**
@@ -1072,37 +1252,49 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 			$success = null;
 			$message = null;
 
-			$no_js = ( isset( $_POST['no_js'] ) && $_POST['no_js'] == 'true' ) ? true : false;
+			$no_js = ( isset( $_POST['no_js'] ) && $_POST['no_js'] == 'true' );
 
-			/**
-			 * @todo use add_query_arg
-			 */
-			if ($no_js) wp_safe_redirect( jigoshop_cart::get_checkout_url() . '?no-js=true' );
+			if ( $no_js ) {
+				wp_safe_redirect( add_query_arg( 'no_js', 'true', jigoshop_cart::get_checkout_url() ) );
+				exit;
+			}
 
 			$item_id = esc_attr( $_POST['item_id'] );
-			$qty = 1; // always 1 because it's a buy now situation not a cart situation
+			$qty = 1; // always 1
 			$upgrade = false; // default
 
 			// nonce verification
-			if ( isset( $_POST['jgs_checkout_nonce'] ) && !wp_verify_nonce( $_POST['jgs_checkout_nonce'], 'jgs_checkout' ) ) $messages['nonce'] = __( 'An error has occurred, please try again', 'jigoshop-software' );
-
-			if ( isset($_POST['up_key']) ) {
-				$key = esc_attr( $_POST['up_key'] );
-			} else {
-				$key = null;
+			if ( isset( $_POST['jgs_checkout_nonce'] ) && !wp_verify_nonce( $_POST['jgs_checkout_nonce'], 'jgs_checkout' ) ) {
+				$messages['nonce'] = __( 'An error has occurred, please try again', 'jigoshop-software' );
 			}
 
 			// email validation
-			$email = strtolower( esc_attr( $_POST['jgs_email'] ) );
-			if ( !$email || $email == '') $messages['email'] = __( 'Please enter your email', 'jigoshop-software');
-			elseif ( !is_email( $email ) ) $messages['email'] = __( 'Please enter a valid email address', 'jigoshop-software');
+			if ( empty( $_POST['jgs_email'] ) ) {
+				$messages['email'] = __( 'Please enter your email', 'jigoshop-software');
+			} else {
+				$email = strtolower( esc_attr( $_POST['jgs_email'] ) );
+				if ( !is_email( $email ) ) {
+					$messages['email'] = __( 'Please enter a valid email address', 'jigoshop-software');
+				}
+			}
+
+			// upgrade product
+			if ( $this->is_upgradeable_product( $item_id ) ) {
+				$upgrade = true;
+				$key = esc_attr( $_POST['up_key'] );
+				$upgrade_from_id = $this->get_upgrade_from_product_id( $item_id );
+				$upgrade_from_product_id = $this->get_upgrade_from_product_productid( $item_id );
+				$upgrade_to_id = $this->get_upgrade_to_product_id( $item_id );
+				$upgrade_date_threshold = $this->get_upgrade_date_threshold( $item_id );
+			}
 
 			// key validation
-			if ( $key && $key != '' && !$this->is_valid_upgrade_key( $key, $item_id ) ) $messages['key'] = __( 'The key you have entered is not valid, please try again or contact us if you need additional help', 'jigoshop-software' );
+			if ( $upgrade && !empty( $email ) && ( empty( $key ) || !$this->is_valid_license_key( $key, $email, $upgrade_from_product_id, $upgrade_date_threshold ) ) ) {
+				$messages['key'] = __( 'The key you have entered is not valid, please try again or contact us if you need additional help', 'jigoshop-software' );
+			}
 
 			// if there is no message, then validation passed
-			if ( !$messages ) {
-				if ( $this->is_valid_upgrade_key( $key, $item_id ) ) $upgrade = true;
+			if ( empty( $messages ) ) {
 
 				$success = true;
 
@@ -1116,19 +1308,15 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 				$product = get_post_meta( $item_id, 'product_data', true );
 				$sale_price = get_post_meta( $item_id, 'sale_price', true );
 				$regular_price = get_post_meta( $item_id, 'regular_price', true );
-				$price = ( $sale_price && $sale_price != '' ) ? $sale_price : $regular_price;
+				$price = ( !empty( $sale_price ) ) ? $sale_price : $regular_price;
 
 				if ( $upgrade ) {
 					$order['is_upgrade'] = 'on';
-					$order['upgrade_name'] = $product['upgradable_product'];
-					$order['upgrade_price'] = $product['up_price'];
-					$order['original_price'] = $price;
-					$price = $order['upgrade_price'];
-
-					// move the upgraded key to the used keys
-					unset( $product['up_license_keys'][array_search( $key, $product['up_license_keys'] )] );
-					$product['used_license_keys'][] = $key;
-					update_post_meta( $item_id, 'product_data', $product );
+					$order['upgrade_name'] = get_the_title( $upgrade_from_id );
+					$order['upgraded_via'] = get_the_title( $item_id );
+					$order['upgraded_to'] = get_the_title( $upgrade_to_id );
+					$order['upgrade_price'] = $price;
+					$product = get_post_meta( $upgrade_to_id, 'product_data', true );
 				}
 
 				// Order meta data [from jigoshop]
@@ -1143,7 +1331,7 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 
 				// activation stuff
 				$order['version'] = $product['version'];
-				$order['license_key'] = ( !empty( $product['license_key_prefix'] ) ) ? strtolower( $product['license_key_prefix'].$this->generate_license_key() ) : $this->generate_license_key();
+				$order['license_key'] = ( !empty( $product['license_key_prefix'] ) ) ? strtolower( $product['license_key_prefix'] . $this->generate_license_key() ) : $this->generate_license_key();
 				$order['activations_possible'] = $product['activations'];
 				$order['remaining_activations'] = $product['activations'];
 				$order['secret_product_key'] = $product['secret_product_key'];
