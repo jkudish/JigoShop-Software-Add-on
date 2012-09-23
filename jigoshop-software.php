@@ -1336,7 +1336,7 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 				$order['remaining_activations'] = $product['activations'];
 				$order['secret_product_key'] = $product['secret_product_key'];
 				$order['paypal_name'] = $product['paypal_name'];
-				$order['productid'] = get_post_meta( $item_id, 'soft_product_id', true );
+			  $order['productid'] = ( $upgrade ) ? get_post_meta( $upgrade_to_id, 'soft_product_id', true ) : get_post_meta( $item_id, 'soft_product_id', true );
 
 				$order_items = array();
 
