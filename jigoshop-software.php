@@ -3,7 +3,7 @@
 Plugin Name: JigoShop - Software Add-On
 Plugin URI: https://github.com/jkudish/JigoShop-Software-Add-on/
 Description: Extends JigoShop to a full-blown software shop, including license activation, license retrieval, activation e-mails and more
-Version: 2.2
+Version: 2.3
 Author: Joachim Kudish
 Author URI: http://jkudish.com
 License: GPL v2
@@ -11,7 +11,7 @@ Text Domain: jigoshop-software
 */
 
 /**
-	* @version 2.2
+	* @version 2.3
 	* @author Joachim Kudish <info@jkudish.com>
 	* @link http://jkudish.com
 	* @uses JigoShop @link http://jigoshop.com
@@ -102,7 +102,7 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 			add_action( 'grouped_add_to_cart', array( $this, 'add_to_cart' ) );
 			add_action( 'jigoshop_after_shop_loop_item', array( $this, 'loop_add_to_cart' ), 10, 2 );
 
-			add_action( 'wp_print_styles', array( $this, 'print_styles' ) );
+			add_action( 'wp_enqueue_scripts', array( $this, 'frontend_enqueue' ) );
 			add_action( 'wp_head', array( $this, 'redirect_away_from_cart' ) );
 			add_action( 'wp_ajax_nopriv_jgs_checkout', array( $this, 'ajax_jgs_checkout' ) );
 			add_action( 'wp_ajax_jgs_checkout', array( $this, 'ajax_jgs_checkout' ) );
@@ -139,13 +139,14 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 		function define_constants() {
 			if ( !defined( 'JIGOSHOP_SOFTWARE_PATH' ) ) define( 'JIGOSHOP_SOFTWARE_PATH', dirname( __FILE__ ) );
 			if ( !defined( 'JIGOSHOP_SOFTWARE_SLUG' ) ) define( 'JIGOSHOP_SOFTWARE_SLUG', plugin_basename( __FILE__ ) );
+			if ( !defined( 'JIGOSHOP_SOFTWARE_VERSION' ) ) define( 'JIGOSHOP_SOFTWARE_VERSION', 2.3 );
 			if ( !defined( 'JIGOSHOP_SOFTWARE_PROPER_NAME' ) ) define( 'JIGOSHOP_SOFTWARE_PROPER_NAME', 'jigoshop-software' );
 			if ( !defined( 'JIGOSHOP_SOFTWARE_GITHUB_URL' ) ) define( 'JIGOSHOP_SOFTWARE_GITHUB_URL', 'https://github.com/jkudish/JigoShop-Software-Add-on' );
 			if ( !defined( 'JIGOSHOP_SOFTWARE_GITHUB_ZIP_URL' ) ) define( 'JIGOSHOP_SOFTWARE_GITHUB_ZIP_URL', 'https://github.com/jkudish/JigoShop-Software-Add-on/zipball/master' );
 			if ( !defined( 'JIGOSHOP_SOFTWARE_GITHUB_API_URL' ) ) define( 'JIGOSHOP_SOFTWARE_GITHUB_API_URL', 'https://api.github.com/repos/jkudish/JigoShop-Software-Add-on' );
 			if ( !defined( 'JIGOSHOP_SOFTWARE_GITHUB_RAW_URL' ) ) define( 'JIGOSHOP_SOFTWARE_GITHUB_RAW_URL', 'https://raw.github.com/jkudish/JigoShop-Software-Add-on/master' );
-			if ( !defined( 'JIGOSHOP_SOFTWARE_REQUIRES_WP' ) ) define( 'JIGOSHOP_SOFTWARE_REQUIRES_WP', '3.0' );
-			if ( !defined( 'JIGOSHOP_SOFTWARE_TESTED_WP' ) ) define( 'JIGOSHOP_SOFTWARE_TESTED_WP', '3.3' );
+			if ( !defined( 'JIGOSHOP_SOFTWARE_REQUIRES_WP' ) ) define( 'JIGOSHOP_SOFTWARE_REQUIRES_WP', '3.3' );
+			if ( !defined( 'JIGOSHOP_SOFTWARE_TESTED_WP' ) ) define( 'JIGOSHOP_SOFTWARE_TESTED_WP', '3.4.2' );
 		}
 
 		/**
@@ -540,8 +541,7 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 			* @return void
 			*/
     function admin_enqueue() {
-			wp_register_style( 'jigoshop_software_backend', plugins_url( 'inc/back-end.css', __FILE__ ) );
-			wp_enqueue_style( 'jigoshop_software_backend' );
+    	wp_enqueue_style( 'jigoshop_software_backend', plugins_url( 'inc/back-end.css', __FILE__ ), array(), JIGOSHOP_SOFTWARE_VERSION );
     }
 
 
@@ -913,14 +913,13 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 ==========================================*/
 
 		/**
-			* adds css to the front-end
+			* enqueue scripts and styles on the frontend
 			*
-			* @since 1.0
+			* @since 2.3
 			* @return void
 			*/
-		function print_styles() {
-			wp_register_style( 'jigoshop_software', plugins_url( 'inc/front-end.css', __FILE__ ) );
-			wp_enqueue_style( 'jigoshop_software' );
+		function frontend_enqueue() {
+			wp_enqueue_style( 'jigoshop_software', plugins_url( 'inc/front-end.css', __FILE__ ), array(), JIGOSHOP_SOFTWARE_VERSION );
 		}
 
 		/**
