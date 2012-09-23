@@ -122,27 +122,82 @@ class Jigoshop_Software_Api extends jigoshop_software {
 						$data = get_post_meta( $order->ID, 'order_data', true );
 						if ( isset( $data['productid'] ) && $data['productid'] == $product_id ) {
 							if ( isset( $data['license_key'] ) && $data['license_key'] == $license_key ) {
-								// we have a match, let's make sure it's a completed sale
-								$order_status = wp_get_post_terms( $order->ID, 'shop_order_status' );
-								$order_status = $order_status[0]->slug;
-								if ( $order_status == 'completed' ) {
-									$global_activations = get_option( 'jigoshop_software_global_activations' );
-									$activations = get_post_meta( $order->ID, 'activations', true );
-									$activations_possible = $data['activations_possible'];
-									$remaining_activations = $data['remaining_activations'];
-
-									if ( $instance ) {
-										// checking existing activation
+								// check if the order has been upgraded
+								if ( empty( $data['has_been_upgraded'] ) || 'on' != $data['has_been_upgraded'] ) {
+									// make sure it's a completed sale
+									$order_status = wp_get_post_terms( $order->ID, 'shop_order_status' );
+									$order_status = $order_status[0]->slug;
+									if ( $order_status == 'completed' ) {
+										$global_activations = get_option( 'jigoshop_software_global_activations' );
 										$activations = get_post_meta( $order->ID, 'activations', true );
+										$activations_possible = $data['activations_possible'];
+										$remaining_activations = $data['remaining_activations'];
 
-										if ( isset( $activations[$instance] ) && is_array( $activations[$instance] ) ) {
-											// this instance exists
-											if ( $activations[$instance]['active'] == true ) {
+										if ( $instance ) {
+											// checking existing activation
+											$activations = get_post_meta( $order->ID, 'activations', true );
+
+											if ( isset( $activations[$instance] ) && is_array( $activations[$instance] ) ) {
+												// this instance exists
+												if ( $activations[$instance]['active'] == true ) {
+													$activated = true;
+													$output_data = $data;
+													$output_data['activated'] = true;
+													$output_data['instanceid'] = $instance;
+													$output_data['message'] = $data['remaining_activations'].' out of '.$activations_possible.' activations remaining';
+													$output_data['time'] = time();
+													$to_output = array( 'activated', 'instanceid' );
+													$to_output['message'] = 'message';
+													if ( $nonce ) {
+														$output_data['nonce'] = $nonce;
+														$to_output['nonce'] = 'nonce';
+													}
+													$to_output['timestamp'] = 'time';
+													$json = $this->prepare_output( $to_output, $output_data );
+												} else {
+													$this->error( '102', __( 'This instance isn\'t active', 'jigoshop-software' ), null, array( 'activated' => false, 'secret' => $data['secret_product_key'] ) );
+												}
+											} else {
+												// the instance doesn't exist
+												$this->error( '102', __( 'This instance doesn\'t exist', 'jigoshop-software' ), null, array( 'activated' => false, 'secret' => $data['secret_product_key'] ) );
+											}
+										} else {
+											// new activation
+											// check number of remaining activations
+											if ( $remaining_activations > 0 ) {
+												// let's activate
 												$activated = true;
+												$data['remaining_activations'] = $remaining_activations - 1; // decrease remaining activations
+												$instance = parent::generate_license_key();
+												$activation = array( 'time' => time(), 'active' => true, 'version' => $version, 'os' => $os, 'instance' => $instance, 'product_id' => $data['productid'] );
+
+												// store the activation globally
+												$global_activations[$instance] = $activation;
+												update_option( 'jigoshop_software_global_activations', $global_activations );
+
+												// store the activation for this purchase only now
+												unset( $activation['product_id'] );
+												$activations[$instance] = $activation;
+												update_post_meta( $order->ID, 'activations', $activations );
+
+												// update the order data
+												update_post_meta( $order->ID, 'order_data', $data );
+
+												// send email to the customer
+												$order_items = get_post_meta( $order->ID, 'order_items', true );
+												$email_data = array(
+													'email' => get_post_meta( $order->ID, 'activation_email', true ),
+													'remaining_activations' => $data['remaining_activations'],
+													'activations_possible' => $data['activations_possible'],
+													'product' => $order_items[0]['name'],
+												);
+												parent::process_email( $email_data, 'new_activation' );
+
+												// return the json
 												$output_data = $data;
 												$output_data['activated'] = true;
 												$output_data['instanceid'] = $instance;
-												$output_data['message'] = $data['remaining_activations'].' out of '.$activations_possible.' activations remaining';
+												$output_data['message'] = $data['remaining_activations'] .' '. __( 'out of', 'jigoshop-software' ) .' ' . $activations_possible . ' ' . __( 'activations remaining', 'jigoshop-software' );
 												$output_data['time'] = time();
 												$to_output = array( 'activated', 'instanceid' );
 												$to_output['message'] = 'message';
@@ -153,64 +208,14 @@ class Jigoshop_Software_Api extends jigoshop_software {
 												$to_output['timestamp'] = 'time';
 												$json = $this->prepare_output( $to_output, $output_data );
 											} else {
-												$this->error( '102', __( 'This instance isn\'t active', 'jigoshop-software' ), null, array( 'activated' => false, 'secret' => $data['secret_product_key'] ) );
+												$this->error( '103', __( 'Remaining activations is equal to zero', 'jigoshop-software' ), null, array( 'activated' => false, 'secret' => $data['secret_product_key'] ) );
 											}
-										} else {
-											// the instance doesn't exist
-											$this->error( '102', __( 'This instance doesn\'t exist', 'jigoshop-software' ), null, array( 'activated' => false, 'secret' => $data['secret_product_key'] ) );
 										}
 									} else {
-										// new activation
-										// check number of remaining activations
-										if ( $remaining_activations > 0 ) {
-											// let's activate
-											$activated = true;
-											$data['remaining_activations'] = $remaining_activations - 1; // decrease remaining activations
-											$instance = parent::generate_license_key();
-											$activation = array( 'time' => time(), 'active' => true, 'version' => $version, 'os' => $os, 'instance' => $instance, 'product_id' => $data['productid'] );
-
-											// store the activation globally
-											$global_activations[$instance] = $activation;
-											update_option( 'jigoshop_software_global_activations', $global_activations );
-
-											// store the activation for this purchase only now
-											unset( $activation['product_id'] );
-											$activations[$instance] = $activation;
-											update_post_meta( $order->ID, 'activations', $activations );
-
-											// update the order data
-											update_post_meta( $order->ID, 'order_data', $data );
-
-											// send email to the customer
-											$order_items = get_post_meta( $order->ID, 'order_items', true );
-											$email_data = array(
-												'email' => get_post_meta( $order->ID, 'activation_email', true ),
-												'remaining_activations' => $data['remaining_activations'],
-												'activations_possible' => $data['activations_possible'],
-												'product' => $order_items[0]['name'],
-											);
-											parent::process_email( $email_data, 'new_activation' );
-
-											// return the json
-											$output_data = $data;
-											$output_data['activated'] = true;
-											$output_data['instanceid'] = $instance;
-											$output_data['message'] = $data['remaining_activations'] .' '. __( 'out of', 'jigoshop-software' ) .' ' . $activations_possible . ' ' . __( 'activations remaining', 'jigoshop-software' );
-											$output_data['time'] = time();
-											$to_output = array( 'activated', 'instanceid' );
-											$to_output['message'] = 'message';
-											if ( $nonce ) {
-												$output_data['nonce'] = $nonce;
-												$to_output['nonce'] = 'nonce';
-											}
-											$to_output['timestamp'] = 'time';
-											$json = $this->prepare_output( $to_output, $output_data );
-										} else {
-											$this->error( '103', __( 'Remaining activations is equal to zero', 'jigoshop-software' ), null, array( 'activated' => false, 'secret' => $data['secret_product_key'] ) );
-										}
+										$this->error( '101', __( 'The purchase matching this product is not complete', 'jigoshop-software' ), null,  array( 'activated' => false, 'secret' => $data['secret_product_key'] ) );
 									}
 								} else {
-									$this->error( '101', __( 'The purchase matching this product is not complete', 'jigoshop-software' ), null,  array( 'activated' => false, 'secret' => $data['secret_product_key'] ) );
+									$this->error( '105', __( 'This purchase has been upgraded and is no longer active', 'jigoshop-software' ), null,  array( 'activated' => false, 'secret' => $data['secret_product_key'] ) );
 								}
 							}
 						}
@@ -503,6 +508,9 @@ class Jigoshop_Software_Api extends jigoshop_software {
 			break;
 			case '104' :
 				$error = array( 'error' => __( 'Invalid Instance ID', 'jigoshop-software' ), 'code' => '104' );
+			break;
+			case '105' :
+				$error = array( 'error' => __( 'Purchase has been upgraded', 'jigoshop-software' ), 'code' => '105' );
 			break;
 			default :
 				$error = array( 'error' => __( 'Invalid Request', 'jigoshop-software' ), 'code' => '100' );

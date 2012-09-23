@@ -189,6 +189,9 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 				array( 'id' => 'upgraded_via', 'label' => __( 'Upgraded Using', 'jigoshop-software' ), 'title' => __( 'Upgraded Using', 'jigoshop-software' ), 'placeholder' => '', 'type' => 'text' ),
 				array( 'id' => 'upgraded_to', 'label' => __( 'Upgraded To', 'jigoshop-software' ), 'title' => __( 'Upgraded To', 'jigoshop-software' ), 'placeholder' => '', 'type' => 'text' ),
 				array( 'id' => 'upgrade_price', 'label' => __( 'Upgrade price ($)', 'jigoshop-software' ), 'title' => __( 'Upgrade price ($)', 'jigoshop-software' ), 'placeholder' => '', 'type' => 'text' ),
+				array( 'id' => 'upgraded_from_order_id', 'label' => __( 'Order ID of the original purchase', 'jigoshop-software' ), 'title' => __( 'Order ID of the original purchase', 'jigoshop-software' ), 'placeholder' => '', 'type' => 'text' ),
+				array( 'id' => 'has_been_upgraded', 'label' => __( 'This order has been used as an upgrade to another upgrade if checked', 'jigoshop-software' ), 'title' => __( 'This order has been used as an upgrade to another upgrade if checked', 'jigoshop-software' ), 'placeholder' => '', 'type' => 'checkbox' ),
+				array( 'id' => 'upgraded_to_order_id', 'label' => __( 'Order ID of the upgrade purchase', 'jigoshop-software' ), 'title' => __( 'Order ID of the upgrade purchase', 'jigoshop-software' ), 'placeholder' => '', 'type' => 'text' ),
 				array( 'id' => 'original_price', 'label' => __( 'Original price ($)', 'jigoshop-software' ), 'title' => __( 'Original price ($)', 'jigoshop-software' ), 'placeholder' => '', 'type' => 'text' ),
 			);
 
@@ -1018,10 +1021,12 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 		function filter_price_paypal( $buffer ) {
 			$order_id = $_GET['order'];
 			$data = get_post_meta( $order_id, 'order_data', true );
-			$original_price = number_format( $data['original_price'], 2 );
-			$correct_price = number_format( $data['order_total'], 2 );
-			if ( $original_price ) {
-				$buffer = str_replace( '"amount_1" value="' . $original_price . '"', '"amount_1" value="' . $correct_price . '"', $buffer );
+			if ( ! empty( $data['original_price'] ) ) {
+				$original_price = number_format( $data['original_price'], 2 );
+				$correct_price = number_format( $data['order_total'], 2 );
+				if ( ! empty( $original_price ) ) {
+					$buffer = str_replace( '"amount_1" value="' . $original_price . '"', '"amount_1" value="' . $correct_price . '"', $buffer );
+				}
 			}
 			return $buffer;
 		}
@@ -1077,9 +1082,10 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 			* @param string $email_address the email address asssociated with the purchase
 			* @param int $product_id the product to validate for
 			* @param string $date date after which purchase must have occurred
-			* @return bool valid key or not
+			* @param bool $return_order_id if true, the function will return the order ID that matches the license key, instead of just a bool
+			* @return bool|int valid key or not|order_id if $return_order_id is set to true
 			*/
-		function is_valid_license_key( $license_key = null, $email_address = null, $product_id = null, $date = null ) {
+		function is_valid_license_key( $license_key = null, $email_address = null, $product_id = null, $date = null, $return_order_id = false ) {
 
 			if ( empty( $license_key ) || empty( $email_address ) || empty( $product_id ) )
 				return false;
@@ -1105,9 +1111,12 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 						$order_status = wp_get_post_terms( $order->ID, 'shop_order_status' );
 						$order_status = $order_status[0]->slug;
 						if ( $order_status == 'completed' ) {
-							// finally let's make sure the date is within the threshold
+							// let's make sure the date is within the threshold
 							if ( empty( $date ) || get_the_time( 'U', $order->ID ) >= strtotime( $date ) ) {
-								return true;
+								// finaly let's make sure it hasn't already been upgraded
+								if ( empty( $data['has_been_upgraded'] ) || 'on' != $data['has_been_upgraded'] ) {
+									return ( $return_order_id ) ? $order->ID : true;
+								}
 							}
 						}
 					}
@@ -1205,6 +1214,55 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 		}
 
 		/**
+		 * checks if the given order is an upgrade from another order
+		 *
+		 * @since 2.3
+		 * @param $order_id the order ID
+		 * @return bool
+		 */
+		function is_upgrade_order( $order_id ) {
+
+			$data = get_post_meta( $order_id, 'order_data', true );
+			return ( !empty( $data['is_upgrade'] ) && $data['is_upgrade'] );
+
+		}
+
+		/**
+		 * given an order that is an upgrade from another order,
+		 * gets the original order ID
+		 *
+		 * @since 2.3
+		 * @param $order_id the upgrade order ID
+		 * @return bool
+		 */
+		function get_upgrade_order_orginal_order_id( $order_id ) {
+
+			if ( ! $this->is_upgrade_order( $order_id ) )
+				return false;
+
+			$data = get_post_meta( $order_id, 'order_data', true );
+			if ( empty( $data['upgraded_from_order_id'] ) ) {
+				return false;
+			} else {
+				return $data['upgraded_from_order_id'];
+			}
+		}
+
+		/**
+		 * checks if the given order has been upgraded
+		 *
+		 * @since 2.3
+		 * @param $order_id the order ID
+		 * @return bool
+		 */
+		function order_has_been_upgraded( $order_id ) {
+
+			$data = get_post_meta( $order_id, 'product_data', true );
+			return ( !empty( $data['has_been_upgraded'] ) && $data['has_been_upgraded'] );
+
+		}
+
+		/**
  			* generates a unique id that is used as the license code
 			*
 			* @since 1.0
@@ -1288,8 +1346,13 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 			}
 
 			// key validation
-			if ( $upgrade && !empty( $email ) && ( empty( $key ) || !$this->is_valid_license_key( $key, $email, $upgrade_from_product_id, $upgrade_date_threshold ) ) ) {
-				$messages['key'] = __( 'The key you have entered is not valid, please try again or contact us if you need additional help', 'jigoshop-software' );
+			if ( $upgrade && !empty( $email ) && ( empty( $key ) || ! $this->is_valid_license_key( $key, $email, $upgrade_from_product_id, $upgrade_date_threshold ) ) ) {
+				$original_order_id = $this->is_valid_license_key( $key, $email, $upgrade_from_product_id, $upgrade_date_threshold, true );
+				if ( ! empty( $original_order_id ) && $this->order_has_been_upgraded( $original_order_id ) ) {
+					$messages['key'] = __( 'The key you have entered has already been upgraded, please try again or contact us if you need additional help', 'jigoshop-software' );
+				} else {
+					$messages['key'] = __( 'The key you have entered is not valid, please try again or contact us if you need additional help', 'jigoshop-software' );
+				}
 			}
 
 			// if there is no message, then validation passed
@@ -1315,6 +1378,7 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 					$order['upgraded_via'] = get_the_title( $item_id );
 					$order['upgraded_to'] = get_the_title( $upgrade_to_id );
 					$order['upgrade_price'] = $price;
+					$order['upgraded_from_order_id'] = $this->is_valid_license_key( $key, $email, $upgrade_from_product_id, $upgrade_date_threshold, true );
 					$product = get_post_meta( $upgrade_to_id, 'product_data', true );
 				}
 
@@ -1451,7 +1515,7 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 						$data['purchases'][$i]['price'] = $order_items[0]['cost'];
 						$data['purchases'][$i]['date'] = get_the_time( 'l, F j Y', $order->ID );
 						$data['purchases'][$i]['activation_email'] = get_post_meta( $order->ID, 'activation_email', true );
-						$data['purchases'][$i]['license_key'] = $order_data['license_key'];
+						$data['purchases'][$i]['license_key'] = ( $this->order_has_been_upgraded() ) ? __( 'Upgraded and Deactivated', 'jigoshop-software' ) : $order_data['license_key'];
 						$data['purchases'][$i]['order_total'] = $order_items[0]['cost'];
 						$data['purchases'][$i]['remaining_activations'] = $order_data['remaining_activations'];
 						$data['purchases'][$i]['activations_possible'] = $order_data['activations_possible'];
@@ -1511,6 +1575,16 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 			*/
 		function completed_order( $order_id ) {
 			jigoshop_cart::empty_cart();
+
+			// if this is an upgrade to a previous order, mark the previous order as having been upgraded
+			if ( $this->is_upgrade_order( $order_id ) ) {
+				$original_order_id = $this->get_upgrade_order_orginal_order_id( $order_id );
+				$data = get_post_meta( $original_order_id, 'order_data', true );
+				$data['has_been_upgraded'] = 'on';
+				$data['upgraded_to_order_id'] = $order_id;
+				update_post_meta( $original_order_id, 'order_data', $data );
+			}
+
 			$this->process_email( $order_id, 'completed_purchase' );
 		}
 
