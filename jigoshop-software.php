@@ -1257,8 +1257,8 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 		 */
 		function order_has_been_upgraded( $order_id ) {
 
-			$data = get_post_meta( $order_id, 'product_data', true );
-			return ( !empty( $data['has_been_upgraded'] ) && $data['has_been_upgraded'] );
+			$data = get_post_meta( $order_id, 'order_data', true );
+			return ( ! empty( $data['has_been_upgraded'] ) && 'on' == $data['has_been_upgraded'] );
 
 		}
 
@@ -1515,7 +1515,7 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 						$data['purchases'][$i]['price'] = $order_items[0]['cost'];
 						$data['purchases'][$i]['date'] = get_the_time( 'l, F j Y', $order->ID );
 						$data['purchases'][$i]['activation_email'] = get_post_meta( $order->ID, 'activation_email', true );
-						$data['purchases'][$i]['license_key'] = ( $this->order_has_been_upgraded() ) ? __( 'Upgraded and Deactivated', 'jigoshop-software' ) : $order_data['license_key'];
+						$data['purchases'][$i]['license_key'] = ( $this->order_has_been_upgraded( $order->ID ) ) ? __( 'Upgraded and Deactivated', 'jigoshop-software' ) : $order_data['license_key'];
 						$data['purchases'][$i]['order_total'] = $order_items[0]['cost'];
 						$data['purchases'][$i]['remaining_activations'] = $order_data['remaining_activations'];
 						$data['purchases'][$i]['activations_possible'] = $order_data['activations_possible'];
