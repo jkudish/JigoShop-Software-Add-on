@@ -9,6 +9,12 @@ The plugin requires JigoShop 1.1.1 or higher.
 Changelog
 ===========
 
+### 2.3
+* Prevent license keys from being used to upgrade more than once, along with necessary API adjustments.
+* Fix a bug where upgrade orders were missing the product id.
+* Properly register/enqueue css stylesheets.
+* Other minor code cleanup/fixes.
+
 ### 2.2
 * Major rewrite of how upgradable products work. If you are relying on the license key based upgrade system you may want to hold-off this update and/or [manually] convert your products to the new system
 * Products can now be configured as an upgrade from and to another product
@@ -134,4 +140,4 @@ Current Version
 
 The line below is used for the updater API, please leave it untouched unless bumping the version up :)
 
-~Current Version:2.2~
+~Current Version:2.3~
