@@ -3,7 +3,7 @@
 Plugin Name: JigoShop - Software Add-On
 Plugin URI: https://github.com/jkudish/JigoShop-Software-Add-on/
 Description: Extends JigoShop to a full-blown software shop, including license activation, license retrieval, activation e-mails and more
-Version: 2.3
+Version: 2.3.1
 Author: Joachim Kudish
 Author URI: http://jkudish.com
 License: GPL v2
@@ -11,7 +11,7 @@ Text Domain: jigoshop-software
 */
 
 /**
-	* @version 2.3
+	* @version 2.3.1
 	* @author Joachim Kudish <info@jkudish.com>
 	* @link http://jkudish.com
 	* @uses JigoShop @link http://jigoshop.com
@@ -111,7 +111,7 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 
 			// payment stuff
 			add_action( 'init', array( $this, 'init_actions' ), 1 );
-			add_action( 'thankyou_paypal', array( $this, 'post_paypal_payment' ) );
+			add_action( 'valid-paypal-standard-ipn-request', array( $this, 'post_paypal_payment' ) );
 			add_action( 'order_status_cancelled', array( $this, 'cancel_order' ) );
 
 			// email stuff
@@ -1559,9 +1559,9 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 			* @param int $order_id the order id to process
 			* @return void
 			*/
-		function post_paypal_payment( $order_id ) {
-			if ( isset( $_GET['tx'] ) ) {
-				update_post_meta( $order_id, 'transaction_id', $_GET['tx'], true );
+		function post_paypal_payment( $post_data ) {
+			if ( ! empty( $post_data['transaction_subject'] ) && ! empty ( $post_data['txn_id'] ) ) {
+				update_post_meta( absint( $post_data['transaction_subject'] ), 'transaction_id', $post_data['txn_id'], true );
 			}
 		}
 
