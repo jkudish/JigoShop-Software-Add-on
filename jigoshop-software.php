@@ -3,7 +3,7 @@
 Plugin Name: JigoShop - Software Add-On
 Plugin URI: https://github.com/jkudish/JigoShop-Software-Add-on/
 Description: Extends JigoShop to a full-blown software shop, including license activation, license retrieval, activation e-mails and more
-Version: 2.3.1
+Version: 2.3.2
 Author: Joachim Kudish
 Author URI: http://jkudish.com
 License: GPL v2
@@ -11,7 +11,7 @@ Text Domain: jigoshop-software
 */
 
 /**
-	* @version 2.3.1
+	* @version 2.3.2
 	* @author Joachim Kudish <info@jkudish.com>
 	* @link http://jkudish.com
 	* @uses JigoShop @link http://jigoshop.com
@@ -518,6 +518,13 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 					}
 				}
 			}
+
+			if ( empty( $_POST['is_upgrade'] ) )
+				unset( $data['is_upgrade'] );
+
+			if ( empty( $_POST['has_been_upgraded'] ) )
+				unset( $data['has_been_upgraded'] );
+
 			update_post_meta( $post->ID, 'order_data', $data );
 			if ( isset( $_POST['resend_email'] ) ) {
 				$this->process_email( $post->ID, 'completed_purchase' );
@@ -532,7 +539,7 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 			*/
 		function order_further_actions_meta_box() { ?>
 			<ul class="order_actions">
-				<li><input type="submit" class="button button-primary" name="resend_email" value="<?php _e( 'Resend Email', 'jigoshop-software' ); ?>" /> &mdash; <?php _e( 'Resend Purchase Email' , 'jigoshop-software' ); ?></li>
+				<li><input type="submit" class="button button-primsy" name="resend_email" value="<?php _e( 'Resend Email', 'jigoshop-software' ); ?>" /> &mdash; <?php _e( 'Resend Purchase Email' , 'jigoshop-software' ); ?></li>
 			</ul>
 			<?php
 		}

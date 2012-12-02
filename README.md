@@ -10,6 +10,9 @@ Changelog
 ===========
 
 ### 2.3.1
+* Fix saving of checkbox order meta fields
+
+### 2.3.1
 * Fix how the paypal transaction ID is recorded to work with the latest version(s) of JigoShop
 
 ### 2.3
