@@ -328,68 +328,67 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 			global $post;
 			$data = get_post_meta( $post->ID, 'product_data', true );
 			$this->define_fields();
-			?>
-			<div id="software_data" class="panel jigoshop_options_panel">
-				<?php
-				foreach ($this->product_fields as $field) :
-					if ( $field['id'] == 'soft_product_id' ) $value = get_post_meta( $post->ID, 'soft_product_id', true );
-					else @$value = ( $field['id'] == 'up_license_keys' || $field['id'] == 'used_license_keys' ) ? $this->un_array_ify_keys( $data[$field['id']] ) : $data[$field['id']];
-					echo '<p class="form-field jgs-product-field';
-					echo ( !empty( $field['upgrade_field'] ) && $field['upgrade_field'] ) ? ' jgs-upgrade-field' : '';
-					echo ( !empty( $field['never_hide'] ) && $field['never_hide'] ) ? ' jgs-never-hide' : '';
-					echo '">';
-					echo '<label for="'.$field['id'].'">'.$field['label'].'</label>';
-					switch ($field['type']) :
-						case 'text' :
-							echo '<input type="text" id="'.$field['id'].'" name="'.$field['id'].'" value="'.$value.'" placeholder="'.$field['placeholder'].'"/>';
-							break;
-						case 'number' :
-							echo '<input type="number" id="'.$field['id'].'" name="'.$field['id'].'" value="'.$value.'" placeholder="'.$field['placeholder'].'"/>';
-							break;
-						case 'textarea' :
-							echo '<textarea id="'.$field['id'].'" name="'.$field['id'].'" placeholder="'.$field['placeholder'].'">'.$value.'</textarea>';
-							break;
-						case 'checkbox' :
-							$checked = ($value == 'on') ? ' checked=checked' : '';
-							echo '<input type="checkbox" id="'.$field['id'].'" name="'.$field['id'].'" value="on"'.$checked.'>';
-							break;
-						case 'select' :
-							echo '<select id="'.$field['id'].'" name="'.$field['id'].'">';
-							foreach ($field['values'] as $k => $v) :
-								$selected = ($value == $k) ? ' selected="selected"' : '';
-								echo '<option value="'.$k.'"'.$selected.'>'.$v.'</option>';
-							endforeach;
-							echo '</select>';
-							break;
-					endswitch;
-					echo '</p>';
-				endforeach;
-				?>
-			</div>
-			<script>
+			echo '<div id="software_data" class="panel jigoshop_options_panel">';
+			foreach ( $this->product_fields as $field) {
 
-				function upgrade_checkboxes() {
-					if ( jQuery('#is_upgrade').prop( 'checked' ) ) {
-						jQuery('.jgs-upgrade-field').show();
-						jQuery('.jgs-product-field').not( '.jgs-never-hide' ).not( '.jgs-upgrade-field' ).hide();
-					} else {
-						jQuery('.jgs-upgrade-field').hide();
-						jQuery('.jgs-product-field').show();
-					}
+				// determine what the value should be
+				if ( ! empty( $field['id'] ) && 'soft_product_id' == $field['id'] )
+					$value = get_post_meta( $post->ID, 'soft_product_id', true );
+				elseif ( ! empty( $field['id'] ) && in_array( $field['id'], array( 'up_license_keys', 'used_license_keys' ) ) )
+					$value = $this->un_array_ify_keys( $data[$field['id']] );
+				else
+					$value = $data[$field['id']];
+
+
+				$field_classes = array( 'form-field', 'jgs-product-field' );
+				if ( ! empty( $field['upgrade_field'] ) && $field['upgrade_field'] )
+					$field_classes[] = 'jgs-upgrade-field';
+				if ( ! empty( $field['never_hide'] ) && $field['never_hide'] )
+					$field_classes[] = 'jgs-never-hide';
+
+				printf( '<p class="%s">', sanitize_html_class( implode( ' ', $field_classes ) ) );
+				printf( '<label for="%s">%s</label>', esc_attr( $field['id'] ), esc_html( $field['label'] ) );
+
+				switch ( $field['type'] ) {
+					case 'text' :
+					case 'number' :
+						printf( '<input type="%s" id="%s" name="%s" value="%s" placeholder="%s"/>', esc_attr( $field['type'] ), esc_attr( $field['id'] ), esc_attr( $field['id'] ), esc_attr( $value ), esc_attr( $field['placeholder'] ) );
+						break;
+					case 'textarea' :
+						printf( '<textarea id="%s" name="%s" placeholder="%s">%s</textarea>', esc_attr( $field['id'] ), esc_attr( $field['id'] ), esc_attr( $field['placeholder'] ), esc_textarea( $value ) );
+						break;
+					case 'checkbox' :
+						printf( '<input type="checkbox" id="%s" name="%s" value="on"%s', esc_attr( $field['id'] ), esc_attr( $field['id'] ), checked( $value, 'on', false ) );
+						break;
+					case 'select' :
+						printf( '<select id="%s" name="%s">', esc_attr( $field['id'] ), esc_attr( $field['id'] ) );
+						foreach ( $field['values'] as $value_to_save => $value_nice_name )
+							printf( '<option value="%s"%s>%s</option>', esc_attr( $value_to_save ), selected( $value_to_save, $value, false ), esc_html( $value_nice_name ) );
+						echo '</select>';
+						break;
 				}
 
+				echo '</p>';
+			}
+			echo '</div>';
+			?>
+			<script>
 				jQuery(document).ready(function($){
+					function upgrade_checkboxes() {
+						if ( $( '#is_upgrade' ).prop( 'checked' ) ) {
+							$( '.jgs-upgrade-field' ).show();
+							$( '.jgs-product-field' ).not( '.jgs-never-hide' ).not( '.jgs-upgrade-field' ).hide();
+						} else {
+							$( '.jgs-upgrade-field' ).hide();
+							$( '.jgs-product-field' ).show();
+						}
+					}
 
 					upgrade_checkboxes();
-
-					$('#is_upgrade').change(function(){
-						upgrade_checkboxes();
-					});
-
+					$( '#is_upgrade' ).change( 'upgrade_checkboxes' );
 				});
-
 			</script>
-		<?php
+			<?php
 		}
 
 		/**
@@ -529,7 +528,7 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 					} elseif ( $field['id'] == 'old_order_id' ) {
 						update_post_meta( $post->ID, 'old_order_id', sanitize_text_field( $_POST['old_order_id'] ) );
 					} else {
-						$data[$field['id']] = absint( $_POST[$field['id']] );
+						$data[$field['id']] = $_POST[$field['id']];
 					}
 				}
 			}
