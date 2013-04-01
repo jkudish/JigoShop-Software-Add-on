@@ -52,12 +52,12 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 		 */
 		static $order_fields;
 
-	/**
-		* class constructor
-		* plugin activation, hooks & filters, etc..
-		*
-		* @since 1.0
-		* @return void
+		/**
+		 * class constructor
+		 * plugin activation, hooks & filters, etc..
+		 *
+		 * @since 1.0
+		 * @return void
 		*/
 		function __construct() {
 
