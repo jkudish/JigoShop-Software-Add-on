@@ -144,16 +144,26 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 		 * @return void
 		 */
 		function define_constants() {
-			if ( !defined( 'JIGOSHOP_SOFTWARE_PATH' ) ) define( 'JIGOSHOP_SOFTWARE_PATH', dirname( __FILE__ ) );
-			if ( !defined( 'JIGOSHOP_SOFTWARE_SLUG' ) ) define( 'JIGOSHOP_SOFTWARE_SLUG', plugin_basename( __FILE__ ) );
-			if ( !defined( 'JIGOSHOP_SOFTWARE_VERSION' ) ) define( 'JIGOSHOP_SOFTWARE_VERSION', 2.3 );
-			if ( !defined( 'JIGOSHOP_SOFTWARE_PROPER_NAME' ) ) define( 'JIGOSHOP_SOFTWARE_PROPER_NAME', 'jigoshop-software' );
-			if ( !defined( 'JIGOSHOP_SOFTWARE_GITHUB_URL' ) ) define( 'JIGOSHOP_SOFTWARE_GITHUB_URL', 'https://github.com/jkudish/JigoShop-Software-Add-on' );
-			if ( !defined( 'JIGOSHOP_SOFTWARE_GITHUB_ZIP_URL' ) ) define( 'JIGOSHOP_SOFTWARE_GITHUB_ZIP_URL', 'https://github.com/jkudish/JigoShop-Software-Add-on/zipball/master' );
-			if ( !defined( 'JIGOSHOP_SOFTWARE_GITHUB_API_URL' ) ) define( 'JIGOSHOP_SOFTWARE_GITHUB_API_URL', 'https://api.github.com/repos/jkudish/JigoShop-Software-Add-on' );
-			if ( !defined( 'JIGOSHOP_SOFTWARE_GITHUB_RAW_URL' ) ) define( 'JIGOSHOP_SOFTWARE_GITHUB_RAW_URL', 'https://raw.github.com/jkudish/JigoShop-Software-Add-on/master' );
-			if ( !defined( 'JIGOSHOP_SOFTWARE_REQUIRES_WP' ) ) define( 'JIGOSHOP_SOFTWARE_REQUIRES_WP', '3.3' );
-			if ( !defined( 'JIGOSHOP_SOFTWARE_TESTED_WP' ) ) define( 'JIGOSHOP_SOFTWARE_TESTED_WP', '3.4.2' );
+			if ( ! defined( 'JIGOSHOP_SOFTWARE_PATH' ) )
+				define( 'JIGOSHOP_SOFTWARE_PATH', dirname( __FILE__ ) );
+			if ( ! defined( 'JIGOSHOP_SOFTWARE_SLUG' ) )
+				define( 'JIGOSHOP_SOFTWARE_SLUG', plugin_basename( __FILE__ ) );
+			if ( ! defined( 'JIGOSHOP_SOFTWARE_VERSION' ) )
+				define( 'JIGOSHOP_SOFTWARE_VERSION', 2.3 );
+			if ( ! defined( 'JIGOSHOP_SOFTWARE_PROPER_NAME' ) )
+				define( 'JIGOSHOP_SOFTWARE_PROPER_NAME', 'jigoshop-software' );
+			if ( ! defined( 'JIGOSHOP_SOFTWARE_GITHUB_URL' ) )
+				define( 'JIGOSHOP_SOFTWARE_GITHUB_URL', 'https://github.com/jkudish/JigoShop-Software-Add-on' );
+			if ( ! defined( 'JIGOSHOP_SOFTWARE_GITHUB_ZIP_URL' ) )
+				define( 'JIGOSHOP_SOFTWARE_GITHUB_ZIP_URL', 'https://github.com/jkudish/JigoShop-Software-Add-on/zipball/master' );
+			if ( ! defined( 'JIGOSHOP_SOFTWARE_GITHUB_API_URL' ) )
+				define( 'JIGOSHOP_SOFTWARE_GITHUB_API_URL', 'https://api.github.com/repos/jkudish/JigoShop-Software-Add-on' );
+			if ( ! defined( 'JIGOSHOP_SOFTWARE_GITHUB_RAW_URL' ) )
+				define( 'JIGOSHOP_SOFTWARE_GITHUB_RAW_URL', 'https://raw.github.com/jkudish/JigoShop-Software-Add-on/master' );
+			if ( ! defined( 'JIGOSHOP_SOFTWARE_REQUIRES_WP' ) )
+				define( 'JIGOSHOP_SOFTWARE_REQUIRES_WP', '3.3' );
+			if ( ! defined( 'JIGOSHOP_SOFTWARE_TESTED_WP' ) )
+				define( 'JIGOSHOP_SOFTWARE_TESTED_WP', '3.4.2' );
 		}
 
 		/**
