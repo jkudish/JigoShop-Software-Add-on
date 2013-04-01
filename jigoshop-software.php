@@ -315,9 +315,7 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 		 * @return void
 		 */
 		function product_write_panel_tab() {
-			?>
-			<li><a href="#software_data"><?php _e( 'Software', 'jigoshop-software' ); ?></a></li>
-		<?php
+			printf( '<li><a href="#software_data">%s</a></li>', __( 'Software', 'jigoshop-software' ) );
 		}
 
 		/**
