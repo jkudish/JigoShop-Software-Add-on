@@ -3,7 +3,7 @@
 Plugin Name: JigoShop - Software Add-On
 Plugin URI: https://github.com/jkudish/JigoShop-Software-Add-on/
 Description: Extends JigoShop to a full-blown software shop, including license activation, license retrieval, activation e-mails and more
-Version: 2.3.2
+Version: 2.4
 Author: Joachim Kudish
 Author URI: http://jkudish.com
 License: GPL v2
@@ -11,7 +11,7 @@ Text Domain: jigoshop-software
 */
 
 /**
-	* @version 2.3.2
+	* @version 2.4
 	* @author Joachim Kudish <info@jkudish.com>
 	* @link http://jkudish.com
 	* @uses JigoShop @link http://jigoshop.com
