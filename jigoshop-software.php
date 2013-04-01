@@ -47,6 +47,12 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 		public $product_fields;
 
 		/**
+		 * the order fields
+		 * @var array
+		 */
+		public $order_fields;
+
+		/**
 		 * class constructor
 		 * plugin activation, hooks & filters, etc..
 		 *
