@@ -519,19 +519,19 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 		 * @return void
 		 */
 		function order_save_data() {
-			global $post, $wpdb;
+			global $post;
 			$this->define_fields();
-			$data = get_post_meta($post->ID, 'order_data', true);
+			$data = get_post_meta( $post->ID, 'order_data', true );
 			foreach ( $this->order_fields as $field ) {
 				if ( isset( $_POST[$field['id']] ) ) {
 					if ( $field['id'] == 'activation_email' ) {
-						update_post_meta( $post->ID, 'activation_email', $_POST['activation_email'] );
+						update_post_meta( $post->ID, 'activation_email', sanitize_text_field( $_POST['activation_email'] ) );
 					} elseif ( $field['id'] == 'transaction_id' ) {
-						update_post_meta( $post->ID, 'transaction_id', $_POST['transaction_id'] );
+						update_post_meta( $post->ID, 'transaction_id', sanitize_text_field( $_POST['transaction_id'] ) );
 					} elseif ( $field['id'] == 'old_order_id' ) {
-						update_post_meta( $post->ID, 'old_order_id', $_POST['old_order_id'] );
+						update_post_meta( $post->ID, 'old_order_id', sanitize_text_field( $_POST['old_order_id'] ) );
 					} else {
-						$data[$field['id']] = $wpdb->escape( $_POST[$field['id']] );
+						$data[$field['id']] = absint( $_POST[$field['id']] );
 					}
 				}
 			}
