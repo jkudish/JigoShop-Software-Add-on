@@ -44,13 +44,7 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 		 * the product fields
 		 * @var array
 		 */
-		static $product_fields;
-
-		/**
-		 * the order fields
-		 * @var array
-		 */
-		static $order_fields;
+		public $product_fields;
 
 		/**
 		 * class constructor
