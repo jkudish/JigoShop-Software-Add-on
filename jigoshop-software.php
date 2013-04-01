@@ -405,9 +405,9 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 				if ( $field['id'] == 'up_license_keys' || $field['id'] == 'used_license_keys' ) {
 					$data[$field['id']] = $this->array_ify_keys( $_POST[$field['id']] );
 				} elseif ( $field['id'] == 'soft_product_id' ) {
-					update_post_meta( $post->ID, 'soft_product_id', $_POST[$field['id']] );
+					update_post_meta( $post->ID, 'soft_product_id', sanitize_text_field( $_POST[$field['id']] ) );
 				} else {
-					$data[$field['id']] = esc_attr( $_POST[$field['id']] );
+					$data[$field['id']] = sanitize_text_field( $_POST[$field['id']] );
 				}
 			}
 			update_post_meta( $post->ID, 'product_data', $data );
