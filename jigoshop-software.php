@@ -229,14 +229,14 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 		function activation() {
 
 			// checks if the jigoshop plugin is running and disables this plugin if it's not (and displays a message)
-			if ( !is_plugin_active( 'jigoshop/jigoshop.php' ) ) {
+			if ( ! is_plugin_active( 'jigoshop/jigoshop.php' ) ) {
 				deactivate_plugins( plugin_basename( __FILE__ ) );
-				wp_die( sprintf( _x( 'The JigoShop Software Add-On requires %s to be activated in order to work. Please activate %s first.', 'A link to JigoShop is provided in the placeholders', 'jigoshop-software' ), '<a href="http://jigoshop.com" target="_blank">JigoShop</a>', '<a href="http://jigoshop.com" target="_blank">JigoShop</a>' ) . '<a href="'.admin_url( 'plugins.php' ).'"> <br> &laquo; ' . _x( 'Go Back', 'Activation failed, so go back to the plugins page', 'jigoshop-software' ) . '</a>' );
+				wp_die( sprintf( _x( 'The JigoShop Software Add-On requires %s to be activated in order to work. Please activate %s first.', 'A link to JigoShop is provided in the placeholders', 'jigoshop-software' ), '<a href="http://jigoshop.com" target="_blank">JigoShop</a>', '<a href="http://jigoshop.com" target="_blank">JigoShop</a>' ) . '<a href="'. esc_url( admin_url( 'plugins.php' ) ) . '"> <br> &laquo; ' . _x( 'Go Back', 'Activation failed, so go back to the plugins page', 'jigoshop-software' ) . '</a>' );
 			}
 
 			// creates the lost license page with the right shortcode in it
 			$lost_license_page_id = get_option( 'jigoshop_lost_license_page_id' );
-			if ( !$lost_license_page_id || $lost_license_page_id == '' ) {
+			if ( empty(  $lost_license_page_id ) ) {
 				$lost_license_page = array(
 					'post_title' => _x( 'Lost License', 'title of a page', 'jigoshop-software' ),
 					'post_content' => '[jigoshop_software_lost_license]',
@@ -249,7 +249,7 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 
 			// creates the API page
 			$jigoshop_api_page_id = get_option( 'jigoshop_api_page_id' );
-			if ( !$jigoshop_api_page_id || $jigoshop_api_page_id == '' ) {
+			if ( empty( $jigoshop_api_page_id ) ) {
 				$api_page = array(
 					'post_title' => _x( 'API', 'title of a page', 'jigoshop-software' ),
 					'post_content' => '',
