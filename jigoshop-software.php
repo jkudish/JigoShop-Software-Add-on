@@ -339,36 +339,14 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 				else
 					$value = $data[$field['id']];
 
-
 				$field_classes = array( 'form-field', 'jgs-product-field' );
 				if ( ! empty( $field['upgrade_field'] ) && $field['upgrade_field'] )
 					$field_classes[] = 'jgs-upgrade-field';
 				if ( ! empty( $field['never_hide'] ) && $field['never_hide'] )
 					$field_classes[] = 'jgs-never-hide';
 
-				printf( '<p class="%s">', esc_attr( implode( ' ', array_map( 'sanitize_html_class', $field_classes ) ) ) );
-				printf( '<label for="%s">%s</label>', esc_attr( $field['id'] ), esc_html( $field['label'] ) );
+				$this->admin_field_helper( $field, $value, $field_classes );
 
-				switch ( $field['type'] ) {
-					case 'text' :
-					case 'number' :
-						printf( '<input type="%s" id="%s" name="%s" value="%s" placeholder="%s"/>', esc_attr( $field['type'] ), esc_attr( $field['id'] ), esc_attr( $field['id'] ), esc_attr( $value ), esc_attr( $field['placeholder'] ) );
-						break;
-					case 'textarea' :
-						printf( '<textarea id="%s" name="%s" placeholder="%s">%s</textarea>', esc_attr( $field['id'] ), esc_attr( $field['id'] ), esc_attr( $field['placeholder'] ), esc_textarea( $value ) );
-						break;
-					case 'checkbox' :
-						printf( '<input type="checkbox" id="%s" name="%s" value="on"%s', esc_attr( $field['id'] ), esc_attr( $field['id'] ), checked( $value, 'on', false ) );
-						break;
-					case 'select' :
-						printf( '<select id="%s" name="%s">', esc_attr( $field['id'] ), esc_attr( $field['id'] ) );
-						foreach ( $field['values'] as $value_to_save => $value_nice_name )
-							printf( '<option value="%s"%s>%s</option>', esc_attr( $value_to_save ), selected( $value_to_save, $value, false ), esc_html( $value_nice_name ) );
-						echo '</select>';
-						break;
-				}
-
-				echo '</p>';
 			}
 			echo '</div>';
 			?>
@@ -427,38 +405,57 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 			<div class="panel-wrap jigoshop">
 				<div id="order_software_data" class="panel jigoshop_options_panel">
 					<?php
-					foreach ($this->order_fields as $field) :
-						if ( $field['id'] == 'activation_email' ) {
+					foreach ( $this->order_fields as $field ) {
+						if ( 'activation_email' == $field['id'] )
 							$value = get_post_meta( $post->ID, 'activation_email', true );
-						} elseif ( $field['id'] == 'transaction_id' ) {
+						elseif ( 'transaction_id' == $field['id'] )
 							$value = get_post_meta( $post->ID, 'transaction_id', true );
-						} elseif ( $field['id'] == 'old_order_id' ) {
+						elseif ( 'old_order_id' == $field['id'] )
 							$value = get_post_meta( $post->ID, 'old_order_id', true );
-						} elseif ( isset( $data[$field['id']] ) ) {
+						elseif ( isset( $data[$field['id']] ) )
 							$value = $data[$field['id']];
-						} else {
+						else
 							$value = null;
-						}
-						switch ($field['type']) :
-							case 'text' :
-								echo '<p class="form-field"><label for="'.$field['id'].'">'.$field['label'].'</label><input type="text" id="'.$field['id'].'" name="'.$field['id'].'" value="'.$value.'" placeholder="'.$field['placeholder'].'"/></p>';
-								break;
-							case 'number' :
-								echo '<p class="form-field"><label for="'.$field['id'].'">'.$field['label'].'</label><input type="number" id="'.$field['id'].'" name="'.$field['id'].'" value="'.$value.'" placeholder="'.$field['placeholder'].'"/></p>';
-								break;
-							case 'textarea' :
-								echo '<p class="form-field"><label for="'.$field['id'].'">'.$field['label'].'</label><textarea id="'.$field['id'].'" name="'.$field['id'].'" placeholder="'.$field['placeholder'].'">'.$value.'</textarea></p>';
-								break;
-							case 'checkbox' :
-								$checked = ($value == 'on') ? ' checked=checked' : '';
-								echo '<p class="form-field"><label for="'.$field['id'].'">'.$field['label'].'</label><input type="checkbox" id="'.$field['id'].'" name="'.$field['id'].'" value="on"'.$checked.'</p>';
-								break;
-						endswitch;
-					endforeach;
+						$this->admin_field_helper( $field, $value, array( 'form-field', 'jgs-order-field' ) );
 					?>
 				</div>
 			</div>
 		<?php
+		}
+
+		/**
+ 		 * admin helper to build out fields used inside meta boxes
+		 * helps reduce code duplication
+		 * echos/prints the field
+		 *
+		 * @param $field, field object to build
+		 * @param $value, the current value of the field
+		 * @return void
+		 */
+		function admin_field_helper( $field, $value, $field_classes ) {
+			printf( '<p class="%s">', esc_attr( implode( ' ', array_map( 'sanitize_html_class', $field_classes ) ) ) );
+			printf( '<label for="%s">%s</label>', esc_attr( $field['id'] ), esc_html( $field['label'] ) );
+
+			switch ( $field['type'] ) {
+				case 'text' :
+				case 'number' :
+					printf( '<input type="%s" id="%s" name="%s" value="%s" placeholder="%s"/>', esc_attr( $field['type'] ), esc_attr( $field['id'] ), esc_attr( $field['id'] ), esc_attr( $value ), esc_attr( $field['placeholder'] ) );
+					break;
+				case 'textarea' :
+					printf( '<textarea id="%s" name="%s" placeholder="%s">%s</textarea>', esc_attr( $field['id'] ), esc_attr( $field['id'] ), esc_attr( $field['placeholder'] ), esc_textarea( $value ) );
+					break;
+				case 'checkbox' :
+					printf( '<input type="checkbox" id="%s" name="%s" value="on"%s', esc_attr( $field['id'] ), esc_attr( $field['id'] ), checked( $value, 'on', false ) );
+					break;
+				case 'select' :
+					printf( '<select id="%s" name="%s">', esc_attr( $field['id'] ), esc_attr( $field['id'] ) );
+					foreach ( $field['values'] as $value_to_save => $value_nice_name )
+						printf( '<option value="%s"%s>%s</option>', esc_attr( $value_to_save ), selected( $value_to_save, $value, false ), esc_html( $value_nice_name ) );
+					echo '</select>';
+					break;
+			}
+
+			echo '</p>';
 		}
 
 		/**
