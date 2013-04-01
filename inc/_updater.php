@@ -94,6 +94,9 @@ class wp_github_updater {
 
 	function get_date() {
 		$_date = $this->get_github_data();
+		if ( empty( $_date ) || ! is_object( $_date ) || is_wp_error( $_date ) )
+			return;
+
 		$date = $_date->updated_at;
 		$date = date('Y-m-d', strtotime($_date->updated_at));
 		return $date;
@@ -101,6 +104,8 @@ class wp_github_updater {
 
 	function get_description() {
 		$_description = $this->get_github_data();
+		if ( empty( $_description ) || ! is_object( $_description ) || is_wp_error( $_description ) )
+			return;
 		return $_description->description;
 	}
 
