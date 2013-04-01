@@ -63,15 +63,10 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 
 			$this->define_constants();
 
-			// set the right time zone from WP options
-			if ( get_option( 'timezone_string' ) != '' ) {
-				date_default_timezone_set( get_option( 'timezone_string' ) );
-			}
-
 			/**
 			 * hooks
 			 */
-
+			add_action( 'init', array( $this, 'set_timezone' ) );
 			add_action( 'init', array( $this, 'load_lang' ) );
 
 			// backend stuff
@@ -128,6 +123,18 @@ if ( !class_exists( 'Jigoshop_Software' ) ) {
 			add_filter( 'add_to_cart_redirect', array( $this, 'add_to_cart_redirect' ) );
 			add_filter( 'page_template', array( $this, 'locate_api_template' ), 10, 1 );
 
+		}
+
+		/**
+ 		 * set the correct timezone from the WP options
+		 *
+		 * @since 2.4
+		 * @return void
+		 */
+		function set_timezone() {
+			$timezone = get_option( 'timezone_string' );
+			if ( ! empty( $timezone ) )
+				date_default_timezone_set( $timezone );
 		}
 
 		/**
