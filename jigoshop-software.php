@@ -346,7 +346,7 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 				if ( ! empty( $field['never_hide'] ) && $field['never_hide'] )
 					$field_classes[] = 'jgs-never-hide';
 
-				printf( '<p class="%s">', sanitize_html_class( implode( ' ', $field_classes ) ) );
+				printf( '<p class="%s">', esc_attr( implode( ' ', array_map( 'sanitize_html_class', $field_classes ) ) ) );
 				printf( '<label for="%s">%s</label>', esc_attr( $field['id'] ), esc_html( $field['label'] ) );
 
 				switch ( $field['type'] ) {
@@ -373,7 +373,7 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 			echo '</div>';
 			?>
 			<script>
-				jQuery(document).ready(function($){
+				(function($) {
 					function upgrade_checkboxes() {
 						if ( $( '#is_upgrade' ).prop( 'checked' ) ) {
 							$( '.jgs-upgrade-field' ).show();
@@ -383,10 +383,9 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 							$( '.jgs-product-field' ).show();
 						}
 					}
-
 					upgrade_checkboxes();
-					$( '#is_upgrade' ).change( 'upgrade_checkboxes' );
-				});
+					$( '#is_upgrade' ).change( function(){ upgrade_checkboxes() });
+				})(jQuery);
 			</script>
 			<?php
 		}
