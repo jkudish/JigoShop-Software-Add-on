@@ -418,6 +418,7 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 						else
 							$value = null;
 						$this->admin_field_helper( $field, $value, array( 'form-field', 'jgs-order-field' ) );
+					}
 					?>
 				</div>
 			</div>
