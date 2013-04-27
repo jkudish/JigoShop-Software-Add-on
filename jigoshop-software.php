@@ -551,7 +551,7 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 		 */
 		function order_further_actions_meta_box() { ?>
 			<ul class="order_actions">
-				<li><input type="submit" class="button button-primsy" name="resend_email" value="<?php _e( 'Resend Email', 'jigoshop-software' ); ?>" /> &mdash; <?php _e( 'Resend Purchase Email' , 'jigoshop-software' ); ?></li>
+				<li><input type="submit" class="button button-primary" name="resend_email" value="<?php esc_attr_e( 'Resend Email', 'jigoshop-software' ); ?>" /> &mdash; <?php _e( 'Resend Purchase Email' , 'jigoshop-software' ); ?></li>
 			</ul>
 		<?php
 		}
