@@ -525,7 +525,7 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 					} elseif ( $field['id'] == 'old_order_id' ) {
 						update_post_meta( $post->ID, 'old_order_id', sanitize_text_field( $_POST['old_order_id'] ) );
 					} else {
-						$data[$field['id']] = $_POST[$field['id']];
+						$data[$field['id']] = ( is_array( $_POST[$field['id']] ) ) ? array_map( 'sanitize_text_field', $_POST[$field['id']] ) : sanitize_text_field( $_POST[$field['id']] );
 					}
 				}
 			}
@@ -537,9 +537,9 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 				unset( $data['has_been_upgraded'] );
 
 			update_post_meta( $post->ID, 'order_data', $data );
-			if ( isset( $_POST['resend_email'] ) ) {
+			if ( isset( $_POST['resend_email'] ) )
 				$this->process_email( $post->ID, 'completed_purchase' );
-			}
+
 		}
 
 		/**
