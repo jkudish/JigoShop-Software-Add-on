@@ -467,7 +467,7 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 		 */
 		function activation_meta_box( $post ) {
 			$activations = get_post_meta( $post->ID, 'activations', true );
-			if ( is_array( $activations ) && count( $activations ) > 0 ) { ?>
+			if ( ! empty( $activations ) ) { ?>
 				<table id="activations-table" class="widefat">
 					<thead>
 						<tr>
@@ -490,11 +490,11 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 					<tbody>
 						<?php $i = 0; foreach ($activations as $activation) : $i++ ?>
 							<tr<?php if ( $i / 2 == 1 ) echo ' class="alternate"' ?>>
-								<td><?php echo $activation['instance'] ?></td>
+								<td><?php echo esc_html( $activation['instance'] ); ?></td>
 								<td><?php echo ( $activation['active'] ) ? __( 'Activated', 'jigoshop-software' ) : __( 'Deactivated', 'jigoshop-software' ) ?></td>
-								<td><?php echo date( 'D j M Y', $activation['time'] ).' at '.date( 'h:ia T', $activation['time'] ) ?></td>
-								<td><?php echo $activation['version'] ?></td>
-								<td><?php echo ucwords( $activation['os'] ) ?></td>
+								<td><?php echo esc_html( sprintf( _x( '%s at %s', 'date and time of the activation', 'jigoshop-software' ), date( 'D j M Y', $activation['time'] ), date( 'h:ia T', $activation['time'] ) ) ); ?></td>
+								<td><?php echo esc_html( $activation['version'] ); ?></td>
+								<td><?php echo esc_html( ucwords( $activation['os'] ) ); ?></td>
 							</tr>
 						<?php endforeach; ?>
 					</tbody>
