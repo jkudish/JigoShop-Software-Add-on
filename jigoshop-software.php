@@ -380,15 +380,16 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 			delete_transient( 'jigoshop_software_get_product_upgrade_dropdown' );
 			$data = get_post_meta( $post->ID, 'product_data', true );
 			foreach ( $this->product_fields as $field ) {
-				if ( $field['id'] == 'up_license_keys' || $field['id'] == 'used_license_keys' ) {
-					$data[$field['id']] = $this->array_ify_keys( $_POST[$field['id']] );
-				} elseif ( $field['id'] == 'soft_product_id' ) {
+				if ( in_array( $field['id'], array( 'up_license_keys', 'used_license_keys' ) ) ) {
+					$data[$field['id']] = $this->array_ify_keys( strip_tags( $_POST[$field['id']] ) );
+				} elseif ( 'soft_product_id' == $field['id'] ) {
 					update_post_meta( $post->ID, 'soft_product_id', sanitize_text_field( $_POST[$field['id']] ) );
 				} else {
 					$data[$field['id']] = sanitize_text_field( $_POST[$field['id']] );
 				}
 			}
 			update_post_meta( $post->ID, 'product_data', $data );
+			$this->get_product_upgrade_dropdown();
 		}
 
 		/**
