@@ -718,7 +718,7 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 								if ($orders) :
 									foreach ($orders as $order) :
 
-										$order_data = &new jigoshop_order( $order->ID );
+										$order_data = new jigoshop_order( $order->ID );
 
 										if ($first_day < strtotime( $order->post_date ) && strtotime( $order->post_date ) < $last_day) :
 
