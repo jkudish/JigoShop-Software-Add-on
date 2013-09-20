@@ -9,6 +9,13 @@ The plugin requires JigoShop 1.1.1 or higher.
 Changelog
 ===========
 
+### 2.4
+* Lots of code cleanup for PHP notices/warnings, code standards and performance/security
+* Spacing, indentation and code style fixes
+* Update Github Updater class to latest version
+* Fixes to the shop order search functionality (remove some code that is now native to Jigoshop and improve the display of search results)
+
+
 ### 2.3.2
 * Fix saving of checkbox order meta fields
 
@@ -146,4 +153,4 @@ Current Version
 
 The line below is used for the updater API, please leave it untouched unless bumping the version up :)
 
-~Current Version:2.3.2~
+~Current Version:2.4~
