@@ -1622,7 +1622,7 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 				case 'completed_purchase' :
 
 					$order_id = $data;
-					$order = &new jigoshop_order( $order_id );
+					$order = new jigoshop_order( $order_id );
 
 					$date = date( 'l, F j Y', time() );
 					$data = get_post_meta( $order_id, 'order_data', true );
@@ -1935,7 +1935,7 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 					if ( is_wp_error( $order_id ) ) {
 						$failures[] = $old_order_id;
 					} else {
-						$_order = &new jigoshop_order( $order_id );
+						$_order = new jigoshop_order( $order_id );
 
 						// Update post meta
 						update_post_meta( $order_id, 'order_data', $order );
