@@ -1440,7 +1440,7 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 				update_post_meta( $order_id, 'order_items', $order_items );
 				wp_set_object_terms( $order_id, 'pending', 'shop_order_status' );
 
-				$_order = &new jigoshop_order( $order_id );
+				$_order = new jigoshop_order( $order_id );
 
 				// Inserted successfully
 				do_action( 'jigoshop_new_order', $order_id );
