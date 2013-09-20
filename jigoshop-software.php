@@ -81,9 +81,7 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 			add_action( 'wp_ajax_jgs_import', array( $this, 'import_ajax' ) );
 			add_action( 'wp_ajax_nopriv_jgs_do_import', array( $this, 'import' ) );
 			add_action( 'wp_ajax_jgs_do_import', array( $this, 'import' ) );
-
-			add_action( 'admin_head', array( $this, 'filter_order_search' ) );
-
+			add_action( 'get_search_query', array( $this, 'order_get_search_query' ) );
 
 			// frontend stuff
 			remove_action( 'simple_add_to_cart', 'jigoshop_simple_add_to_cart' );
@@ -566,40 +564,19 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 			wp_enqueue_style( 'jigoshop_software_backend', plugins_url( 'inc/back-end.css', __FILE__ ), array(), JIGOSHOP_SOFTWARE_VERSION );
 		}
 
-
 		/**
-		 * filters search results on the orders page to allow search by email
-		 * will only do it when it's a valid email, otherwise will revert back to regular old search
+ 		 * filter the text displayed when searching for orders
 		 *
-		 * @since 1.2
-		 * @return void
+		 * @since 2.4
+		 * @ret
 		 */
-		function filter_order_search() {
-			global $pagenow, $wp_query;
-			if ( $pagenow == 'edit.php' && $_GET['post_type'] == 'shop_order' && $wp_query->is_search === true && isset( $_GET['s'] ) && is_email( $_GET['s'] ) ) {
-				query_posts(
-					array(
-						'post_type' => 'shop_order',
-						'meta_query' => array(
-							array(
-								'key' => 'activation_email',
-								'value' => $_GET['s'],
-							),
-						),
-					)
-				);
-				add_filter( 'get_search_query', array( $this, 'get_search_query_when_order' ) );
-			}
-		}
+		function order_get_search_query( $search_query ) {
+			global $pagenow;
+			if ( 'edit.php' != $pagenow && 'shop_order' != get_post_type() )
+				return $search_query;
 
-		/**
-		 * filters the "search results" subtitle on the orders page to show the e-mail address
-		 *
-		 * @since 1.2
-		 * @return string the current searched GET string
-		 */
-		function get_search_query_when_order() {
-			return $_GET['s'];
+			$search_query = esc_html( $_GET['s'] );
+			return $search_query;
 		}
 
 		/**
