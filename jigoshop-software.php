@@ -2015,6 +2015,7 @@ if ( is_admin() ) {
 		'zip_url' => JIGOSHOP_SOFTWARE_GITHUB_ZIP_URL,
 		'requires' => JIGOSHOP_SOFTWARE_REQUIRES_WP,
 		'tested' => JIGOSHOP_SOFTWARE_TESTED_WP,
+		'readme' => 'README.md',
 	);
 	$github_updater = new wp_github_updater( $config );
 }
