@@ -8,6 +8,8 @@ The plugin requires JigoShop 1.1.1 or higher.
 
 Changelog
 ===========
+### 2.5
+* Remove global stats, they were slow, had performance issues and not really used
 
 ### 2.4
 * Lots of code cleanup for PHP notices/warnings, code standards and performance/security
@@ -153,4 +155,4 @@ Current Version
 
 The line below is used for the updater API, please leave it untouched unless bumping the version up :)
 
-~Current Version:2.4~
+~Current Version:2.5~

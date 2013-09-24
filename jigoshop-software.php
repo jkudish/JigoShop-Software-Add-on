@@ -3,7 +3,7 @@
 Plugin Name: JigoShop - Software Add-On
 Plugin URI: https://github.com/jkudish/JigoShop-Software-Add-on/
 Description: Extends JigoShop to a full-blown software shop, including license activation, license retrieval, activation e-mails and more
-Version: 2.4
+Version: 2.5
 Author: Joachim Kudish
 Author URI: http://jkudish.com
 License: GPL v2
@@ -11,7 +11,7 @@ Text Domain: jigoshop-software
 */
 
 /**
- * @version 2.4
+ * @version 2.5
  * @author Joachim Kudish <info@jkudish.com>
  * @link http://jkudish.com
  * @uses JigoShop @link http://jigoshop.com
@@ -147,7 +147,7 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 			if ( ! defined( 'JIGOSHOP_SOFTWARE_SLUG' ) )
 				define( 'JIGOSHOP_SOFTWARE_SLUG', plugin_basename( __FILE__ ) );
 			if ( ! defined( 'JIGOSHOP_SOFTWARE_VERSION' ) )
-				define( 'JIGOSHOP_SOFTWARE_VERSION', 2.3 );
+				define( 'JIGOSHOP_SOFTWARE_VERSION', 2.5 );
 			if ( ! defined( 'JIGOSHOP_SOFTWARE_PROPER_NAME' ) )
 				define( 'JIGOSHOP_SOFTWARE_PROPER_NAME', 'jigoshop-software' );
 			if ( ! defined( 'JIGOSHOP_SOFTWARE_GITHUB_URL' ) )
@@ -580,332 +580,14 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 		}
 
 		/**
-		 * registers the stats page & import page
+		 * registers the import page
 		 * @since 1.0
 		 * @return void
 		 */
 		function admin_menu() {
-			add_submenu_page( 'jigoshop', __( 'Stats', 'jigoshop-software' ),  __( 'Stats', 'jigoshop-software' ) , 'manage_options', 'jgs_stats', array( $this, 'software_stats' ) );
 			add_submenu_page( 'jigoshop', __( 'Import', 'jigoshop-software' ),  __( 'Import', 'jigoshop-software' ) , 'manage_options', 'jgs_import', array( $this, 'import_page' ) );
 		}
 
-		/**
-		 * generate admin page with stats
-		 *
-		 * @since 1.0
-		 * @return void
-		 */
-		function software_stats() {
-			$options = $this->software_stats_options();
-			if ( isset( $_POST['update_jgs_stats_options'] ) && wp_verify_nonce( $_POST['update_jgs_stats_options'], 'update_jgs_stats_options' ) ) {
-				foreach ( array( 'from_date', 'to_date' ) as $key ) {
-					$stamp = strtotime( esc_attr( $_POST[$key] ) );
-					$options[$key] = $stamp;
-				}
-				update_option( 'jigoshop_software_stats_options', $options );
-			}
-			$options = $this->software_stats_options();
-			$str_from_date = date( 'M d Y', $options['from_date'] );
-			$str_to_date = date( 'M d Y', $options['to_date'] );
-			$date_str = 'from ' . $str_from_date . ' to ' . $str_to_date;
-
-			?>
-			<div class="wrap jigoshop">
-			<div class="icon32 jigoshop_icon" id="icon-jigoshop"><br/></div>
-			<h2><?php _e( 'Software Sales & Activations', 'jigoshop-software' ) ?></h2>
-
-			<div class="metabox-holder" style="margin-top:25px">
-			<div class="postbox-container" style="width:25%;">
-
-				<div class="postbox">
-					<h3><?php _e( 'Choose dates to show for stats', 'jigoshop-software' ) ?></h3>
-					<div class="inside">
-						<form method="post">
-							<p>
-								<label for="from_date"><?php _e( 'Start date', 'jigoshop-software' ); ?>:
-									<input type="date" id="from_date" name="from_date" value="<?php echo date( 'Y-m-d', $options['from_date'] ) ?>">
-								</label>
-							</p>
-							<p>
-								<label for="to_date"><?php _e( 'End date', 'jigoshop-software' ); ?>:
-									<input type="date" id="to_date" name="to_date" value="<?php echo date( 'Y-m-d', $options['to_date'] ) ?>">
-								</label>
-							</p>
-							<?php wp_nonce_field( 'update_jgs_stats_options', 'update_jgs_stats_options' ); ?>
-							<p><input type="submit" class="button-primary" name="submit" value="Submit"></p>
-						</form>
-					</div>
-				</div>
-
-			</div>
-
-			<div class="postbox-container" style="width:65%; margin-left:25px">
-
-			<div class="postbox">
-				<h3><?php _e( 'Software Sales & Activations', 'jigoshop-software' ) ?> <?php echo $date_str ?></h3>
-				<div class="inside">
-					<div id="placeholder" style="width:100%; height:300px; position:relative; margin: 50px 0; max-width: 1000px"></div>
-					<script type="text/javascript">
-						/* <![CDATA[ */
-
-						jQuery(function(){
-
-							<?php
-								$args = array(
-									'posts_per_page'  => -1,
-									'orderby'         => 'post_date',
-									'order'           => 'DESC',
-									'post_type'       => 'shop_order',
-									'post_status'     => 'publish',
-									'suppress_filters' => false,
-										'tax_query' => array(
-											array(
-												'taxonomy' => 'shop_order_status',
-												'field' => 'slug',
-												'terms' => 'completed',
-											),
-										),
-								);
-								$orders = get_posts( $args );
-								$_activations = get_option( 'jigoshop_software_global_activations' );
-
-								$order_counts = array();
-								$order_amounts = array();
-								$activations = array();
-
-								// date ranges to use
-								$options = $this->software_stats_options();
-								$offset = get_option( 'gmt_offset' ) * 60 * 60; // put this in hours
-							$first_day = $options['from_date'] + $offset;
-							$last_day = $options['to_date'] + $offset;
-								$up_to = floor( ( $last_day - $first_day ) / ( 60 * 60 * 24 ) );
-
-								$count = 0;
-
-								while ( $count < $up_to ) :
-
-									$time = strtotime( date( 'Ymd', strtotime( '+ ' . $count . ' DAY', $first_day ) ) ) . '000';
-									$order_counts[$time] = 0;
-									$order_amounts[$time] = 0;
-									$activations[$time] = 0;
-
-									$count++;
-								endwhile;
-
-								if ($orders) :
-									foreach ($orders as $order) :
-
-										$order_data = new jigoshop_order( $order->ID );
-
-										if ($first_day < strtotime( $order->post_date ) && strtotime( $order->post_date ) < $last_day) :
-
-											$time = strtotime( date( 'Ymd', strtotime( $order->post_date ) ) ) . '000';
-
-											if ( isset( $order_counts[$time] ) ) :
-												$order_counts[$time]++;
-											else :
-												$order_counts[$time] = 1;
-											endif;
-
-											if ( isset( $order_amounts[$time] ) ) :
-												$order_amounts[$time] = $order_amounts[$time] + $order_data->items[0]['cost'];
-											else :
-												$order_amounts[$time] = (float) $order_data->items[0]['cost'];
-											endif;
-
-										endif;
-
-									endforeach;
-								endif;
-
-								remove_filter( 'posts_where', 'orders_this_month' );
-
-								foreach ($_activations as $activation) :
-
-									$time = strtotime( date( 'Ymd', $activation['time'] ) ) . '000';
-									if ( $first_day < $activation['time'] && $activation['time'] < $last_day ) :
-										if ( isset( $activations[$time] ) ) $activations[$time]++;
-										else $activations[$time] = 1;
-									endif;
-
-								endforeach;
-
-
-
-							?>
-
-							var d = [
-								<?php
-									$values = array();
-									foreach ( $order_counts as $key => $value ) $values[] = "[$key, $value]";
-									echo implode( ',', $values );
-								?>
-							];
-
-							for (var i = 0; i < d.length; ++i) d[i][0] += 60 * 60 * 1000;
-
-							var d2 = [
-								<?php
-									$values = array();
-									foreach ( $order_amounts as $key => $value ) $values[] = "[$key, $value]";
-									echo implode( ',', $values );
-								?>
-							];
-
-							var d3 = [
-								<?php
-									$values = array();
-									foreach ( $activations as $key => $value ) $values[] = "[$key, $value]";
-									echo implode( ',', $values );
-								?>
-							];
-							for (var i = 0; i < d2.length; ++i) d2[i][0] += 60 * 60 * 1000;
-
-							var plot = jQuery.plot(jQuery("#placeholder"), [ { label: "<?php _e( 'Number of sales', 'jigoshop-software' ) ?>", data: d }, { label: "<?php _e( 'Sales amount', 'jigoshop-software' ) ?>", data: d2, yaxis: 2 },  { label: "<?php _e( 'Number of activations', 'jigoshop-software' ) ?>", data: d3 } ], {
-								series: {
-									lines: { show: true },
-									points: { show: true }
-								},
-								grid: {
-									show: true,
-									aboveData: false,
-									color: '#ccc',
-									backgroundColor: '#fff',
-									borderWidth: 2,
-									borderColor: '#ccc',
-									clickable: false,
-									hoverable: true,
-								},
-								legend : {
-									position: "nw",
-								},
-								xaxis: {
-									mode: "time",
-									timeformat: "%d %b",
-									tickLength: 1,
-									minTickSize: [1, "day"]
-								},
-								yaxes: [ { min: 0, tickSize: 1, tickDecimals: 0 }, { position: "right", min: 0, tickDecimals: 2 } ],
-								colors: ["#21759B", "#ed8432"]
-							});
-
-							function showTooltip(x, y, contents) {
-								jQuery('<div id="tooltip">' + contents + '</div>').css( {
-									position: 'absolute',
-									display: 'none',
-									top: y + 5,
-									left: x + 5,
-									border: '1px solid #fdd',
-									padding: '2px',
-									'background-color': '#fee',
-									opacity: 0.80
-								}).appendTo("body").fadeIn(200);
-							}
-
-							var previousPoint = null;
-							jQuery("#placeholder").bind("plothover", function (event, pos, item) {
-								if (item) {
-									if (previousPoint != item.dataIndex) {
-										previousPoint = item.dataIndex;
-
-										jQuery("#tooltip").remove();
-
-										if (item.series.label=="Number of sales" || item.series.label=="Number of activations") {
-
-											var y = item.datapoint[1];
-											showTooltip(item.pageX, item.pageY, item.series.label + " - " + y);
-
-										} else {
-
-											var y = item.datapoint[1].toFixed(2);
-											showTooltip(item.pageX, item.pageY, item.series.label + " - <?php echo get_jigoshop_currency_symbol(); ?>" + y);
-
-										}
-
-									}
-								}
-								else {
-									jQuery("#tooltip").remove();
-									previousPoint = null;
-								}
-							});
-
-						});
-
-						/* ]]> */
-					</script>
-				</div>
-			</div>
-
-			<div class="postbox">
-				<h3>Activations <?php echo $date_str?></h3>
-				<div class="inside">
-					<?php
-					$activations = get_option( 'jigoshop_software_global_activations' );
-					$activations = ( is_array( $activations ) ) ? array_reverse( $activations ) : $activations;
-					?>
-					<table id="activations-table" class="widefat" style="width: 100%; max-width: 1000px">
-						<thead>
-							<tr>
-								<th><?php _e( 'Product ID', 'jigoshop-software' ) ?></th>
-								<th><?php _e( 'Instance', 'jigoshop-software' ) ?></th>
-								<th><?php _e( 'Status', 'jigoshop-software' ) ?></th>
-								<th><?php _e( 'Date & Time', 'jigoshop-software' ) ?></th>
-								<th><?php _e( 'Version', 'jigoshop-software' ) ?></th>
-								<th><?php _e( 'Operating System', 'jigoshop-software' ) ?></th>
-							</tr>
-						</thead>
-						<tfoot>
-							<tr>
-								<th><?php _e( 'Product ID', 'jigoshop-software' ) ?></th>
-								<th><?php _e( 'Instance', 'jigoshop-software' ) ?></th>
-								<th><?php _e( 'Status', 'jigoshop-software' ) ?></th>
-								<th><?php _e( 'Date & Time', 'jigoshop-software' ) ?></th>
-								<th><?php _e( 'Version', 'jigoshop-software' ) ?></th>
-								<th><?php _e( 'Operating System', 'jigoshop-software' ) ?></th>
-							</tr>
-						</tfoot>
-						<tbody>
-							<?php if ( is_array( $activations ) && count( $activations ) > 0 ) : ?>
-								<?php $i = 0; foreach ( $activations as $activation ) : $i++ ?>
-									<?php if ( isset( $activation['active'] ) && $first_day < $activation['time'] && $activation['time'] < $last_day ) : ?>
-										<tr<?php if ( $i / 2 == 1 ) echo ' class="alternate"' ?>>
-											<td><?php echo $activation['product_id'] ?></td>
-											<td><?php echo $activation['instance'] ?></td>
-											<td><?php echo ( $activation['active'] ) ? 'Activated' : 'Deactivated' ?></td>
-											<td><?php echo date( 'D j M Y', $activation['time'] ) . ' at ' . date( 'h:ia T', $activation['time'] ) ?></td>
-											<td><?php echo $activation['version'] ?></td>
-											<td><?php echo ucwords( $activation['os'] ) ?></td>
-										</tr>
-									<?php endif; ?>
-								<?php endforeach; ?>
-							<?php else : ?>
-								<tr><td colspan="6"> No activations yet</td></tr>
-							<?php endif; ?>
-						</tbody>
-					</table>
-				</div>
-			</div>
-
-			</div>
-			</div>
-
-			</div>
-		<?php
-		}
-
-		/**
-		 * save dashboard widget options
-		 *
-		 * @since 1.0
-		 * @return array the dashboard options
-		 */
-		function software_stats_options() {
-			$defaults = array( 'from_date' => time() - ( 30 * 24 * 60 * 60 ), 'to_date' => time() );
-			if ( ( !$options = get_option( 'jigoshop_software_stats_options' ) ) || !is_array( $options ) )
-				$options = array();
-			return array_merge( $defaults, $options );
-		}
 
 		/* =======================================
 				filter add to cart & other jigoshop internal functions

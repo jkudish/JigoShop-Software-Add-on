@@ -128,7 +128,6 @@ class Jigoshop_Software_Api extends jigoshop_software {
 									$order_status = wp_get_post_terms( $order->ID, 'shop_order_status' );
 									$order_status = $order_status[0]->slug;
 									if ( $order_status == 'completed' ) {
-										$global_activations = get_option( 'jigoshop_software_global_activations' );
 										$activations = get_post_meta( $order->ID, 'activations', true );
 										$activations_possible = $data['activations_possible'];
 										$remaining_activations = $data['remaining_activations'];
@@ -171,11 +170,7 @@ class Jigoshop_Software_Api extends jigoshop_software {
 												$instance = parent::generate_license_key();
 												$activation = array( 'time' => time(), 'active' => true, 'version' => $version, 'os' => $os, 'instance' => $instance, 'product_id' => $data['productid'] );
 
-												// store the activation globally
-												$global_activations[$instance] = $activation;
-												update_option( 'jigoshop_software_global_activations', $global_activations );
-
-												// store the activation for this purchase only now
+												// store the activation for this purchase
 												unset( $activation['product_id'] );
 												$activations[$instance] = $activation;
 												update_post_meta( $order->ID, 'activations', $activations );
@@ -276,17 +271,13 @@ class Jigoshop_Software_Api extends jigoshop_software {
 						$data = get_post_meta( $order->ID, 'order_data', true );
 						if ( isset( $data['productid'] ) && $data['productid'] == $product_id ) {
 							if ( isset( $data['license_key'] ) && $data['license_key'] == $license_key ) {
-								// get global and purchase only activations
-								$global_activations = get_option( 'jigoshop_software_global_activations' );
 								$activations = get_post_meta( $order->ID, 'activations', true );
 
 								// loop through the activations and deactivate them
 								foreach ( $activations as $instance => $activation ) {
-									$global_activations[$instance]['active'] = false;
 									$activations[$instance]['active'] = false;
 								}
 
-								update_option( 'jigoshop_software_global_activations', $global_activations );
 								update_post_meta( $order->ID, 'activations', $activations );
 
 								// reset number of activations
@@ -378,17 +369,12 @@ class Jigoshop_Software_Api extends jigoshop_software {
 					foreach ( $_orders as $order ) {
 						$data = get_post_meta( $order->ID, 'order_data', true );
 						if ( isset( $data['license_key'] ) && $data['license_key'] == $license_key ) {
-							// get global and purchase only activations
-							$global_activations = get_option( 'jigoshop_software_global_activations' );
 							$activations = get_post_meta( $order->ID, 'activations', true );
 
 							// find the instance & deactivate it
 							if ( isset( $activations[$instanceid] ) ) {
 								if ( $activations[$instanceid]['active'] ) {
 									$activations[$instanceid]['active'] = false;
-									if ( isset( $global_activations[$instanceid] ) ) {
-										$global_activations[$instanceid]['active'] = false;
-									}
 								} else {
 									$this->error( '102', __( 'The instance ID provided is already deactivated', 'jigoshop-software' ), null, array( 'reset' => false ) );
 								}
@@ -396,7 +382,6 @@ class Jigoshop_Software_Api extends jigoshop_software {
 								$this->error( '104', __( 'The instance ID provided is invalid', 'jigoshop-software' ), null, array( 'reset' => false ) );
 							}
 
-							update_option( 'jigoshop_software_global_activations', $global_activations );
 							update_post_meta( $order->ID, 'activations', $activations );
 
 							// reset number of activations
