@@ -2,7 +2,7 @@
 .jgs_page .form-row {padding: 1em; border-top: 1px solid white;}
 .jgs_page .form-row label {float: left; width: 170px; padding-top: 4px;}
 .jgs_page .form-row input[type="text"] {width: 300px;}
-.jgs_page .form-row .button-alt {float: right;}
+.jgs_page .form-row .button-alt {float: right; margin-top: 0;}
 .jgs_page #jgs_validation {display: none; color: red;}
 .jgs_page #jgs_validation.not-hidden {display: block}
 .jgs_page #jgs_validation.success {color: green;}
