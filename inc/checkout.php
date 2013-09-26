@@ -59,7 +59,8 @@ if ( sizeof( jigoshop_cart::$cart_contents ) > 0 ) :
 						<?php if ( $is_upgrade ) : ?>
 							<p><?php printf( __( 'This upgrade to %s requires a %s license. Please enter your %s license email and key below, then click purchase now below to complete the purchase with credit card or PayPal.', 'jigoshop-software' ), get_the_title( $upgrade_to_id ), get_the_title( $upgrade_from_id ), get_the_title( $upgrade_from_id ) ); ?></p>
 						<?php else : ?>
-							<p><?php _e( 'Please enter your email below, then click <em>purchase now</em> below to complete the purchase with Paypal.', 'jigoshop-software' ) ?></p>
+							<p><?php _e( 'Please enter your email below, then click <em>purchase now</em> below to complete the purchase with credit card or Paypal.', 'jigoshop-software' ) ?></p>
+    						<p style="color: #EE0000; font-weight: bold;"><?php _e( 'Note: Your license key will be sent to the email address below, so check your email address carefully before purchasing.', 'jigoshop-software' ) ?></p>
 						<?php endif; ?>
 
 					</div>
