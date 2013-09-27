@@ -66,12 +66,12 @@ if ( sizeof( jigoshop_cart::$cart_contents ) > 0 ) :
 					</div>
 
 					<div class="form-row">
-						<p><label for="jgs_email"><?php _e( 'Your email address', 'jigoshop-software' ) ?>:</label> <input type="text" id="jgs_email" name="jgs_email"></p>
+						<label for="jgs_email"><?php _e( 'Your email address', 'jigoshop-software' ) ?>:</label> <input type="text" id="jgs_email" name="jgs_email">
 					</div>
 
 					<?php if ( $is_upgrade ) : ?>
 						<div class="form-row">
-							<label for="up_key"><?php _e( 'Your license Key', 'jigoshop-software' ) ?>:</label> <input type="text" id="up_key" name="up_key"><br><br>
+							<label for="up_key"><?php _e( 'Your license Key', 'jigoshop-software' ) ?>:</label> <input type="text" id="up_key" name="up_key">
 						</div>
 					<?php endif; ?>
 
