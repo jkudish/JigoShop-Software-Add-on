@@ -120,8 +120,8 @@ class Jigoshop_Software_Api extends jigoshop_software {
 				if ( is_array( $_orders ) && count( $_orders ) > 0 ) {
 					foreach ( $_orders as $order ) {
 						$data = get_post_meta( $order->ID, 'order_data', true );
-						if ( isset( $data['productid'] ) && $data['productid'] == $product_id ) {
-							if ( isset( $data['license_key'] ) && $data['license_key'] == $license_key ) {
+                        if ( isset( $data['license_key'] ) && $data['license_key'] == $license_key ) {
+						    if ( isset( $data['productid'] ) && $data['productid'] == $product_id ) {
 								// check if the order has been upgraded
 								if ( empty( $data['has_been_upgraded'] ) || 'on' != $data['has_been_upgraded'] ) {
 									// make sure it's a completed sale
@@ -212,6 +212,9 @@ class Jigoshop_Software_Api extends jigoshop_software {
 								} else {
 									$this->error( '105', __( 'This purchase has been upgraded and is no longer active', 'jigoshop-software' ), null,  array( 'activated' => false, 'secret' => $data['secret_product_key'] ) );
 								}
+							} else {
+        						$data = array( 'activated' => false );
+        						$this->error( '106', __( 'License key for wrong product', 'jigoshop-software' ), null, $data );							    
 							}
 						}
 					}
@@ -496,6 +499,9 @@ class Jigoshop_Software_Api extends jigoshop_software {
 			break;
 			case '105' :
 				$error = array( 'error' => __( 'Purchase has been upgraded', 'jigoshop-software' ), 'code' => '105' );
+			break;
+			case '106' :
+				$error = array( 'error' => __( 'License key for different product. Please check the product for this license key, and go to http://sparkbooth.com to download and install the correct product for this license key.', 'jigoshop-software' ), 'code' => '106' );
 			break;
 			default :
 				$error = array( 'error' => __( 'Invalid Request', 'jigoshop-software' ), 'code' => '100' );
