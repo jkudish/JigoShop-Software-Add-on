@@ -501,7 +501,7 @@ class Jigoshop_Software_Api extends jigoshop_software {
 				$error = array( 'error' => __( 'Purchase has been upgraded', 'jigoshop-software' ), 'code' => '105' );
 			break;
 			case '106' :
-				$error = array( 'error' => __( 'License key for different product. Please check the product for this license key, then download and install the correct product for this license key.', 'jigoshop-software' ), 'code' => '106' );
+				$error = array( 'error' => __( 'License key for different product. Please check the product for this license key, then download and install the correct product.', 'jigoshop-software' ), 'code' => '106' );
 			break;
 			default :
 				$error = array( 'error' => __( 'Invalid Request', 'jigoshop-software' ), 'code' => '100' );
