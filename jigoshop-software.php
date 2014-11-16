@@ -467,7 +467,7 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 		 */
 		function activation_meta_box( $post ) {
 			$activations = get_post_meta( $post->ID, 'activations', true );
-			if ( ! empty( $activations ) ) { ?>
+			if ( ! empty( $activations ) ) : ?>
 				<table id="activations-table" class="widefat">
 					<thead>
 						<tr>
@@ -499,9 +499,9 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 						<?php endforeach; ?>
 					</tbody>
 				</table>
-			<?php } else { ?>
+			<?php else : ?>
 				<p><?php _e( 'No activations yet', 'jigoshop-software' ) ?></p>
-			<? }
+			<?php endif;
 		}
 
 		/**
