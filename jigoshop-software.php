@@ -3,7 +3,7 @@
 Plugin Name: JigoShop - Software Add-On
 Plugin URI: https://github.com/jkudish/JigoShop-Software-Add-on/
 Description: Extends JigoShop to a full-blown software shop, including license activation, license retrieval, activation e-mails and more
-Version: 2.5
+Version: 2.6
 Author: Joachim Kudish
 Author URI: http://jkudish.com
 License: GPL v2
@@ -11,7 +11,7 @@ Text Domain: jigoshop-software
 */
 
 /**
- * @version 2.5
+ * @version 2.6
  * @author Joachim Kudish <info@jkudish.com>
  * @link http://jkudish.com
  * @uses JigoShop @link http://jigoshop.com
@@ -51,6 +51,13 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 		 * @var array
 		 */
 		public $order_fields;
+
+		/*
+		 * helpers used for the upgrades pages
+		 */
+		private $looking_for_upgrades;
+		private $possible_upgrades_found ;
+		private $upgrade_error ;
 
 		/**
 		 * class constructor
@@ -101,6 +108,8 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 			add_action( 'wp_ajax_jgs_checkout', array( $this, 'ajax_jgs_checkout' ) );
 			add_action( 'wp_ajax_nopriv_jgs_lost_license', array( $this, 'ajax_jgs_lost_license' ) );
 			add_action( 'wp_ajax_jgs_lost_license', array( $this, 'ajax_jgs_lost_license' ) );
+			add_action( 'wp_ajax_nopriv_jgs_upgrade', array( $this, 'ajax_jgs_upgrade' ) );
+			add_action( 'wp_ajax_jgs_upgrade', array( $this, 'ajax_jgs_upgrade' ) );
 
 			// payment stuff
 			add_action( 'init', array( $this, 'init_actions' ), 1 );
@@ -120,7 +129,6 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 			// filters
 			add_filter( 'add_to_cart_redirect', array( $this, 'add_to_cart_redirect' ) );
 			add_filter( 'page_template', array( $this, 'locate_api_template' ), 10, 1 );
-
 		}
 
 		/**
@@ -270,8 +278,9 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 		 * @since 2.2
 		 * @return array the array of product IDs and product Names
 		 */
-		function get_product_upgrade_dropdown() {
-			$return = get_transient( 'jigoshop_software_get_product_upgrade_dropdown' );
+		function get_product_upgrade_dropdown( $get_the_upgrades = false ) {
+			$transient_key = ( $get_the_upgrades ) ? 'jigoshop_software_get_products_which_are_upgrades' : 'jigoshop_software_get_product_upgrade_dropdown';
+			$return = get_transient( $transient_key );
 			if ( empty( $return ) ) {
 				$query_args = array(
 					'post_type' => 'product',
@@ -283,13 +292,15 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 				if ( !empty( $products ) ) {
 					foreach ( $products as $product ) {
 						$data = get_post_meta( $product->ID, 'product_data', true );
-						if ( empty( $data['is_upgrade'] ) ) {
+						if ( $get_the_upgrades && ! empty( $data['is_upgrade'] ) ) {
+							$return[$product->ID] = $product->post_title;
+						} elseif ( ! $get_the_upgrades && empty( $data['is_upgrade'] ) ) {
 							$return[$product->ID] = $product->post_title;
 						}
 					}
 				}
 				wp_reset_query();
-				set_transient( 'jigoshop_software_get_product_upgrade_dropdown', $return );
+				set_transient( $transient_key, $return );
 			}
 			return $return;
 		}
@@ -363,7 +374,7 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 					$( '#is_upgrade' ).change( function(){ upgrade_checkboxes() });
 				})(jQuery);
 			</script>
-			<?php
+		<?php
 		}
 
 		/**
@@ -376,6 +387,7 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 			global $post;
 			$this->define_fields();
 			delete_transient( 'jigoshop_software_get_product_upgrade_dropdown' );
+			delete_transient( 'jigoshop_software_get_products_which_are_upgrades' );
 			$data = get_post_meta( $post->ID, 'product_data', true );
 			foreach ( $this->product_fields as $field ) {
 				if ( in_array( $field['id'], array( 'up_license_keys', 'used_license_keys' ) ) ) {
@@ -709,9 +721,102 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 			return $buffer;
 		}
 
-		/* =======================================
-				helper functions
-		==========================================*/
+		/**
+		 * process the ajax request for the upgrade page
+		 *
+		 * @since 2.6
+		 * @return void
+		 */
+		function ajax_jgs_upgrade() {
+			$messages = null; // reset in case this a second attempt
+			$success = null;
+			$message = null;
+
+			// nonce verification
+			if ( empty( $_POST['jgs_upgrade_nonce'] ) || ! wp_verify_nonce( $_POST['jgs_upgrade_nonce'], 'jgs_upgrade' ) ) {
+				wp_send_json_error( __( 'An error has occurred, please try again.', 'jigoshop-software' ) );
+				return;
+			}
+
+			// email validation
+			if ( empty( $_POST['jgs_email'] ) || ! is_email( $_POST['jgs_email'] ) ) {
+				wp_send_json_error( __( 'Please enter a valid email address.', 'jigoshop-software' ) );
+				return;
+			}
+
+			if ( empty( $_POST['jgs_license_key'] ) ) {
+				wp_send_json_error( __( 'Please enter a license key.', 'jigoshop-software' ) );
+				return;
+			}
+
+			$license_key = sanitize_key( $_POST['jgs_license_key'] );
+			$email_address = sanitize_email( $_POST['jgs_email'] );
+			$possible_upgrade_ids = $this->get_possible_upgrades_for_order( $license_key, $email_address );
+			if ( is_wp_error( $possible_upgrade_ids ) ) {
+				wp_send_json_error( $possible_upgrade_ids->get_error_message() );
+				return;
+			} elseif ( empty( $possible_upgrade_ids ) ) {
+				wp_send_json_error( __( 'No possible upgrades found with the provided details.' ) );
+				return;
+			}
+
+			$this->set_upgrade_cookie( $possible_upgrade_ids, $license_key, $email_address );
+
+			wp_send_json_success( array(
+				'success_message' => sprintf( __( 'Here are the possible upgrades for license key %s. Please press "Buy Now" for the upgrade you want.', 'jigoshop-software' ), esc_html( $_POST['jgs_license_key'] ) ),
+				'possible_upgrade_products' => do_shortcode( '[products ids="' . implode( ',', $possible_upgrade_ids ) . '"]' ),
+			) );
+		}
+
+		/**
+		 * set a cookie for pre-filling the upgrade screen
+		 *
+		 * @param $possible_upgrade_ids
+		 * @param $license_key
+		 * @param $email_address
+		 */
+		function set_upgrade_cookie( $possible_upgrade_ids, $license_key, $email_address ) {
+			if ( ! empty( $_COOKIE['jgs_upgrade_prefill'] ) ) {
+				$cookie = json_decode( $_COOKIE['jgs_upgrade_prefill'] );
+			}
+
+			if ( empty( $cookie ) || ! is_array( $cookie ) ) {
+				$cookie = array();
+			}
+
+			foreach( $possible_upgrade_ids as $upgrade_id ) {
+				$cookie[$upgrade_id] = array(
+					'license_key' => $license_key,
+					'email_address' => $email_address,
+				);
+			}
+
+			$cookie = json_encode( $cookie );
+			$expire = time() + DAY_IN_SECONDS;
+			setcookie( 'jgs_upgrade_prefill', $cookie, $expire, '/' );
+		}
+
+		/**
+		 * set a cookie for pre-filling the upgrade screen
+		 *
+		 * @param $possible_upgrade_ids
+		 * @param $license_key
+		 * @param $email_address
+		 */
+		function get_upgrade_prefill_from_cookie( $upgrade_id ) {
+			if ( empty( $_COOKIE['jgs_upgrade_prefill'] ) )
+				return false;
+
+			$cookie = json_decode( stripslashes( $_COOKIE['jgs_upgrade_prefill'] ) );
+			if ( empty( $cookie ) || ! is_object( $cookie ) )
+				return false;
+
+			if ( empty( $cookie->{$upgrade_id} ) )
+				return false;
+
+			$prefill_values = (array) $cookie->{$upgrade_id};
+			return $prefill_values;
+		}
 
 		/**
 		 * transforms a comma separated list of license keys into an array in order to store in the DB
@@ -761,11 +866,13 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 		 * @param int $product_id the product to validate for
 		 * @param string $date date after which purchase must have occurred
 		 * @param bool $return_order_id if true, the function will return the order ID that matches the license key, instead of just a bool
+		 * @param bool $validate_product_id if true, the function will validate the provided product ID for the license key
+		 * @param bool $return_details if true, the function will return details about the order, such as the product ID that matches this license key, note that $return_order_id takes presedence
 		 * @return bool|int valid key or not|order_id if $return_order_id is set to true
 		 */
-		function is_valid_license_key( $license_key = null, $email_address = null, $product_id = null, $date = null, $return_order_id = false ) {
+		function is_valid_license_key( $license_key = null, $email_address = null, $product_id = null, $date = null, $return_order_id = false, $validate_product_id = true, $return_details = false ) {
 
-			if ( empty( $license_key ) || empty( $email_address ) || empty( $product_id ) )
+			if ( empty( $license_key ) || empty( $email_address ) || ( $validate_product_id && empty( $product_id ) ) )
 				return false;
 
 			$orders = get_posts(
@@ -784,7 +891,7 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 			if ( !empty( $orders ) ) {
 				foreach ( $orders as $order ) {
 					$data = get_post_meta( $order->ID, 'order_data', true );
-					if ( isset( $data['productid'] ) && $data['productid'] == $product_id && isset( $data['license_key'] ) && $data['license_key'] == $license_key ) {
+					if ( ( ! $validate_product_id || ( isset( $data['productid'] ) && $data['productid'] == $product_id ) ) && isset( $data['license_key'] ) && $data['license_key'] == $license_key ) {
 						// we have a match, let's make sure it's a completed sale
 						$order_status = wp_get_post_terms( $order->ID, 'shop_order_status' );
 						$order_status = $order_status[0]->slug;
@@ -793,7 +900,16 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 							if ( empty( $date ) || get_the_time( 'U', $order->ID ) >= strtotime( $date ) ) {
 								// finaly let's make sure it hasn't already been upgraded
 								if ( empty( $data['has_been_upgraded'] ) || 'on' != $data['has_been_upgraded'] ) {
-									return ( $return_order_id ) ? $order->ID : true;
+									if ( $return_order_id ) {
+										return $order->ID;
+									} elseif ( $return_details ) {
+										return array(
+											'order_id' => $order->ID,
+											'order_data' => $data,
+										);
+									} else {
+										return true;
+									}
 								}
 							}
 						}
@@ -877,6 +993,13 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 
 		}
 
+		/**
+		 * returns the date since when the product was upgraded
+		 *
+		 * @since 2.2
+		 * @param $product_id the upgraded product
+		 * @return bool
+		 */
 		function get_upgrade_date_threshold( $product_id ) {
 
 			if ( !$this->is_upgradeable_product( $product_id ) )
@@ -927,6 +1050,35 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 		}
 
 		/**
+		 * given a soft_product_id (e.g. those used for the API)
+		 * returns the product's real post ID
+		 *
+		 * @since 2.6
+		 * @param $productid the soft_product_id
+		 * @return mixed false if not found or int the post ID
+		 */
+		function get_product_post_id_from_api_productid( $productid ) {
+			$_prod = get_posts(
+				array(
+					'post_type' => 'product',
+					'posts_per_page' => 1,
+					'meta_query' => array(
+						'relation' => 'OR',
+						array(
+							'key' => 'soft_product_id',
+							'value' => $productid,
+						),
+					),
+				)
+			);
+
+			if ( is_array( $_prod ) && count( $_prod ) == 1 )
+				return $_prod[0]->ID;
+
+			return false;
+		}
+
+		/**
 		 * checks if the given order has been upgraded
 		 *
 		 * @since 2.3
@@ -938,6 +1090,38 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 			$data = get_post_meta( $order_id, 'order_data', true );
 			return ( ! empty( $data['has_been_upgraded'] ) && 'on' == $data['has_been_upgraded'] );
 
+		}
+
+		/**
+		 * finds possible upgrades for the given order (license key + email address)
+		 *
+		 * @since 2.6
+		 * @param $license_key string the license key to check for
+		 * @param $email_address string the matching email address
+		 * @return array possible upgrades or WP_Error in case of an error
+		 */
+		function get_possible_upgrades_for_order( $license_key, $email_address ) {
+			$possible_upgrades = array();
+			$order = $this->is_valid_license_key( $license_key, $email_address, null, null, false, false, true );
+			$order_id = $order['order_id'];
+
+			if ( empty( $order_id ) )
+				return new WP_Error( '500', __( 'No order found with the provided details.' ) );
+
+			if ( $this->is_upgrade_order( $order_id ) || $this->order_has_been_upgraded( $order_id ) )
+				return new WP_Error( '500', __( 'This order has already been upgraded' ) );
+
+			$product_id = $order['order_data']['productid'];
+			$product_post_id = $this->get_product_post_id_from_api_productid( $product_id );
+
+			$all_upgradeable_products =  $this->get_product_upgrade_dropdown( true );
+			foreach ( $all_upgradeable_products as $upgrade_id => $upgrade_name ) {
+				if ( $this->get_upgrade_from_product_id( $upgrade_id ) == $product_post_id ) {
+					$possible_upgrades[] = $upgrade_id;
+				}
+			}
+
+			return $possible_upgrades;
 		}
 
 		/**

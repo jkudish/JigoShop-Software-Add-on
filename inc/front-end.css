@@ -1,10 +1,11 @@
 .jgs_page {background: #F9F9F9; -webkit-border-radius: 5px; -moz-border-radius: 5px; -khtml-border-radius: 5px; border-radius: 5px;}
-.jgs_page .form-row {padding: 1em; border-top:}
+.jgs_page .form-row {padding: 1em;}
 .jgs_page .form-row label {float: left; width: 170px; padding-top: 4px;}
 .jgs_page .form-row input[type="text"] {width: 300px;}
 .jgs_page .form-row .button-alt {float: right; margin-top: 0;}
-.jgs_page #jgs_validation {display: none; color: red;}
-.jgs_page #jgs_validation.not-hidden {display: block}
-.jgs_page #jgs_validation.success {color: green;}
 .jgs_loader {float: right;}
 .jgs_loader.loading {padding: 5px 0 0 20px; height: 40px; background: url('../../jigoshop/assets/images/ajax-loader.gif') 0 50% no-repeat; }
+#jgs_validation {display: none; color: red;}
+#jgs_validation.not-hidden {display: block}
+#jgs_validation.success {color: green;}
+#jgs_another_upgrade {display: none;}

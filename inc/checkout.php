@@ -8,6 +8,7 @@
 	*/
 
 if ( !empty( $_GET['empty'] ) && $_GET['empty'] == true ) {
+	setcookie( 'jgs_upgrade_prefill', null, -1, '/' );
 	jigoshop_cart::empty_cart();
 	wp_redirect( site_url( '/checkout' ) ); exit;
 }
@@ -34,6 +35,9 @@ if ( sizeof( jigoshop_cart::$cart_contents ) > 0 ) :
 			$upgrade_from_id = $product_data['upgrade_from'];
 			$upgrade_to_id = $product_data['upgrade_to'];
 			$is_upgrade = ( $is_upgrade && !empty( $upgrade_from_id ) && !empty( $upgrade_to_id ) );
+
+			global $jigoshopsoftware;
+			$upgrade_prefill = $jigoshopsoftware->get_upgrade_prefill_from_cookie( $item_id );
 		} else {
 			$is_upgrade = false;
 		}
@@ -41,6 +45,24 @@ if ( sizeof( jigoshop_cart::$cart_contents ) > 0 ) :
 		// prices format in US dollars
 		setlocale( LC_MONETARY, 'en_US' );
 		@$echo_price = money_format( '%(#10n', (float) $price );
+
+		// prefill
+		if ( ! empty( $_POST['jgs_email'] ) ) {
+			$prefill_email = sanitize_email( $_POST['jgs_email'] );
+		} elseif ( ! empty( $upgrade_prefill['email_address'] ) ) {
+			$prefill_email = sanitize_email( $upgrade_prefill['email_address'] );
+		} else {
+			$prefill_email = '';
+		}
+
+		if ( ! empty( $_POST['up_key'] ) ) {
+			$prefill_license_key = sanitize_key( $_POST['up_key'] );
+		} elseif ( ! empty( $upgrade_prefill['license_key'] ) ) {
+			$prefill_license_key = sanitize_key( $upgrade_prefill['license_key'] );
+		} else {
+			$prefill_license_key = '';
+		}
+
 
 
 	?>
@@ -66,12 +88,12 @@ if ( sizeof( jigoshop_cart::$cart_contents ) > 0 ) :
 					</div>
 
 					<div class="form-row">
-						<label for="jgs_email"><?php _e( 'Your email address', 'jigoshop-software' ) ?>:</label> <input type="text" id="jgs_email" name="jgs_email">
+						<label for="jgs_email"><?php _e( 'Your email address', 'jigoshop-software' ) ?>:</label> <input type="text" id="jgs_email" name="jgs_email" value="<?php echo esc_attr( $prefill_email ); ?>">
 					</div>
 
 					<?php if ( $is_upgrade ) : ?>
 						<div class="form-row">
-							<label for="up_key"><?php _e( 'Your license Key', 'jigoshop-software' ) ?>:</label> <input type="text" id="up_key" name="up_key">
+							<label for="up_key"><?php _e( 'Your license Key', 'jigoshop-software' ) ?>:</label> <input type="text" id="up_key" name="up_key" value="<?php echo esc_attr( $prefill_license_key ); ?>">
 						</div>
 					<?php endif; ?>
 

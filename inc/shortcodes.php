@@ -10,6 +10,7 @@ remove_shortcode( 'jigoshop_checkout', 'jigoshop_checkout' );
 add_shortcode( 'jigoshop_checkout', 'jigoshop_software_checkout' );
 add_shortcode( 'jigoshop_software_checkout', 'jigoshop_software_checkout' );
 add_shortcode( 'jigoshop_software_lost_license', 'jigoshop_software_lost_license' );
+add_shortcode( 'jigoshop_software_upgrade', 'jigoshop_software_upgrade' );
 
 
 /**
@@ -33,5 +34,17 @@ function jigoshop_software_checkout( $atts ) {
 function jigoshop_software_lost_license( $atts ) {
 
 	include_once( 'lost-license.php' );
+
+}
+
+
+/**
+ * shortcode used for the upgrade page
+ *
+ * @since 1.0
+ */
+function jigoshop_software_upgrade( $atts ) {
+
+	include_once( 'upgrade.php' );
 
 }
