@@ -1108,7 +1108,7 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 			if ( empty( $order_id ) )
 				return new WP_Error( '500', __( 'No order found with the provided details.' ) );
 
-			if ( $this->is_upgrade_order( $order_id ) || $this->order_has_been_upgraded( $order_id ) )
+			if ( $this->order_has_been_upgraded( $order_id ) )
 				return new WP_Error( '500', __( 'This order has already been upgraded' ) );
 
 			$product_id = $order['order_data']['productid'];
