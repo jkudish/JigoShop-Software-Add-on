@@ -1467,7 +1467,7 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 
 					$order_id = $data;
 					$order = new jigoshop_order( $order_id );
-
+					$order_page = get_permalink( $order_id );
 					$date = date( 'l, F j Y', time() );
 					$data = get_post_meta( $order_id, 'order_data', true );
 					$products = get_post_meta( $order_id, 'order_items', true );
@@ -1522,13 +1522,15 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 					break;
 
 				case 'new_activation' :
-
+					var_dump($data);
 					$subject = $data['product'] . ' ' . __( 'Activation Confirmation', 'jigoshop-software' );
 					$send_to = $data['email'];
 					$message = file_get_contents( JIGOSHOP_SOFTWARE_PATH . '/inc/email-activation.txt' );
 					$date = date( 'l, F j Y', time() );
 					$message = str_replace( '{date}', $date, $message );
 					$message = str_replace( '{remaining_activations}', $data['remaining_activations'], $message );
+					$message = str_replace( '{order_page}',
+					$order_page, $message);
 					$message = str_replace( '{activations_possible}', $data['activations_possible'], $message );
 					$message = str_replace( '{product}', $data['product'], $message );
 
