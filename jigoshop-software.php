@@ -1522,7 +1522,6 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 					break;
 
 				case 'new_activation' :
-					var_dump($data);
 					$subject = $data['product'] . ' ' . __( 'Activation Confirmation', 'jigoshop-software' );
 					$send_to = $data['email'];
 					$message = file_get_contents( JIGOSHOP_SOFTWARE_PATH . '/inc/email-activation.txt' );
