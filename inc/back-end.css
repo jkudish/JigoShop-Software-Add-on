@@ -5,3 +5,5 @@
 #jgs_import_feedback {display: none; color: red;}
 #jgs_import_feedback.doing_import {color: green;}
 #jgs_import_feedback_done {display: none;}
+
+.jigoshop_options_panel input, .jigoshop_options_panel .form-field [type=checkbox] { width: auto; }
