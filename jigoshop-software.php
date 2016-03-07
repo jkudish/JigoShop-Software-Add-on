@@ -198,7 +198,6 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 
 			$this->order_fields = array(
 				array( 'id' => 'activation_email', 'label' => __( 'Activation Email', 'jigoshop-software' ), 'title' => __( 'Activation Email', 'jigoshop-software' ), 'placeholder' => '', 'type' => 'text' ),
-				array( 'id' => 'activation_email_optin', 'label' => __( 'Receive Activation Emails', 'jigoshop-software' ), 'title' => __( 'Receive Activation Emails', 'jigoshop-software' ), 'placeholder' => 'optin', 'type' => 'checkbox', 'checked' => 'checked' ),
 				array( 'id' => 'license_key', 'label' => __( 'License Key', 'jigoshop-software' ), 'title' => __( 'License Key', 'jigoshop-software' ), 'placeholder' => '', 'type' => 'text' ),
 				array( 'id' => 'paypal_name', 'label' => __( 'Paypal Name to show on transaction receipts', 'jigoshop-software' ), 'title' => __( 'Paypal Name to show on transaction receipts', 'jigoshop-software' ), 'placeholder' => __( 'ex: Google Inc.', 'jigoshop-software' ), 'type' => 'text' ),
 				array( 'id' => 'transaction_id', 'label' => __( 'Transaction ID', 'jigoshop-software' ), 'title' => __( 'Transaction ID', 'jigoshop-software' ), 'placeholder' => '', 'type' => 'text' ),
@@ -420,8 +419,6 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 					foreach ( $this->order_fields as $field ) {
 						if ( 'activation_email' == $field['id'] )
 							$value = get_post_meta( $post->ID, 'activation_email', true );
-						if ( 'activation_email_optin' == $field['id'] )
-							$value = get_post_meta( $post->ID, 'activation_email_optin', true );
 						elseif ( 'transaction_id' == $field['id'] )
 							$value = get_post_meta( $post->ID, 'transaction_id', true );
 						elseif ( 'old_order_id' == $field['id'] )
@@ -1425,7 +1422,6 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 		 * @return void
 		 */
 		function post_paypal_payment( $post_data ) {
-			var_dump($post_data);
 			if ( ! empty( $post_data['transaction_subject'] ) && ! empty ( $post_data['txn_id'] ) ) {
 				update_post_meta( absint( $post_data['transaction_subject'] ), 'transaction_id', $post_data['txn_id'], true );
 			}
@@ -1470,7 +1466,7 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 
 					$order_id = $data;
 					$order = new jigoshop_order( $order_id );
-					$order_page = '<a href=' . get_permalink( $order_id ) . '>order page</a>' ;
+
 					$date = date( 'l, F j Y', time() );
 					$data = get_post_meta( $order_id, 'order_data', true );
 					$products = get_post_meta( $order_id, 'order_items', true );
@@ -1525,14 +1521,13 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 					break;
 
 				case 'new_activation' :
+
 					$subject = $data['product'] . ' ' . __( 'Activation Confirmation', 'jigoshop-software' );
 					$send_to = $data['email'];
 					$message = file_get_contents( JIGOSHOP_SOFTWARE_PATH . '/inc/email-activation.txt' );
 					$date = date( 'l, F j Y', time() );
 					$message = str_replace( '{date}', $date, $message );
 					$message = str_replace( '{remaining_activations}', $data['remaining_activations'], $message );
-					$message = str_replace( '{order_page}',
-					$order_page, $message);
 					$message = str_replace( '{activations_possible}', $data['activations_possible'], $message );
 					$message = str_replace( '{product}', $data['product'], $message );
 
