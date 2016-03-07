@@ -198,6 +198,7 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 
 			$this->order_fields = array(
 				array( 'id' => 'activation_email', 'label' => __( 'Activation Email', 'jigoshop-software' ), 'title' => __( 'Activation Email', 'jigoshop-software' ), 'placeholder' => '', 'type' => 'text' ),
+				array( 'id' => 'activation_email_optout', 'label' => __( 'Opt out of activation emails', 'jigoshop-software' ), 'title' => __( 'Opt out of activation emails', 'jigoshop-software' ), 'placeholder' => 'optout', 'type' => 'checkbox' ),
 				array( 'id' => 'license_key', 'label' => __( 'License Key', 'jigoshop-software' ), 'title' => __( 'License Key', 'jigoshop-software' ), 'placeholder' => '', 'type' => 'text' ),
 				array( 'id' => 'paypal_name', 'label' => __( 'Paypal Name to show on transaction receipts', 'jigoshop-software' ), 'title' => __( 'Paypal Name to show on transaction receipts', 'jigoshop-software' ), 'placeholder' => __( 'ex: Google Inc.', 'jigoshop-software' ), 'type' => 'text' ),
 				array( 'id' => 'transaction_id', 'label' => __( 'Transaction ID', 'jigoshop-software' ), 'title' => __( 'Transaction ID', 'jigoshop-software' ), 'placeholder' => '', 'type' => 'text' ),
