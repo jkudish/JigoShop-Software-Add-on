@@ -179,7 +179,7 @@ class Jigoshop_Software_Api extends jigoshop_software {
 												update_post_meta( $order->ID, 'order_data', $data );
 
 												// send email to the customer if activation email optin is enabled
-												if ( $data['activation_email_optin'])  {
+												if ( ! $data['activation_email_optin'] )  {
 													$order_items = get_post_meta( $order->ID, 'order_items', true );
 													$email_data = array(
 														'email' => get_post_meta( $order->ID, 'activation_email', true ),
