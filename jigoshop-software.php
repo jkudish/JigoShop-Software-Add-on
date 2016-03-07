@@ -548,9 +548,13 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 			if ( empty( $_POST['has_been_upgraded'] ) )
 				unset( $data['has_been_upgraded'] );
 
+			if ( empty( $_POST['activation_email_optout'] ) )
+        unset( $data['activation_email_optout'] );
+
 			update_post_meta( $post->ID, 'order_data', $data );
 			if ( isset( $_POST['resend_email'] ) )
 				$this->process_email( $post->ID, 'completed_purchase' );
+
 
 		}
 
