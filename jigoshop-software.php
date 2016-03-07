@@ -1427,8 +1427,8 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 		 * @return void
 		 */
 		function post_paypal_payment( $post_data ) {
-			if ( ! empty( $post_data['transaction_subject'] ) && ! empty ( $post_data['txn_id'] ) ) {
-				update_post_meta( absint( $post_data['transaction_subject'] ), 'transaction_id', $post_data['txn_id'], true );
+			if ( ! empty( $post_data['transaction_subject'] ) && ! empty ( $post_data['id'] ) ) {
+				update_post_meta( absint( $post_data['transaction_subject'] ), 'transaction_id', $post_data['id'], true );
 			}
 		}
 
@@ -1471,9 +1471,11 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 
 					$order_id = $data;
 					$order = new jigoshop_order( $order_id );
+					$order_page = '<a href=' . get_permalink( $order_id ) . '>order page</a>' ;
 
 					$date = date( 'l, F j Y', time() );
 					$data = get_post_meta( $order_id, 'order_data', true );
+
 					$products = get_post_meta( $order_id, 'order_items', true );
 					$product = $products[0]['name'];
 					$price = $products[0]['cost'];
@@ -1534,6 +1536,7 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 					$message = str_replace( '{date}', $date, $message );
 					$message = str_replace( '{remaining_activations}', $data['remaining_activations'], $message );
 					$message = str_replace( '{activations_possible}', $data['activations_possible'], $message );
+					$message = str_replace( '{order_page}', $order_page, $message);
 					$message = str_replace( '{product}', $data['product'], $message );
 
 					break;
