@@ -48,3 +48,25 @@ function jigoshop_software_upgrade( $atts ) {
 	include_once( 'upgrade.php' );
 
 }
+
+/**
+ * shortcode used for the Activation Notification Unsubscribe confirmation page
+ *
+ * @since 2.7
+ */
+function jigoshop_software_activation_notification_unsubscribe( $atts ) {
+
+	include_once( 'activation-notification-unsubscribe.php' );
+
+}
+
+/**
+ * shortcode used for the Activation Notification Subscribe form page
+ *
+ * @since 2.7
+ */
+function jigoshop_software_activation_notification_subscribe( $atts ) {
+
+	include_once( 'activation-notification-subscribe.php' );
+
+}
