@@ -3,4 +3,4 @@
 You have {remaining_activations} of {activations_possible} activations remaining for {product}.
 
 If you have any questions, please visit: {site_url}/contact
-To stop receiving activation emails pleasure go to the {order_page}.
+To stop receiving activation emails pleasure {activation_unsuscribe}.
