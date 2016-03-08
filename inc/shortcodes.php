@@ -11,8 +11,8 @@ add_shortcode( 'jigoshop_checkout', 'jigoshop_software_checkout' );
 add_shortcode( 'jigoshop_software_checkout', 'jigoshop_software_checkout' );
 add_shortcode( 'jigoshop_software_lost_license', 'jigoshop_software_lost_license' );
 add_shortcode( 'jigoshop_software_upgrade', 'jigoshop_software_upgrade' );
-add_shortcode( 'jigoshop_software_activiation_notification_subscribe', 'jigoshop_software_activation_notification_subscribe' );
-add_shortcode( 'jigoshop_software_activiation_notification_unsubscribe', 'jigoshop_software_activation_notification_unsubscribe' );
+add_shortcode( 'jigoshop_software_activation_subscribe', 'jigoshop_software_activation_subscribe' );
+add_shortcode( 'jigoshop_software_activation_unsubscribe', 'jigoshop_software_activation_unsubscribe' );
 
 
 /**
@@ -56,7 +56,7 @@ function jigoshop_software_upgrade( $atts ) {
  *
  * @since 2.7
  */
-function jigoshop_software_activation_notification_unsubscribe( $atts ) {
+function jigoshop_software_activation_unsubscribe( $atts ) {
 
 	include_once( 'activation-notification-unsubscribe.php' );
 
@@ -67,7 +67,7 @@ function jigoshop_software_activation_notification_unsubscribe( $atts ) {
  *
  * @since 2.7
  */
-function jigoshop_software_activation_notification_subscribe( $atts ) {
+function jigoshop_software_activation_subscribe( $atts ) {
 
 	include_once( 'activation-notification-subscribe.php' );
 
