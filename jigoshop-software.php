@@ -89,6 +89,10 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 			add_action( 'wp_ajax_nopriv_jgs_do_import', array( $this, 'import' ) );
 			add_action( 'wp_ajax_jgs_do_import', array( $this, 'import' ) );
 			add_action( 'get_search_query', array( $this, 'order_get_search_query' ) );
+			add_action( 'wp_ajax_nopriv_jgs_activation_subscribe', array( $this, 'activation_subscribe' ) );
+			add_action( 'wp_ajax_jgs_activation_subscribe', array( $this, 'activation_subscribe' ) );
+			add_action( 'wp_ajax_nopriv_jgs_activation_usubscribe', array( $this, 'activation_unsubscribe' ) );
+			add_action( 'wp_ajax_jgs_activation_unsubscribe', array( $this, 'activation_unsubscribe' ) );
 
 			// frontend stuff
 			remove_action( 'simple_add_to_cart', 'jigoshop_simple_add_to_cart' );
@@ -271,7 +275,7 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 			$jigoshop_activation_notification_subscribe_page_id = get_option( 'jigoshop_activation_notification_subscribe_page_id' );
 			if ( empty( $jigoshop_activation_notification_subscribe_page_id ) ) {
 				$jigoshop_activation_notification_subscribe_page = array(
-					'post_title' => _x( 'Activation Notification Subscription', 'title of a page', 'jigoshop-software' ),
+					'post_title' => _x( 'License Activation Notification Subscription', 'title of a page', 'jigoshop-software' ),
 					'post_content' => '[jigoshop_software_activation_notification_subscribe]',
 					'post_status' => 'publish',
 					'post_type' => 'page',
@@ -284,7 +288,7 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 			$jigoshop_activation_notification_unsubscribe_page_id = get_option( 'jigoshop_activation_notification_unsubscribe_page_id' );
 			if ( empty( $jigoshop_activation_notification_unsubscribe_page_id ) ) {
 				$jigoshop_activation_notification_unsubscribe_page = array(
-					'post_title' => _x( 'Activation Notification Unsubscribe', 'title of a page', 'jigoshop-software' ),
+					'post_title' => _x( 'License Activation Notification Unsubscribe', 'title of a page', 'jigoshop-software' ),
 					'post_content' => '[jigoshop_software_activation_notification_unsubscribe]',
 					'post_status' => 'publish',
 					'post_type' => 'page',
@@ -1907,7 +1911,7 @@ if ( is_admin() ) {
  * @author Anton Iancu <anton.iancu@gmail.com>
  */
 
-function unsuscribe_activation_notification( $order_id ) {
+function activation_unsubscribe( $order_id ) {
 	if ( ! empty( $order_id ) ) {
 			//Don't trust the data coming from the user. Sanitize it!
 			$order_id = sanitize_text_field($order_id);
@@ -1931,7 +1935,7 @@ function unsuscribe_activation_notification( $order_id ) {
  * Can be called with either the order ID or a license key and email address combination.
  */
 
-function suscribe_activation_notification( $license_key , $email_address, $order_id ) {
+function activation_subscribe( $license_key , $email_address, $order_id ) {
 		if ( ! empty( $license_key ) && ! empty ($email_address)) {
 			$license_key = sanitize_text_field($license_key);
 			$email_address = sanitize_email($email_address);
