@@ -1909,7 +1909,9 @@ if ( is_admin() ) {
 
 function unsuscribe_activation_notification( $order_id ) {
 	if ( ! empty( $order_id ) ) {
-			//Get the order data meta
+			//Don't trust the data coming from the user. Sanitize it!
+			$order_id = sanitize_text_field($order_id);
+			//Get the order data meta using the provided order id
 			$data = get_post_meta( $order_id, 'order_data', true );
 			//Set the notification optout value to ON
 			$data['activation_email_optout'] = "on";
@@ -1931,9 +1933,12 @@ function unsuscribe_activation_notification( $order_id ) {
 
 function suscribe_activation_notification( $license_key , $email_address, $order_id ) {
 		if ( ! empty( $license_key ) && ! empty ($email_address)) {
-			$client_order = is_valid_license_key( $license_key, $email_address, null, null, true, false, true );
+			$license_key = sanitize_text_field($license_key);
+			$email_address = sanitize_email($email_address);
+			$client_order = is_valid_license_key( $license_key, $email_address, null, null, true, false, true ); //will return the order id and data in an array.
 			$data = $client_order['order_data'];
 		} elseif ( ! empty( $order_id ) ) {
+				$order_id = sanitize_text_field($order_id);
 				$data = get_post_meta( $order_id, 'order_data', true );
 		}
 		//Remove the activation email notification optout from the order_data array
