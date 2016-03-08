@@ -11,6 +11,8 @@ add_shortcode( 'jigoshop_checkout', 'jigoshop_software_checkout' );
 add_shortcode( 'jigoshop_software_checkout', 'jigoshop_software_checkout' );
 add_shortcode( 'jigoshop_software_lost_license', 'jigoshop_software_lost_license' );
 add_shortcode( 'jigoshop_software_upgrade', 'jigoshop_software_upgrade' );
+add_shortcode( 'jigoshop_software_activiation_notification_subscribe', 'jigoshop_software_activation_notification_subscribe' );
+add_shortcode( 'jigoshop_software_activiation_notification_unsubscribe', 'jigoshop_software_activation_notification_unsubscribe' );
 
 
 /**
