@@ -3,7 +3,7 @@
 Plugin Name: JigoShop - Software Add-On
 Plugin URI: https://github.com/jkudish/JigoShop-Software-Add-on/
 Description: Extends JigoShop to a full-blown software shop, including license activation, license retrieval, activation e-mails and more
-Version: 2.6
+Version: 2.7 ALPHA
 Author: Joachim Kudish
 Author URI: http://jkudish.com
 License: GPL v2
@@ -266,6 +266,34 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 				$jigoshop_api_page_id = wp_insert_post( $api_page );
 				update_option( 'jigoshop_api_page_id', $jigoshop_api_page_id );
 			}
+
+			// creates the activation notification SUBSCRIBE page
+			$jigoshop_activation_notification_subscribe_page_id = get_option( 'jigoshop_activation_notification_subscribe_page_id' );
+			if ( empty( $jigoshop_activation_notification_subscribe_page_id ) ) {
+				$jigoshop_activation_notification_subscribe_page = array(
+					'post_title' => _x( 'Activation Notification Subscription', 'title of a page', 'jigoshop-software' ),
+					'post_content' => '[jigoshop_software_activation_notification_subscribe]',
+					'post_status' => 'publish',
+					'post_type' => 'page',
+				);
+				$jigoshop_activation_notification_subscribe_page_id = wp_insert_post( $jigoshop_activation_notification_subscribe_page );
+				update_option( 'jigoshop_activation_notification_subscribe', $jigoshop_activation_notification_subscribe_page_id );
+			}
+
+			// creates the activation notification UN-SUBSCRIBE page
+			$jigoshop_activation_notification_unsubscribe_page_id = get_option( 'jigoshop_activation_notification_unsubscribe_page_id' );
+			if ( empty( $jigoshop_activation_notification_unsubscribe_page_id ) ) {
+				$jigoshop_activation_notification_unsubscribe_page = array(
+					'post_title' => _x( 'Activation Notification Subscription', 'title of a page', 'jigoshop-software' ),
+					'post_content' => '[jigoshop_software_activation_notification_subscribe]',
+					'post_status' => 'publish',
+					'post_type' => 'page',
+				);
+				$jigoshop_activation_notification_subscribe_page_id = wp_insert_post( $jigoshop_activation_notification_unsubscribe_page );
+				update_option( 'jigoshop_activation_notification_subscribe', $jigoshop_activation_notification_unsubscribe_page_id );
+			}
+
+
 
 		}
 
@@ -1428,7 +1456,7 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 		 */
 		function post_paypal_payment( $post_data ) {
 			if ( ! empty( $post_data['transaction_subject'] ) && ! empty ( $post_data['id'] ) ) {
-				update_post_meta( absint( $post_data['transaction_subject'] ), 'transaction_id', $post_data['id'], true );
+				update_post_meta( absint( $post_data['transaction_subject'] ), 'transaction_id', $post_data['tid'], true );
 			}
 		}
 
@@ -1471,7 +1499,6 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 
 					$order_id = $data;
 					$order = new jigoshop_order( $order_id );
-					$order_page = '<a href=' . get_permalink( $order_id ) . '>order page</a>' ;
 
 					$date = date( 'l, F j Y', time() );
 					$data = get_post_meta( $order_id, 'order_data', true );
@@ -1529,6 +1556,8 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 
 				case 'new_activation' :
 
+					$order_id = $data['order'];
+
 					$subject = $data['product'] . ' ' . __( 'Activation Confirmation', 'jigoshop-software' );
 					$send_to = $data['email'];
 					$message = file_get_contents( JIGOSHOP_SOFTWARE_PATH . '/inc/email-activation.txt' );
@@ -1536,7 +1565,7 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 					$message = str_replace( '{date}', $date, $message );
 					$message = str_replace( '{remaining_activations}', $data['remaining_activations'], $message );
 					$message = str_replace( '{activations_possible}', $data['activations_possible'], $message );
-					$message = str_replace( '{order_page}', $order_page, $message);
+					$message = str_replace( '{activation_unsuscribe}', '<a href=" ' . get_site_url() . '/activation-unsubscribe.php/?order_id=' . $order_id  . '">click here</a>' , $message);
 					$message = str_replace( '{product}', $data['product'], $message );
 
 					break;
@@ -1869,4 +1898,47 @@ if ( is_admin() ) {
 		'readme' => 'README.md',
 	);
 	$github_updater = new wp_github_updater( $config );
+}
+
+/**
+ * Unsubscribe from activation notification emails.
+ *
+ * @since 2.7
+ * @author Anton Iancu <anton.iancu@gmail.com>
+ */
+
+function unsuscribe_activation_notification( $order_id ) {
+	if ( ! empty( $order_id ) ) {
+			//Get the order data meta
+			$data = get_post_meta( $order_id, 'order_data', true );
+			//Set the notification optout value to ON
+			$data['activation_email_optout'] = "on";
+			//Update the options in the db
+			update_post_meta( $order_id, 'order_data', $data );
+			return true;
+		}	else {
+			return false;
+		}
+}
+
+/**
+ * Subscribe to activation notification emails.
+ *
+ * @since 2.7
+ * @author Anton Iancu <anton.iancu@gmail.com>
+ * Can be called with either the order ID or a license key and email address combination.
+ */
+
+function suscribe_activation_notification( $license_key, $email_address, $order_id ) {
+		if ( ! empty( $license_key ) && ! empty ($email_address)) {
+			$client_order = is_valid_license_key( $license_key, $email_address, null, null, true, false, true );
+			$data = $client_order['order_data'];
+		} elseif ( ! empty( $order_id ) ) {
+				$data = get_post_meta( $order_id, 'order_data', true );
+		}
+		//Remove the activation email notification optout from the order_data array
+		unset( $data['activation_email_optout'] );
+		//Update the options in the db
+		update_post_meta( $order_id, 'order_data', $data );
+		return true;
 }
