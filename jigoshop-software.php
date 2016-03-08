@@ -284,7 +284,7 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 			$jigoshop_activation_notification_unsubscribe_page_id = get_option( 'jigoshop_activation_notification_unsubscribe_page_id' );
 			if ( empty( $jigoshop_activation_notification_unsubscribe_page_id ) ) {
 				$jigoshop_activation_notification_unsubscribe_page = array(
-					'post_title' => _x( 'Activation Notification Subscription', 'title of a page', 'jigoshop-software' ),
+					'post_title' => _x( 'Activation Notification Unsubscribe', 'title of a page', 'jigoshop-software' ),
 					'post_content' => '[jigoshop_software_activation_notification_unsubscribe]',
 					'post_status' => 'publish',
 					'post_type' => 'page',
