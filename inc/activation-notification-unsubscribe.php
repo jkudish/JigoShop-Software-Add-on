@@ -19,23 +19,14 @@
 			<p id="jgs_validation"<?php if ( isset( $_GET['no-js'] ) ) echo ' class="not-hidden"' ?>><?php if ( isset( $_GET['no-js'] ) ) _e( 'You need javascript in order to be able to checkout. Please enable javascript and try again.', 'jigoshop-software' ) ?></p>
 		</div>
 		<div class="form-row done">
-			<p><label for="jgs_email"><?php _e( 'Your email address', 'jigoshop-software' ) ?>:</label> <input type="text" id="jgs_email" name="jgs_email"><br/>
-				and <br/>
-			<label for="jgs_license"><?php _e( 'Your Sparkbooth license', 'jigoshop-software' ) ?>:</label> <input type="text" id="jgs_license" name="jgs_license"></p>
-		</div>
-		<div class="form-row done">
-			<p>
-				<strong>OR</strong>
-			</p>
-		</div>
-		<div class="form-row done">
-			<p><label for="jgs_order_id"><?php _e( 'Your order ID', 'jigoshop-software' ) ?>:</label> <input type="text" id="jgs_order_id" name="jgs_order_id" value="<?php if (! empty( $order_id ) ) { echo $order_id; } ?>"></p>
+			<p><label for="jgs_email"><?php _e( 'Your email address', 'jigoshop-software' ) ?>:</label> <input type="text" id="jgs_email" name="jgs_email"></p>
+			<p><label for="jgs_license"><?php _e( 'Your Sparkbooth license', 'jigoshop-software' ) ?>:</label> <input type="text" id="jgs_license" name="jgs_license"></p>
 		</div>
 		<div class="form-row done">
 			<input type="hidden" name="action" value="jgs_lost_license">
 			<?php //wp_nonce_field( 'jgs_lost_license', 'jgs_lost_license_nonce' ); ?>
 			<noscript><input type="hidden" name="no_js" value="true"></noscript>
-			<div class="jgs_loader"><input type="submit" class="button-alt" name="jgs_lost_license_btn" id="jgs_lost_license_btn" value="DISABLE Activation Notifications"></div>
+			<div class="jgs_loader"><input type="submit" class="button-alt" name="jgs_lost_license_btn" id="jgs_lost_license_btn" value="Enable Activation Notifications"></div>
 		</div>
 	</form>
 </div>

@@ -1563,7 +1563,8 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 
 				case 'new_activation' :
 
-					$order_id = $data['order'];
+					$license_key = $data['license_key'];
+          $activation_email = get_post_meta( $order_id, 'activation_email', true );
 
 					$subject = $data['product'] . ' ' . __( 'Activation Confirmation', 'jigoshop-software' );
 					$send_to = $data['email'];
@@ -1572,7 +1573,7 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 					$message = str_replace( '{date}', $date, $message );
 					$message = str_replace( '{remaining_activations}', $data['remaining_activations'], $message );
 					$message = str_replace( '{activations_possible}', $data['activations_possible'], $message );
-					$message = str_replace( '{activation_unsuscribe}', '<a href=" ' . get_site_url() . '/activation-unsubscribe.php/?order_id=' . $order_id  . '">click here</a>' , $message);
+					$message = str_replace( '{activation_unsuscribe}', '<a href=" ' . get_site_url() . '/activation-unsubscribe.php/?license_key=' . $license_key  . '&activation_email=' . $activation_email  . '">click here</a>' , $message);
 					$message = str_replace( '{product}', $data['product'], $message );
 
 					break;
