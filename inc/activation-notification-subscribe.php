@@ -19,8 +19,8 @@
 			<p><label for="jgs_license"><?php _e( 'Your Sparkbooth license', 'jigoshop-software' ) ?>:</label> <input type="text" id="jgs_license" name="jgs_license"></p>
 		</div>
 		<div class="form-row done">
-			<input type="hidden" name="action" value="jgs_lost_license">
-			<?php //wp_nonce_field( 'jgs_lost_license', 'jgs_lost_license_nonce' ); ?>
+			<input type="hidden" name="action" value="jgs_activation_subscribe">
+			<?php wp_nonce_field( 'jgs_activation_subscribe', 'jgs_activation_subscribe_nonce' ); ?>
 			<noscript><input type="hidden" name="no_js" value="true"></noscript>
 			<div class="jgs_loader"><input type="submit" class="button-alt" name="jgs_lost_license_btn" id="jgs_lost_license_btn" value="Enable Activation Notifications"></div>
 		</div>
