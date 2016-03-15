@@ -34,7 +34,7 @@
 
 <script type="text/javascript">
 	jQuery(document).ready(function($){
-		$('#jgs_activation_unsubscribe').submit(function(e){
+		$('#jgs_activation_unsubscribe_form').submit(function(e){
 			e.preventDefault();
 			var load = $('#jgs_activation_unsubscribe_form .jgs_loader');
 			if (!load.hasClass('loading')) {

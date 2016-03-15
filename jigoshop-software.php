@@ -120,10 +120,6 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 			add_action( 'wp_ajax_nopriv_jgs_do_import', array( $this, 'import' ) );
 			add_action( 'wp_ajax_jgs_do_import', array( $this, 'import' ) );
 			add_action( 'get_search_query', array( $this, 'order_get_search_query' ) );
-			add_action( 'wp_ajax_nopriv_jgs_activation_subscribe', array( $this, 'ajax_jgs_activation_subscribe' ) );
-			add_action( 'wp_ajax_jgs_activation_subscribe', array( $this, 'activation_subscribe' ) );
-			add_action( 'wp_ajax_nopriv_jgs_activation_usubscribe', array( $this, 'ajax_jgs_activation_unsubscribe' ) );
-			add_action( 'wp_ajax_jgs_activation_unsubscribe', array( $this, 'ajax_jgs_activation_unsubscribe' ) );
 
 			// frontend stuff
 			remove_action( 'simple_add_to_cart', 'jigoshop_simple_add_to_cart' );
@@ -1457,6 +1453,96 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 			exit;
 		}
 
+
+    /**
+     * Unsubscribe from activation notification emails.
+     *
+     * @since 2.7
+     * @author Anton Iancu <anton.iancu@gmail.com>
+     */
+
+    function ajax_jgs_activation_unsubscribe() {
+        //reset message and reponse vars
+        $message = null;
+        $response = null;
+
+        //   nonce verification
+        if ( $_POST['jgs_activation_unsubscribe_nonce'] && !wp_verify_nonce( $_POST['jgs_activation_unsubscribe_nonce'], 'jgs_activation_unsubscribe' ) ) $messages['nonce'] = __( 'An error has occurred, please try again', 'jigoshop-software' );
+
+        $license_key = sanitize_text_field( $_POST['jgs_license'] );
+        $email_address = sanitize_email( $_POST['jgs_email'] );
+
+        if ( ! empty( $license_key ) && ! empty ($email_address) ) {
+    			$client_order = $this->is_valid_license_key( $license_key, $email_address, null, null, true, false, true ); //will return the order id and data in an array.
+    			$data = $client_order['order_data'];
+          $order_id = $client_order['order_id'];
+          //Activate the optout option for the order
+          $data['activation_email_optout'] = "on";
+    			//Update the options in the db
+    			update_post_meta( $order_id, 'order_data', $data );
+          $success = true;
+          $message = "OK, you will no longer receive activation emails.";
+        } else {
+          $success = false;
+          $message = "Something is wrong. Try again.";
+        }
+        header( 'Content-Type: application/json' );
+        $response = json_encode(
+          array(
+            'success' => $success,
+            'message' => $message,
+          )
+        );
+        echo $response;
+        exit;
+    }
+
+    /**
+     * Subscribe to activation notification emails.
+     *
+     * @since 2.7
+     * @author Anton Iancu <anton.iancu@gmail.com>
+     *
+     */
+
+    function ajax_jgs_activation_subscribe() {
+        //reset message and reponse vars
+        $message = null;
+        $response = null;
+
+        //   nonce verification
+        if ( $_POST['jgs_activation_subscribe_nonce'] && !wp_verify_nonce( $_POST['jgs_activation_subscribe_nonce'], 'jgs_activation_subscribe' ) ) $messages['nonce'] = __( 'An error has occurred, please try again', 'jigoshop-software' );
+
+        $license_key = sanitize_text_field( $_POST['jgs_license'] );
+        $email_address = sanitize_email( $_POST['jgs_email'] );
+
+        if ( ! empty( $license_key ) && ! empty ($email_address) ) {
+    			$client_order = $this->is_valid_license_key( $license_key, $email_address, null, null, true, false, true ); //will return the order id and data in an array.
+    			$data = $client_order['order_data'];
+          $order_id = $client_order['order_id'];
+      		//Remove the activation email notification optout from the order_data array
+      		unset( $data['activation_email_optout'] );
+      		//Update the options in the db
+      		update_post_meta( $order_id, 'order_data', $data );
+          $success = true;
+          $message = "OK, you will no longer receive activation emails.";
+        } else {
+          $success = false;
+          $message = "Something is wrong. Try again.";
+        }
+        header( 'Content-Type: application/json' );
+        $response = json_encode(
+          array(
+            'success' => $success,
+            'message' => $message,
+          )
+        );
+
+        echo $response;
+        exit;
+    }
+
+
 		/**
 		 * processes the order post payment
 		 *
@@ -1910,81 +1996,4 @@ if ( is_admin() ) {
 		'readme' => 'README.md',
 	);
 	$github_updater = new wp_github_updater( $config );
-}
-
-/**
- * Unsubscribe from activation notification emails.
- *
- * @since 2.7
- * @author Anton Iancu <anton.iancu@gmail.com>
- */
-
-function ajax_jgs_activation_unsubscribe() {
-    //reset message and reponse vars
-    $message = "";
-    $response = "";
-
-    //   nonce verification
-    if ( $_POST['jgs_activation_unsubscribe_nonce'] && !wp_verify_nonce( $_POST['jgs_activation_unsubscribe_nonce'], 'jgs_activation_unsubscribe' ) ) $messages['nonce'] = __( 'An error has occurred, please try again', 'jigoshop-software' );
-
-    if ( ! empty( $license_key ) && ! empty ($email_address) ) {
-      $license_key = sanitize_text_field( $_POST_['jgs_email'] );
-			$email_address = sanitize_email( $_POST['jgs_license'] );
-			$client_order = is_valid_license_key( $license_key, $email_address, null, null, true, false, true ); //will return the order id and data in an array.
-			$data = $client_order['order_data'];
-      $order_id = $client_order['order_id'];
-      //Activate the optout option for the order
-      $data['activation_email_optout'] = "on";
-			//Update the options in the db
-			update_post_meta( $order_id, 'order_data', $data );
-      $response['success'] = true;
-      $response['message'] = "OK, you will no longer receive activation emails.";
-    }
-    $response = json_encode(
-      array(
-        'success' => $success,
-        'message' => $message,
-      )
-    );
-
-    echo $response;
-}
-
-/**
- * Subscribe to activation notification emails.
- *
- * @since 2.7
- * @author Anton Iancu <anton.iancu@gmail.com>
- *
- */
-
-function ajax_jgs_activation_subscribe() {
-    //reset message and reponse vars
-    $message = "";
-    $response = "";
-
-    //   nonce verification
-    if ( $_POST['jgs_activation_subscribe_nonce'] && !wp_verify_nonce( $_POST['jgs_activation_subscribe_nonce'], 'jgs_activation_subscribe' ) ) $messages['nonce'] = __( 'An error has occurred, please try again', 'jigoshop-software' );
-
-    if ( ! empty( $license_key ) && ! empty ($email_address) ) {
-      $license_key = sanitize_text_field( $_POST_['jgs_email'] );
-			$email_address = sanitize_email( $_POST['jgs_license'] );
-			$client_order = is_valid_license_key( $license_key, $email_address, null, null, true, false, true ); //will return the order id and data in an array.
-			$data = $client_order['order_data'];
-      $order_id = $client_order['order_id'];
-  		//Remove the activation email notification optout from the order_data array
-  		unset( $data['activation_email_optout'] );
-  		//Update the options in the db
-  		update_post_meta( $order_id, 'order_data', $data );
-      $success = true;
-      $message = "OK, you will no longer receive activation emails.";
-    }
-    $response = json_encode(
-      array(
-        'success' => $success,
-        'message' => $message,
-      )
-    );
-
-    echo $response;
 }
