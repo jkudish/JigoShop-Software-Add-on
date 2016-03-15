@@ -37,6 +37,37 @@ Text Domain: jigoshop-software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+ /**
+  * defines the constants we need for the plugin
+  *
+  * @since 1.3
+  * @return void
+  */
+ function jgs_define_constants() {
+ 	if ( ! defined( 'JIGOSHOP_SOFTWARE_PATH' ) )
+ 		define( 'JIGOSHOP_SOFTWARE_PATH', dirname( __FILE__ ) );
+ 	if ( ! defined( 'JIGOSHOP_SOFTWARE_SLUG' ) )
+ 		define( 'JIGOSHOP_SOFTWARE_SLUG', plugin_basename( __FILE__ ) );
+ 	if ( ! defined( 'JIGOSHOP_SOFTWARE_VERSION' ) )
+ 		define( 'JIGOSHOP_SOFTWARE_VERSION', 2.5 );
+ 	if ( ! defined( 'JIGOSHOP_SOFTWARE_PROPER_NAME' ) )
+ 		define( 'JIGOSHOP_SOFTWARE_PROPER_NAME', 'jigoshop-software' );
+ 	if ( ! defined( 'JIGOSHOP_SOFTWARE_GITHUB_URL' ) )
+ 		define( 'JIGOSHOP_SOFTWARE_GITHUB_URL', 'https://github.com/jkudish/JigoShop-Software-Add-on' );
+ 	if ( ! defined( 'JIGOSHOP_SOFTWARE_GITHUB_ZIP_URL' ) )
+ 		define( 'JIGOSHOP_SOFTWARE_GITHUB_ZIP_URL', 'https://github.com/jkudish/JigoShop-Software-Add-on/zipball/master' );
+ 	if ( ! defined( 'JIGOSHOP_SOFTWARE_GITHUB_API_URL' ) )
+ 		define( 'JIGOSHOP_SOFTWARE_GITHUB_API_URL', 'https://api.github.com/repos/jkudish/JigoShop-Software-Add-on' );
+ 	if ( ! defined( 'JIGOSHOP_SOFTWARE_GITHUB_RAW_URL' ) )
+ 		define( 'JIGOSHOP_SOFTWARE_GITHUB_RAW_URL', 'https://raw.github.com/jkudish/JigoShop-Software-Add-on/master' );
+ 	if ( ! defined( 'JIGOSHOP_SOFTWARE_REQUIRES_WP' ) )
+ 		define( 'JIGOSHOP_SOFTWARE_REQUIRES_WP', '3.3' );
+ 	if ( ! defined( 'JIGOSHOP_SOFTWARE_TESTED_WP' ) )
+ 		define( 'JIGOSHOP_SOFTWARE_TESTED_WP', '3.4.2' );
+ }
+
+
+
 if ( ! class_exists( 'Jigoshop_Software' ) ) {
 	class Jigoshop_Software {
 
@@ -68,7 +99,7 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 		 */
 		function __construct() {
 
-			$this->define_constants();
+			jgs_define_constants();
 
 			/**
 			 * hooks
@@ -145,35 +176,6 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 			$timezone = get_option( 'timezone_string' );
 			if ( ! empty( $timezone ) )
 				date_default_timezone_set( $timezone );
-		}
-
-		/**
-		 * defines the constants we need for the plugin
-		 *
-		 * @since 1.3
-		 * @return void
-		 */
-		function define_constants() {
-			if ( ! defined( 'JIGOSHOP_SOFTWARE_PATH' ) )
-				define( 'JIGOSHOP_SOFTWARE_PATH', dirname( __FILE__ ) );
-			if ( ! defined( 'JIGOSHOP_SOFTWARE_SLUG' ) )
-				define( 'JIGOSHOP_SOFTWARE_SLUG', plugin_basename( __FILE__ ) );
-			if ( ! defined( 'JIGOSHOP_SOFTWARE_VERSION' ) )
-				define( 'JIGOSHOP_SOFTWARE_VERSION', 2.5 );
-			if ( ! defined( 'JIGOSHOP_SOFTWARE_PROPER_NAME' ) )
-				define( 'JIGOSHOP_SOFTWARE_PROPER_NAME', 'jigoshop-software' );
-			if ( ! defined( 'JIGOSHOP_SOFTWARE_GITHUB_URL' ) )
-				define( 'JIGOSHOP_SOFTWARE_GITHUB_URL', 'https://github.com/jkudish/JigoShop-Software-Add-on' );
-			if ( ! defined( 'JIGOSHOP_SOFTWARE_GITHUB_ZIP_URL' ) )
-				define( 'JIGOSHOP_SOFTWARE_GITHUB_ZIP_URL', 'https://github.com/jkudish/JigoShop-Software-Add-on/zipball/master' );
-			if ( ! defined( 'JIGOSHOP_SOFTWARE_GITHUB_API_URL' ) )
-				define( 'JIGOSHOP_SOFTWARE_GITHUB_API_URL', 'https://api.github.com/repos/jkudish/JigoShop-Software-Add-on' );
-			if ( ! defined( 'JIGOSHOP_SOFTWARE_GITHUB_RAW_URL' ) )
-				define( 'JIGOSHOP_SOFTWARE_GITHUB_RAW_URL', 'https://raw.github.com/jkudish/JigoShop-Software-Add-on/master' );
-			if ( ! defined( 'JIGOSHOP_SOFTWARE_REQUIRES_WP' ) )
-				define( 'JIGOSHOP_SOFTWARE_REQUIRES_WP', '3.3' );
-			if ( ! defined( 'JIGOSHOP_SOFTWARE_TESTED_WP' ) )
-				define( 'JIGOSHOP_SOFTWARE_TESTED_WP', '3.4.2' );
 		}
 
 		/**
@@ -276,7 +278,7 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 			if ( empty( $jigoshop_activation_notification_subscribe_page_id ) ) {
 				$jigoshop_activation_notification_subscribe_page = array(
 					'post_title' => _x( 'License Activation Notification Subscription', 'title of a page', 'jigoshop-software' ),
-					'post_content' => '[jigoshop_software_activation_notification_subscribe]',
+					'post_content' => '[jigoshop_software_activation_subscribe]',
 					'post_status' => 'publish',
 					'post_type' => 'page',
 				);
@@ -289,7 +291,7 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 			if ( empty( $jigoshop_activation_notification_unsubscribe_page_id ) ) {
 				$jigoshop_activation_notification_unsubscribe_page = array(
 					'post_title' => _x( 'License Activation Notification Unsubscribe', 'title of a page', 'jigoshop-software' ),
-					'post_content' => '[jigoshop_software_activation_notification_unsubscribe]',
+					'post_content' => '[jigoshop_software_activation_unsubscribe]',
 					'post_status' => 'publish',
 					'post_type' => 'page',
 				);
@@ -1459,9 +1461,10 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 		 * @return void
 		 */
 		function post_paypal_payment( $post_data ) {
-			if ( ! empty( $post_data['transaction_subject'] ) && ! empty ( $post_data['id'] ) ) {
-				update_post_meta( absint( $post_data['transaction_subject'] ), 'transaction_id', $post_data['tid'], true );
+			if ( ! empty( $post_data['transaction_subject'] ) && ! empty ( $post_data['txn_id'] ) ) {
+				update_post_meta( absint( $post_data['transaction_subject'] ), 'transaction_id', $post_data['txn_id'], true );
 			}
+			error_log( print_r( $post_data, true ) );
 		}
 
 		/**
@@ -1886,7 +1889,7 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
  * @since 1.0
  */
 register_activation_hook( __FILE__, array( 'jigoshop_software', 'activation' ) );
-jigoshop_software::define_constants();
+jgs_define_constants();
 
 if ( is_admin() ) {
 	include_once( 'inc/_updater.php' );

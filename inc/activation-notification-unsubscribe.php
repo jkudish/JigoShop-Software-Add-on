@@ -7,7 +7,9 @@
 	*/
 
 	//retrieve the order ID from the url params
-	$order_id = sanitize_text_field(get_query_var( 'order_id' ));
+	if ( ! empty ($_GET[ 'order_id' ]) ){
+		$order_id = esc_attr( $_GET[ 'order_id' ] );
+	}
 ?>
 <div class="jgs_page" id="jgs_activation_unsubscribe">
 	<form id="jgs_notification-subscribe" action="<?php echo admin_url( 'admin-ajax.php' ) ?>" method="post">
