@@ -1525,7 +1525,7 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
       		//Update the options in the db
       		update_post_meta( $order_id, 'order_data', $data );
           $success = true;
-          $message = "OK, you will no longer receive activation emails.";
+          $message = "Great, you will now receive activation emails.";
         } else {
           $success = false;
           $message = "Something is wrong. Try again.";

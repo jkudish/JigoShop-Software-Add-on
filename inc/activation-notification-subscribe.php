@@ -5,6 +5,11 @@
 	* @since 2.7
 	* @author Anton Iancu <anton.iancu@gmail.com>
 	*/
+	//retrieve the order ID from the url params
+	if ( ! empty ( $_GET['jgs_license'] ) && ! empty ( $_GET['jgs_email'] ) ){
+		$license_key = esc_attr( $_GET[ 'jgs_license' ] );
+		$activation_email = esc_attr( $_GET[ 'jgs_email' ] );
+	}
 ?>
 
 <div class="jgs_page" id="jgs_activation_subscribe">
@@ -15,8 +20,8 @@
 			<p id="jgs_validation"<?php if ( isset( $_GET['no-js'] ) ) echo ' class="not-hidden"' ?>><?php if ( isset( $_GET['no-js'] ) ) _e( 'You need javascript in order to be able to checkout. Please enable javascript and try again.', 'jigoshop-software' ) ?></p>
 		</div>
 		<div class="form-row done">
-			<p><label for="jgs_email"><?php _e( 'Your email address', 'jigoshop-software' ) ?>:</label> <input type="text" id="jgs_email" name="jgs_email"></p>
-			<p><label for="jgs_license"><?php _e( 'Your Sparkbooth license', 'jigoshop-software' ) ?>:</label> <input type="text" id="jgs_license" name="jgs_license"></p>
+			<p><label for="jgs_email"><?php _e( 'Your email address', 'jigoshop-software' ) ?>:</label> <input type="text" id="jgs_email" name="jgs_email" value="<?php echo $activation_email; ?>"></p>
+			<p><label for="jgs_license"><?php _e( 'Your Sparkbooth license', 'jigoshop-software' ) ?>:</label> <input type="text" id="jgs_license" name="jgs_license" value="<?php echo $license_key; ?>"></p>
 		</div>
 		<div class="form-row done">
 			<input type="hidden" name="action" value="jgs_activation_subscribe">
