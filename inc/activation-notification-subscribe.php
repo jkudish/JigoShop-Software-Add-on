@@ -8,7 +8,7 @@
 ?>
 
 <div class="jgs_page" id="jgs_activation_subscribe">
-	<form id="jgs_activation_subscribe" action="<?php echo admin_url( 'admin-ajax.php' ) ?>" method="post">
+	<form id="jgs_activation_subscribe_form" action="<?php echo admin_url( 'admin-ajax.php' ) ?>" method="post">
 		<div class="form-row">
 			<p><?php _e( 'Please enter your order email and license to enable receiving a notification email each time you activate Sparkbooth.', 'jigoshop-software' ) ?></p>
 			<p><?php _e( 'If your email address has changed, please', 'jigoshop-software' ) ?> <a href="<?php echo site_url( '/contact' ) ?>"><?php _e( 'contact us', 'jigoshop-software' ) ?></a>.</p>
@@ -29,7 +29,7 @@
 
 <script type="text/javascript">
 	jQuery(document).ready(function($){
-		$('#jgs_lost_license_form').submit(function(e){
+		$('#jgs_activation_subscribe_form').submit(function(e){
 			e.preventDefault();
 			var load = $('#jgs_lost_license .jgs_loader');
 			if (!load.hasClass('loading')) {

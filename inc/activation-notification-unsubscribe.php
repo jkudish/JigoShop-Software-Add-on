@@ -1,19 +1,19 @@
 <?php
 /**
-	* This file renders the unsubscribe confirmation page, with a link to re-subscribe using the same order ID
+	* This file renders the unsubscribe form page
 	*
 	* @since 2.7
 	* @author Anton Iancu <anton.iancu@gmail.com>
 	*/
 
 	//retrieve the order ID from the url params
-	if ( ! empty ($_GET[ 'order_id' ]) ){
+	if ( ! empty ( $_GET['jgs_license'] ) && ! empty ( $_GET['jgs_email'] ) ){
 		$license_key = esc_attr( $_GET[ 'jgs_license' ] );
 		$activation_email = esc_attr( $_GET[ 'jgs_email' ] );
 	}
 ?>
 <div class="jgs_page" id="jgs_activation_unsubscribe">
-	<form id="jgs_notification-subscribe" action="<?php echo admin_url( 'admin-ajax.php' ) ?>" method="post">
+	<form id="jgs_activation_unsubscribe_form" action="<?php echo admin_url( 'admin-ajax.php' ) ?>" method="post">
 		<div class="form-row">
 			<p><?php _e( 'Please enter your order email and license, or your order ID to stop receiving a notification email each time you activate Sparkbooth.', 'jigoshop-software' ) ?></p>
 			<p><?php _e( 'If your email address has changed, please', 'jigoshop-software' ) ?> <a href="<?php echo site_url( '/contact' ) ?>"><?php _e( 'contact us', 'jigoshop-software' ) ?></a>.</p>
@@ -27,7 +27,7 @@
 			<input type="hidden" name="action" value="jgs_activation_unsubscribe">
 			<?php wp_nonce_field( 'jgs_activation_unsubscribe', 'jgs_activation_unsubscribe_nonce' ); ?>
 			<noscript><input type="hidden" name="no_js" value="true"></noscript>
-			<div class="jgs_loader"><input type="submit" class="button-alt" name="jgs_lost_license_btn" id="jgs_lost_license_btn" value="Enable Activation Notifications"></div>
+			<div class="jgs_loader"><input type="submit" class="button-alt" name="jgs_lost_license_btn" id="jgs_lost_license_btn" value="Disable Activation Notifications"></div>
 		</div>
 	</form>
 </div>
@@ -36,7 +36,7 @@
 	jQuery(document).ready(function($){
 		$('#jgs_activation_unsubscribe').submit(function(e){
 			e.preventDefault();
-			var load = $('#jgs_activation_unsubscribe .jgs_loader');
+			var load = $('#jgs_activation_unsubscribe_form .jgs_loader');
 			if (!load.hasClass('loading')) {
 				$('#jgs_validation').fadeIn();
 				$('#jgs_validation').hide();
@@ -54,7 +54,7 @@
 						if (response.success === false) {
 							$('#jgs_validation').html(response.message).fadeIn();
 						} else {
-							$('#jgs_validation').html('An error has occurred, please try again.').fadeIn();
+							$('#jgs_validation').html('An error has occurred in le ajax, please try again.').fadeIn();
 						}
 					}
 				});

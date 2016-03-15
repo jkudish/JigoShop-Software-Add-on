@@ -120,10 +120,10 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 			add_action( 'wp_ajax_nopriv_jgs_do_import', array( $this, 'import' ) );
 			add_action( 'wp_ajax_jgs_do_import', array( $this, 'import' ) );
 			add_action( 'get_search_query', array( $this, 'order_get_search_query' ) );
-			add_action( 'wp_ajax_nopriv_jgs_activation_subscribe', array( $this, 'activation_subscribe' ) );
+			add_action( 'wp_ajax_nopriv_jgs_activation_subscribe', array( $this, 'ajax_jgs_activation_subscribe' ) );
 			add_action( 'wp_ajax_jgs_activation_subscribe', array( $this, 'activation_subscribe' ) );
-			add_action( 'wp_ajax_nopriv_jgs_activation_usubscribe', array( $this, 'activation_unsubscribe' ) );
-			add_action( 'wp_ajax_jgs_activation_unsubscribe', array( $this, 'activation_unsubscribe' ) );
+			add_action( 'wp_ajax_nopriv_jgs_activation_usubscribe', array( $this, 'ajax_jgs_activation_unsubscribe' ) );
+			add_action( 'wp_ajax_jgs_activation_unsubscribe', array( $this, 'ajax_jgs_activation_unsubscribe' ) );
 
 			// frontend stuff
 			remove_action( 'simple_add_to_cart', 'jigoshop_simple_add_to_cart' );
@@ -1920,6 +1920,10 @@ if ( is_admin() ) {
  */
 
 function ajax_jgs_activation_unsubscribe() {
+    //reset message and reponse vars
+    $message = "";
+    $response = "";
+
     //   nonce verification
     if ( $_POST['jgs_activation_unsubscribe_nonce'] && !wp_verify_nonce( $_POST['jgs_activation_unsubscribe_nonce'], 'jgs_activation_unsubscribe' ) ) $messages['nonce'] = __( 'An error has occurred, please try again', 'jigoshop-software' );
 
@@ -1933,8 +1937,17 @@ function ajax_jgs_activation_unsubscribe() {
       $data['activation_email_optout'] = "on";
 			//Update the options in the db
 			update_post_meta( $order_id, 'order_data', $data );
-			return true;
+      $response['success'] = true;
+      $response['message'] = "OK, you will no longer receive activation emails.";
     }
+    $response = json_encode(
+      array(
+        'success' => $success,
+        'message' => $message,
+      )
+    );
+
+    echo $response;
 }
 
 /**
@@ -1946,6 +1959,9 @@ function ajax_jgs_activation_unsubscribe() {
  */
 
 function ajax_jgs_activation_subscribe() {
+    //reset message and reponse vars
+    $message = "";
+    $response = "";
 
     //   nonce verification
     if ( $_POST['jgs_activation_subscribe_nonce'] && !wp_verify_nonce( $_POST['jgs_activation_subscribe_nonce'], 'jgs_activation_subscribe' ) ) $messages['nonce'] = __( 'An error has occurred, please try again', 'jigoshop-software' );
@@ -1960,6 +1976,15 @@ function ajax_jgs_activation_subscribe() {
   		unset( $data['activation_email_optout'] );
   		//Update the options in the db
   		update_post_meta( $order_id, 'order_data', $data );
-  		return true;
+      $success = true;
+      $message = "OK, you will no longer receive activation emails.";
     }
+    $response = json_encode(
+      array(
+        'success' => $success,
+        'message' => $message,
+      )
+    );
+
+    echo $response;
 }
