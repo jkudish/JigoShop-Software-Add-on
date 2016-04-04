@@ -1483,6 +1483,7 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
           $success = true;
           $message = "OK, you will no longer receive activation emails.";
         } else {
+          error_log(print_r($license_key,true));
           $success = false;
           $message = "Something is wrong. Try again.";
         }
@@ -1513,19 +1514,34 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
         //   nonce verification
         if ( $_POST['jgs_activation_subscribe_nonce'] && !wp_verify_nonce( $_POST['jgs_activation_subscribe_nonce'], 'jgs_activation_subscribe' ) ) $messages['nonce'] = __( 'An error has occurred, please try again', 'jigoshop-software' );
 
-        $license_key = sanitize_text_field( $_POST['jgs_license'] );
-        $email_address = sanitize_email( $_POST['jgs_email'] );
 
-        if ( ! empty( $license_key ) && ! empty ($email_address) ) {
+        $email_address = sanitize_email( $_POST['jgs_email'] );
+        $license_key = sanitize_text_field( $_POST['jgs_license'] );
+
+        if ( ! empty ($email_address) && ! empty( $license_key ) ) {
     			$client_order = $this->is_valid_license_key( $license_key, $email_address, null, null, true, false, true ); //will return the order id and data in an array.
     			$data = $client_order['order_data'];
           $order_id = $client_order['order_id'];
       		//Remove the activation email notification optout from the order_data array
       		unset( $data['activation_email_optout'] );
       		//Update the options in the db
-      		update_post_meta( $order_id, 'order_data', $data );
-          $success = true;
-          $message = "Great, you will now receive activation emails.";
+          $optout_result = update_post_meta( $order_id, 'order_data', $data );
+
+          error_log(print_r($_POST,true));
+          error_log(print_r($license_key,true));
+          error_log(print_r($email_address,true));
+          error_log(print_r($client_order,true));
+          error_log(print_r($order_id,true));
+          error_log(print_r($data,true));
+          error_log(print_r($data['activation_email_optout'],true));
+          error_log(print_r($optout_result, true));
+      		if ( !empty ( $data ) ) {
+            $success = true;
+            $message = "Great, you will now receive activation emails.";
+          } else {
+            $success = false;
+            $message = "This email address and license combination is not valid.";
+          }
         } else {
           $success = false;
           $message = "Something is wrong. Try again.";
@@ -1551,10 +1567,12 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 		 * @return void
 		 */
 		function post_paypal_payment( $post_data ) {
+      error_log( print_r( $post_data, true ) );
+      error_log( '^^post paypal reporting for doodie');
 			if ( ! empty( $post_data['transaction_subject'] ) && ! empty ( $post_data['txn_id'] ) ) {
 				update_post_meta( absint( $post_data['transaction_subject'] ), 'transaction_id', $post_data['txn_id'], true );
 			}
-			error_log( print_r( $post_data, true ) );
+
 		}
 
 		/**
