@@ -148,7 +148,7 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 
 			// payment stuff
 			add_action( 'init', array( $this, 'init_actions' ), 1 );
-			add_action( 'jigoshop_api_js_gateway_paypal', array( $this, 'post_paypal_payment' ) );
+			add_action( 'jigoshop_payment_complete', array( $this, 'post_paypal_payment' ) );
 			add_action( 'order_status_cancelled', array( $this, 'cancel_order' ) );
 
 			// email stuff
@@ -1563,6 +1563,7 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 		 * @return void
 		 */
 		function post_paypal_payment() {
+		error_log('HURRAY paypal function triggered');
 					if ( ! empty( $_POST ) && ! empty( $_POST['txn_id'] ) && ! empty( $_POST['custom'] ) ) {
 				update_post_meta( absint( $_POST['custom'] ), 'transaction_id', sanitize_key( $_POST['txn_id'] ), true );
 			}
@@ -1664,8 +1665,8 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 
 				case 'new_activation' :
 					$order_id = $data['order'];
-					$license_key = $data['license_key'];
-					$activation_email =  $data['email'];
+					$license_key = urlencode( $data['license_key'] );
+					$activation_email =  urlencode ( $data['email'] );
 
 					$subject = $data['product'] . ' ' . __( 'Activation Confirmation', 'jigoshop-software' );
 					$send_to = $data['email'];
