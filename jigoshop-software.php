@@ -1672,12 +1672,10 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 					$message = file_get_contents( JIGOSHOP_SOFTWARE_PATH . '/inc/email-activation.txt' );
 					$date = date( 'l, F j Y', time() );
 					$message = str_replace( '{date}', $date, $message );
+					$message = str_replace( '{product}', $data['product'], $message );
 					$message = str_replace( '{remaining_activations}', $data['remaining_activations'], $message );
 					$message = str_replace( '{activations_possible}', $data['activations_possible'], $message );
 					$message = str_replace( '{activation_unsuscribe}', get_site_url() . '/license-activation-notification-unsubscribe/' . '?jgs_license=' . $license_key . '&jgs_email=' . $activation_email, $message );
-					
-					$message = str_replace( '{test}', $data['order'], $message );
-
 
 					break;
 
