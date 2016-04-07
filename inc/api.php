@@ -187,6 +187,7 @@ class Jigoshop_Software_Api extends jigoshop_software {
 														'remaining_activations' => $data['remaining_activations'],
 														'activations_possible' => $data['activations_possible'],
 														'product' => $order_items[0]['name'],
+														'license_key' => $data['license_key'],
 													);
 													parent::process_email( $email_data, 'new_activation' );
 												}

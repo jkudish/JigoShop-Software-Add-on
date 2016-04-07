@@ -54,7 +54,7 @@
 						if (response.success === false) {
 							$('#jgs_validation').html(response.message).fadeIn();
 						} else {
-							$('#jgs_validation').html('An error has occurred in le ajax, please try again.').fadeIn();
+							$('#jgs_validation').html('Please make sure to fill in your email and license and try again.').fadeIn();
 						}
 					}
 				});

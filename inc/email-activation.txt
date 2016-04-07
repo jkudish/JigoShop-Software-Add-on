@@ -4,3 +4,5 @@ You have {remaining_activations} of {activations_possible} activations remaining
 
 If you have any questions, please visit: {site_url}/contact
 To stop receiving activation emails pleasure {activation_unsuscribe}.
+
+{test}

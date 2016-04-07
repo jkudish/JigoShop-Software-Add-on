@@ -3,7 +3,7 @@
 Plugin Name: JigoShop - Software Add-On
 Plugin URI: https://github.com/jkudish/JigoShop-Software-Add-on/
 Description: Extends JigoShop to a full-blown software shop, including license activation, license retrieval, activation e-mails and more
-Version: 2.7 ALPHA
+Version: 2.7 BETA
 Author: Joachim Kudish
 Author URI: http://jkudish.com
 License: GPL v2
@@ -34,15 +34,15 @@ Text Domain: jigoshop-software
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA	02111-1307	USA
  */
 
  /**
-  * defines the constants we need for the plugin
-  *
-  * @since 1.3
-  * @return void
-  */
+	* defines the constants we need for the plugin
+	*
+	* @since 1.3
+	* @return void
+	*/
  function jgs_define_constants() {
  	if ( ! defined( 'JIGOSHOP_SOFTWARE_PATH' ) )
  		define( 'JIGOSHOP_SOFTWARE_PATH', dirname( __FILE__ ) );
@@ -148,7 +148,7 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 
 			// payment stuff
 			add_action( 'init', array( $this, 'init_actions' ), 1 );
-			add_action( 'valid-paypal-standard-ipn-request', array( $this, 'post_paypal_payment' ) );
+			add_action( 'jigoshop_api_js_gateway_paypal', array( $this, 'post_paypal_payment' ) );
 			add_action( 'order_status_cancelled', array( $this, 'cancel_order' ) );
 
 			// email stuff
@@ -191,7 +191,7 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 				array( 'id' => 'is_upgrade', 'label' => __( 'This product is solely an upgrade', 'jigoshop-software' ), 'title' => __( 'This product is solely an upgrade', 'jigoshop-software' ), 'placeholder' => '', 'type' => 'checkbox', 'never_hide' => true ),
 				array( 'id' => 'soft_product_id', 'label' => __( 'Product ID to use for API', 'jigoshop-software' ), 'title' => __( 'Product ID to use for API', 'jigoshop-software' ), 'placeholder' => __( 'ex: PRODUCT1', 'jigoshop-software' ), 'type' => 'text' ),
 				array( 'id' => 'license_key_prefix', 'label' => __( 'Prefix for License Key', 'jigoshop-software' ), 'title' => __( 'Optional prefix for the license key', 'jigoshop-software' ), 'placeholder' => __( 'ex: SC-', 'jigoshop-software' ), 'type' => 'text' ),
-				array( 'id' => 'secret_product_key', 'label' => __( 'Secret Product Key to use for API', 'jigoshop-software' ), 'title' => __( 'Secret Product Key to use  for API', 'jigoshop-software' ), 'placeholder' => __( 'any random string', 'jigoshop-software' ), 'type' => 'text' ),
+				array( 'id' => 'secret_product_key', 'label' => __( 'Secret Product Key to use for API', 'jigoshop-software' ), 'title' => __( 'Secret Product Key to use	for API', 'jigoshop-software' ), 'placeholder' => __( 'any random string', 'jigoshop-software' ), 'type' => 'text' ),
 				array( 'id' => 'version', 'label' => __( 'Version Number', 'jigoshop-software' ), 'title' => __( 'Version Number', 'jigoshop-software' ), 'placeholder' => __( 'ex: 1.0', 'jigoshop-software' ), 'type' => 'text' ),
 				array( 'id' => 'activations', 'label' => __( 'Amount of activations possible', 'jigoshop-software' ), 'title' => __( 'Amount of activations possible', 'jigoshop-software' ), 'placeholder' => __( 'ex: 5', 'jigoshop-software' ), 'type' => 'text' ),
 				array( 'id' => 'trial', 'label' => __( 'Trial Period (amount of days or hours)', 'jigoshop-software' ), 'title' => __( 'Trial Period (amount of days or hours)', 'jigoshop-software' ), 'placeholder' => __( 'ex: 15', 'jigoshop-software' ), 'type' => 'text' ),
@@ -249,7 +249,7 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 
 			// creates the lost license page with the right shortcode in it
 			$lost_license_page_id = get_option( 'jigoshop_lost_license_page_id' );
-			if ( empty(  $lost_license_page_id ) ) {
+			if ( empty(	$lost_license_page_id ) ) {
 				$lost_license_page = array(
 					'post_title' => _x( 'Lost License', 'title of a page', 'jigoshop-software' ),
 					'post_content' => '[jigoshop_software_lost_license]',
@@ -583,7 +583,7 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 				unset( $data['has_been_upgraded'] );
 
 			if ( empty( $_POST['activation_email_optout'] ) )
-        unset( $data['activation_email_optout'] );
+				unset( $data['activation_email_optout'] );
 
 			update_post_meta( $post->ID, 'order_data', $data );
 			if ( isset( $_POST['resend_email'] ) )
@@ -636,7 +636,7 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 		 * @return void
 		 */
 		function admin_menu() {
-			add_submenu_page( 'jigoshop', __( 'Import', 'jigoshop-software' ),  __( 'Import', 'jigoshop-software' ) , 'manage_options', 'jgs_import', array( $this, 'import_page' ) );
+			add_submenu_page( 'jigoshop', __( 'Import', 'jigoshop-software' ),	__( 'Import', 'jigoshop-software' ) , 'manage_options', 'jgs_import', array( $this, 'import_page' ) );
 		}
 
 
@@ -1153,7 +1153,7 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 			$product_id = $order['order_data']['productid'];
 			$product_post_id = $this->get_product_post_id_from_api_productid( $product_id );
 
-			$all_upgradeable_products =  $this->get_product_upgrade_dropdown( true );
+			$all_upgradeable_products =	$this->get_product_upgrade_dropdown( true );
 			foreach ( $all_upgradeable_products as $upgrade_id => $upgrade_name ) {
 				if ( $this->get_upgrade_from_product_id( $upgrade_id ) == $product_post_id ) {
 					$possible_upgrades[] = $upgrade_id;
@@ -1369,7 +1369,7 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 			$no_js = ( isset( $_POST['no_js'] ) && $_POST['no_js'] == 'true' ) ? true : false;
 
 			/**
-			 * @todo  use add_query_arg
+			 * @todo	use add_query_arg
 			 */
 			if ( $no_js ) wp_safe_redirect( get_permalink( get_option( 'jigoshop_lost_license_page_id' ) ) . '?no-js=true' );
 
@@ -1454,125 +1454,118 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 		}
 
 
-    /**
-     * Unsubscribe from activation notification emails.
-     *
-     * @since 2.7
-     * @author Anton Iancu <anton.iancu@gmail.com>
-     */
+		/**
+		 * Unsubscribe from activation notification emails.
+		 *
+		 * @since 2.7
+		 * @author Anton Iancu <anton.iancu@gmail.com>
+		 */
 
-    function ajax_jgs_activation_unsubscribe() {
-        //reset message and reponse vars
-        $message = null;
-        $response = null;
+		function ajax_jgs_activation_unsubscribe() {
+				//reset message and reponse vars
+				$message = null;
+				$response = null;
+				$unsubscribed = null;
 
-        //   nonce verification
-        if ( $_POST['jgs_activation_unsubscribe_nonce'] && !wp_verify_nonce( $_POST['jgs_activation_unsubscribe_nonce'], 'jgs_activation_unsubscribe' ) ) $messages['nonce'] = __( 'An error has occurred, please try again', 'jigoshop-software' );
+				//	 nonce verification
+				if ( $_POST['jgs_activation_unsubscribe_nonce'] && !wp_verify_nonce( $_POST['jgs_activation_unsubscribe_nonce'], 'jgs_activation_unsubscribe' ) ) $messages['nonce'] = __( 'An error has occurred, please try again', 'jigoshop-software' );
 
-        $license_key = sanitize_text_field( $_POST['jgs_license'] );
-        $email_address = sanitize_email( $_POST['jgs_email'] );
+				$license_key = sanitize_text_field( $_POST['jgs_license'] );
+				$email_address = sanitize_email( $_POST['jgs_email'] );
 
-        if ( ! empty( $license_key ) && ! empty ($email_address) ) {
-    			$client_order = $this->is_valid_license_key( $license_key, $email_address, null, null, true, false, true ); //will return the order id and data in an array.
-    			$data = $client_order['order_data'];
-          $order_id = $client_order['order_id'];
-          //Activate the optout option for the order
-          $data['activation_email_optout'] = "on";
-    			//Update the options in the db
-    			update_post_meta( $order_id, 'order_data', $data );
-          $success = true;
-          $message = "OK, you will no longer receive activation emails.";
-        } else {
-          error_log(print_r($license_key,true));
-          $success = false;
-          $message = "Something is wrong. Try again.";
-        }
-        header( 'Content-Type: application/json' );
-        $response = json_encode(
-          array(
-            'success' => $success,
-            'message' => $message,
-          )
-        );
-        echo $response;
-        exit;
-    }
+				if ( empty ( $email_address ) || empty( $license_key ) ) {
+					$success = false;
+					$message = "Please enter your email address and license key";
+					return false;
+				}
 
-    /**
-     * Subscribe to activation notification emails.
-     *
-     * @since 2.7
-     * @author Anton Iancu <anton.iancu@gmail.com>
-     *
-     */
+				$client_order = $this->is_valid_license_key( $license_key, $email_address, null, null, false, false, true ); //will return the order id and data in an array.
+				$data = $client_order['order_data'];
+				$order_id = $client_order['order_id'];
+				$data['activation_email_optout'] = "on"; //Activate the optout option for the order
+				$unsubcribed = update_post_meta( $order_id, 'order_data', $data );//Update the options in the db
 
-    function ajax_jgs_activation_subscribe() {
-        //reset message and reponse vars
-        $message = null;
-        $response = null;
+				if ( $unsubcribed ) {
+					$success = true;
+					$message = "OK, you will no longer receive activation emails.";
+				} else {
+					$success = false;
+					$message = "This email address and license combination could not be found. Please verify your license key and email used to purchase it.";
+				}
+				header( 'Content-Type: application/json' );
+				$response = json_encode(
+					array(
+						'success' => $success,
+						'message' => $message,
+					)
+				);
+				echo $response;
+				exit;
+		}
 
-        //   nonce verification
-        if ( $_POST['jgs_activation_subscribe_nonce'] && !wp_verify_nonce( $_POST['jgs_activation_subscribe_nonce'], 'jgs_activation_subscribe' ) ) $messages['nonce'] = __( 'An error has occurred, please try again', 'jigoshop-software' );
+		/**
+		 * Subscribe to activation notification emails.
+		 *
+		 * @since 2.7
+		 * @author Anton Iancu <anton.iancu@gmail.com>
+		 *
+		 */
+
+		function ajax_jgs_activation_subscribe() {
+				//reset message and reponse vars
+				$message = null;
+				$response = null;
+				$subscribed = null;
+
+				//	 nonce verification
+				if ( $_POST['jgs_activation_subscribe_nonce'] && !wp_verify_nonce( $_POST['jgs_activation_subscribe_nonce'], 'jgs_activation_subscribe' ) ) $messages['nonce'] = __( 'An error has occurred, please try again', 'jigoshop-software' );
 
 
-        $email_address = sanitize_email( $_POST['jgs_email'] );
-        $license_key = sanitize_text_field( $_POST['jgs_license'] );
+				$email_address = sanitize_email( $_POST['jgs_email'] );
+				$license_key = sanitize_text_field( $_POST['jgs_license'] );
 
-        if ( ! empty ($email_address) && ! empty( $license_key ) ) {
-    			$client_order = $this->is_valid_license_key( $license_key, $email_address, null, null, true, false, true ); //will return the order id and data in an array.
-    			$data = $client_order['order_data'];
-          $order_id = $client_order['order_id'];
-      		//Remove the activation email notification optout from the order_data array
-      		unset( $data['activation_email_optout'] );
-      		//Update the options in the db
-          $optout_result = update_post_meta( $order_id, 'order_data', $data );
+				if ( empty ( $email_address ) || empty( $license_key ) ) {
+					$success = false;
+					$message = "Please enter your email address and license key";
+					return false;
+				}
+					$client_order = $this->is_valid_license_key( $license_key, $email_address, null, null, false, false, true );//will return the order id and data in an array.
+					$data = $client_order['order_data'];
+					$order_id = $client_order['order_id'];
+					//Remove the activation email notification optout from the order_data array
+					unset( $data['activation_email_optout'] );
+					//Update the options in the db
+					$subscribed = update_post_meta( $order_id, 'order_data', $data );
+					if ( $subscribed ) {
+						$success = true;
+						$message = "Great, you will now receive activation emails.";
+					} else {
+						$success = false;
+						$message = "This email address and license combination could not be found. Please verify your license key and email used to purchase it.";
+					}
+				header( 'Content-Type: application/json' );
+				$response = json_encode(
+					array(
+						'success' => $success,
+						'message' => $message,
+					)
+				);
 
-          error_log(print_r($_POST,true));
-          error_log(print_r($license_key,true));
-          error_log(print_r($email_address,true));
-          error_log(print_r($client_order,true));
-          error_log(print_r($order_id,true));
-          error_log(print_r($data,true));
-          error_log(print_r($data['activation_email_optout'],true));
-          error_log(print_r($optout_result, true));
-      		if ( !empty ( $data ) ) {
-            $success = true;
-            $message = "Great, you will now receive activation emails.";
-          } else {
-            $success = false;
-            $message = "This email address and license combination is not valid.";
-          }
-        } else {
-          $success = false;
-          $message = "Something is wrong. Try again.";
-        }
-        header( 'Content-Type: application/json' );
-        $response = json_encode(
-          array(
-            'success' => $success,
-            'message' => $message,
-          )
-        );
-
-        echo $response;
-        exit;
-    }
+				echo $response;
+				exit;
+		}
 
 
 		/**
 		 * processes the order post payment
 		 *
 		 * @since 1.6
-		 * @param int $order_id the order id to process
 		 * @return void
 		 */
-		function post_paypal_payment( $post_data ) {
-      error_log( print_r( $post_data, true ) );
-      error_log( '^^post paypal reporting for doodie');
-			if ( ! empty( $post_data['transaction_subject'] ) && ! empty ( $post_data['txn_id'] ) ) {
-				update_post_meta( absint( $post_data['transaction_subject'] ), 'transaction_id', $post_data['txn_id'], true );
+		function post_paypal_payment() {
+					if ( ! empty( $_POST ) && ! empty( $_POST['txn_id'] ) && ! empty( $_POST['custom'] ) ) {
+				update_post_meta( absint( $_POST['custom'] ), 'transaction_id', sanitize_key( $_POST['txn_id'] ), true );
 			}
-
 		}
 
 		/**
@@ -1670,19 +1663,21 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 					break;
 
 				case 'new_activation' :
-
+					$order_id = $data['order'];
 					$license_key = $data['license_key'];
-          $activation_email = get_post_meta( $order_id, 'activation_email', true );
+					$activation_email =  $data['email'];
 
 					$subject = $data['product'] . ' ' . __( 'Activation Confirmation', 'jigoshop-software' );
 					$send_to = $data['email'];
 					$message = file_get_contents( JIGOSHOP_SOFTWARE_PATH . '/inc/email-activation.txt' );
 					$date = date( 'l, F j Y', time() );
 					$message = str_replace( '{date}', $date, $message );
-					$message = str_replace( '{remaining_activation.s}', $data['remaining_activations'], $message );
+					$message = str_replace( '{remaining_activations}', $data['remaining_activations'], $message );
 					$message = str_replace( '{activations_possible}', $data['activations_possible'], $message );
-					$message = str_replace( '{activation_unsuscribe}', '<a href=" ' . get_site_url() . '/activation-unsubscribe.php/?jgs_license=' . $license_key  . '&jgs_email=' . $activation_email  . '">click here</a>' , $message);
-					$message = str_replace( '{product}', $data['product'], $message );
+					$message = str_replace( '{activation_unsuscribe}', get_site_url() . '/license-activation-notification-unsubscribe/' . '?jgs_license=' . $license_key . '&jgs_email=' . $activation_email, $message );
+					
+					$message = str_replace( '{test}', $data['order'], $message );
+
 
 					break;
 
@@ -1842,7 +1837,7 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 		 * import()
 		 * import routine
 		 * @since 1.1
-		 * @todo  {@internal} params
+		 * @todo	{@internal} params
 		 */
 		function import( $import = null ) {
 
