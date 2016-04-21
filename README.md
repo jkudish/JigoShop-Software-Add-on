@@ -8,6 +8,9 @@ The plugin requires JigoShop 1.1.1 or higher.
 
 Changelog
 ===========
+### 2.7
+* Updates hook for post_paypal() trigger and enables subscribing and unsubscribing to activation notifications.
+
 ### 2.6
 * Add upgrades page and related functionality
 
