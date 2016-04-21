@@ -3,7 +3,7 @@
 Plugin Name: JigoShop - Software Add-On
 Plugin URI: https://github.com/jkudish/JigoShop-Software-Add-on/
 Description: Extends JigoShop to a full-blown software shop, including license activation, license retrieval, activation e-mails and more
-Version: 2.7 BETA
+Version: 2.7
 Author: Joachim Kudish
 Author URI: http://jkudish.com
 License: GPL v2
@@ -1563,7 +1563,6 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 		 * @return void
 		 */
 		function post_paypal_payment() {
-		error_log('HURRAY paypal function triggered');
 					if ( ! empty( $_POST ) && ! empty( $_POST['txn_id'] ) && ! empty( $_POST['custom'] ) ) {
 				update_post_meta( absint( $_POST['custom'] ), 'transaction_id', sanitize_key( $_POST['txn_id'] ), true );
 			}
