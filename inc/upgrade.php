@@ -18,6 +18,7 @@
 		<div class="form-row">
 			<h2><?php _e( 'Upgrade', 'jigoshop-software' ) ?></h2>
 			<p><?php _e( 'Enter the Email address and key of your license that you want to upgrade.', 'jigoshop-software' ) ?></p>
+			<p><?php _e( 'When upgrading, your license key will deactivate. You will be sent a new license key to re-activate your installs.', 'jigoshop-software' ) ?></p>
 			<p><?php _e( 'If your email address has changed, please', 'jigoshop-software' ) ?> <a href="<?php echo site_url( '/contact' ) ?>"><?php _e( 'contact us', 'jigoshop-software' ) ?></a>.</p>
 		</div>
 

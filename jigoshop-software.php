@@ -802,7 +802,7 @@ if ( ! class_exists( 'Jigoshop_Software' ) ) {
 			$this->set_upgrade_cookie( $possible_upgrade_ids, $license_key, $email_address );
 
 			wp_send_json_success( array(
-				'success_message' => sprintf( __( 'Here are the possible upgrades for license key %s. Please press "Buy Now" for the upgrade you want.', 'jigoshop-software' ), esc_html( $_POST['jgs_license_key'] ) ),
+				'success_message' => sprintf( __( 'Here are the possible upgrades for license key %s. When upgrading, your license key will deactivate. You will be sent a new license key to re-activate your installs. Please press "Buy Now" for the upgrade you want.', 'jigoshop-software' ), esc_html( $_POST['jgs_license_key'] ) ),
 				'possible_upgrade_products' => do_shortcode( '[products ids="' . implode( ',', $possible_upgrade_ids ) . '"]' ),
 			) );
 		}
